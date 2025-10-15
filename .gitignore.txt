@@ -1,0 +1,10 @@
+# Visual Studio 專案暫存
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.log
+
+# Mac 產生的檔案（如果有人用 Mac）
+*.DS_Store
