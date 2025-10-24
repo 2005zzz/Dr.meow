@@ -1,0 +1,57 @@
+@page
+@model Dr.meow.Pages.Vulnerabilities.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Vulnerability</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Vulnerability.Id" />
+            <div class="form-group">
+                <label asp-for="Vulnerability.Title" class="control-label"></label>
+                <input asp-for="Vulnerability.Title" class="form-control" />
+                <span asp-validation-for="Vulnerability.Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Vulnerability.Status" class="control-label"></label>
+                <input asp-for="Vulnerability.Status" class="form-control" />
+                <span asp-validation-for="Vulnerability.Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Vulnerability.Severity" class="control-label"></label>
+                <input asp-for="Vulnerability.Severity" class="form-control" />
+                <span asp-validation-for="Vulnerability.Severity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Vulnerability.FoundDate" class="control-label"></label>
+                <input asp-for="Vulnerability.FoundDate" class="form-control" />
+                <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Vulnerability.AssignedTo" class="control-label"></label>
+                <input asp-for="Vulnerability.AssignedTo" class="form-control" />
+                <span asp-validation-for="Vulnerability.AssignedTo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Vulnerability.Description" class="control-label"></label>
+                <input asp-for="Vulnerability.Description" class="form-control" />
+                <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+

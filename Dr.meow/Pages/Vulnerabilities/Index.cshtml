@@ -1,0 +1,66 @@
+@page
+@model Dr.meow.Pages.Vulnerabilities.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Vulnerability[0].Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vulnerability[0].Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vulnerability[0].Severity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vulnerability[0].FoundDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vulnerability[0].AssignedTo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Vulnerability[0].Description)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Vulnerability) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Severity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FoundDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AssignedTo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -1,0 +1,55 @@
+@page
+@model Dr.meow.Pages.Vulnerabilities.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Vulnerability</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Vulnerability.Title)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Vulnerability.Title)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Vulnerability.Status)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Vulnerability.Status)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Vulnerability.Severity)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Vulnerability.Severity)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Vulnerability.FoundDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Vulnerability.FoundDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Vulnerability.AssignedTo)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Vulnerability.AssignedTo)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Vulnerability.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Vulnerability.Description)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.Vulnerability.Id">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

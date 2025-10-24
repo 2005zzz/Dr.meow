@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\10932\\OneDrive\\附件\\Dr.meow\\Dr.meow\\Dr.meow.csproj": {}
+    "C:\\Dr.meow\\Dr.meow\\Dr.meow.csproj": {}
   },
   "projects": {
-    "C:\\Users\\10932\\OneDrive\\附件\\Dr.meow\\Dr.meow\\Dr.meow.csproj": {
+    "C:\\Dr.meow\\Dr.meow\\Dr.meow.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\10932\\OneDrive\\附件\\Dr.meow\\Dr.meow\\Dr.meow.csproj",
+        "projectUniqueName": "C:\\Dr.meow\\Dr.meow\\Dr.meow.csproj",
         "projectName": "Dr.meow",
-        "projectPath": "C:\\Users\\10932\\OneDrive\\附件\\Dr.meow\\Dr.meow\\Dr.meow.csproj",
+        "projectPath": "C:\\Dr.meow\\Dr.meow\\Dr.meow.csproj",
         "packagesPath": "C:\\Users\\10932\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\10932\\OneDrive\\附件\\Dr.meow\\Dr.meow\\obj\\",
+        "outputPath": "C:\\Dr.meow\\Dr.meow\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -49,6 +49,32 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
