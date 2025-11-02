@@ -44,6 +44,26 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Dr.meow/Dr.meow/Pages/Vulnerabilities/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVnVsbmVyYWJpbGl0aWVzXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dr.meow/Dr.meow/Pages/Vulnerabilities/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVnVsbmVyYWJpbGl0aWVzXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dr.meow/Dr.meow/Pages/Vulnerabilities/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVnVsbmVyYWJpbGl0aWVzXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dr.meow/Dr.meow/Pages/Vulnerabilities/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVnVsbmVyYWJpbGl0aWVzXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dr.meow/Dr.meow/Pages/Vulnerabilities/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVnVsbmVyYWJpbGl0aWVzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Dr.meow/Dr.meow/Pages/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
