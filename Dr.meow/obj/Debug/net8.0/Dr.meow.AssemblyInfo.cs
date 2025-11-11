@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Dr.meow")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9bd8b8d83449e701b809da0afdb09d5c92379fe9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d9b747284c467bf1ecbf7807175131ae347ca0f9")]
 [assembly: System.Reflection.AssemblyProductAttribute("Dr.meow")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Dr.meow")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

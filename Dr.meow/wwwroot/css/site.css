@@ -1,22 +1,75 @@
-html {
-  font-size: 14px;
+/* ===== 左側選單（精緻 + 點選即亮）===== */
+.list-group-item {
+    background-color: #ffffff;
+    border: none;
+    color: #333;
+    padding: 12px 16px;
+    position: relative;
+    transition: all .25s ease;
+    font-size: 15px;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    /* 左側亮色選中條 */
+    .list-group-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background-color: #2FA494;
+        border-radius: 0 4px 4px 0;
+        opacity: 0;
+        transition: opacity .25s;
+    }
+
+    /* ✅ 點選後立即變色，不用 hover */
+    .list-group-item.active {
+        background-color: #E3F5F3 !important; /* 柔和綠底，不刺眼 */
+        color: #157a71 !important; /* 深綠字體 */
+        font-weight: 600;
+    }
+
+        .list-group-item.active::before {
+            opacity: 1;
+        }
+
+    /* hover 只是微浮起（不負責顯示選中狀態） */
+    .list-group-item:hover {
+        transform: translateX(3px);
+        box-shadow: 0 2px 6px rgba(0,0,0,.05);
+        cursor: pointer;
+    }
+
+    /* 分類標題 */
+    .list-group-item.text-secondary {
+        background: #F5FBFA;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: .5px;
+        cursor: default;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+/* ===== Button Ripple Effect ===== */
+.btn.ripple {
+    position: relative;
+    overflow: hidden; /* 讓波紋不溢出按鈕 */
+    isolation: isolate; /* 避免被父層混合影響 */
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn .ripple-ink {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple-anim .6s ease-out;
+    background: rgba(255, 255, 255, .55); /* 綠色主題上用白色波紋 */
+    pointer-events: none; /* 不阻擋點擊 */
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
+@keyframes ripple-anim {
+    to {
+        transform: scale(12);
+        opacity: 0;
+    }
 }
