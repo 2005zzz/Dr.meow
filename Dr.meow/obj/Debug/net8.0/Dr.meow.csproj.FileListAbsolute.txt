@@ -430,4 +430,12 @@ C:\Dr.meow\Dr.meow\bin\Debug\net8.0\runtimes\win\lib\net7.0\Microsoft.Win32.Syst
 C:\Dr.meow\Dr.meow\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
 C:\Dr.meow\Dr.meow\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Security.Cryptography.ProtectedData.dll
 C:\Dr.meow\Dr.meow\bin\Debug\net8.0\runtimes\win\lib\net7.0\System.Windows.Extensions.dll
+C:\Dr.meow\Dr.meow\bin\Debug\net8.0\ClosedXML.dll
+C:\Dr.meow\Dr.meow\bin\Debug\net8.0\ClosedXML.Parser.dll
+C:\Dr.meow\Dr.meow\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+C:\Dr.meow\Dr.meow\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
+C:\Dr.meow\Dr.meow\bin\Debug\net8.0\ExcelNumberFormat.dll
+C:\Dr.meow\Dr.meow\bin\Debug\net8.0\RBush.dll
+C:\Dr.meow\Dr.meow\bin\Debug\net8.0\SixLabors.Fonts.dll
+C:\Dr.meow\Dr.meow\bin\Debug\net8.0\System.IO.Packaging.dll
 C:\Dr.meow\Dr.meow\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
