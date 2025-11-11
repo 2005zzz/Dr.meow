@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-// µù¥U¸ê®Æ®wªA°È
+// ï¿½ï¿½ï¿½Uï¿½ï¿½Æ®wï¿½Aï¿½ï¿½
 builder.Services.AddDbContext<DrMeowDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DrMeowConnection")));
 

@@ -1,5 +1,199 @@
 ﻿@page
-@model RazorApp.Pages.IndexModel
+@model Dr.meow.Pages.IndexModel
+@{
+    ViewData["Title"] = "顧問中心";
+}
 
-<h1>@Model.Message</h1>
-<p>@Model.Time</p>
+<div class="row g-3">
+    <!-- 左欄：功能 / 主題 -->
+    <aside class="col-12 col-lg-3">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item text-secondary small text-uppercase">功能</div>
+
+                    <a class="list-group-item list-group-item-action active app-menu" data-mode="consult">
+                        RAG 顧問
+                    </a>
+                    <a class="list-group-item list-group-item-action app-menu" data-mode="forms">
+                        表單管理
+                    </a>
+                    <a class="list-group-item list-group-item-action app-menu" data-mode="reports">
+                        報表分析
+                    </a>
+
+                    <div class="list-group-item text-secondary small text-uppercase mt-2">知識主題</div>
+
+                    <a class="list-group-item list-group-item-action app-topic" data-prompt="ISO27001">
+                        ISO27001
+                    </a>
+                    <a class="list-group-item list-group-item-action app-topic" data-prompt="電腦設備異常處理">
+                        電腦設備異常處理
+                    </a>
+                    <a class="list-group-item list-group-item-action app-topic" data-prompt="資訊安全內部稽核">
+                        資訊安全內部稽核
+                    </a>
+                    <a class="list-group-item list-group-item-action app-topic" data-prompt="帳號權限管理">
+                        帳號權限管理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 右欄 -->
+    <section class="col-12 col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Dr.Meow（顧問中心）</h5>
+            </div>
+
+            <div class="card-body">
+
+                <!-- 系統提示 -->
+                <div id="noteBox" class="alert alert-info py-2">
+                    左側可切換顧問 / 表單 / 報表，下方輸入問題即可開始。
+                </div>
+
+                <!-- AI 對話區 -->
+                <div id="messages" class="d-flex flex-column gap-2 mb-3"></div>
+
+                <!-- AI 總結 -->
+                <div id="summaryBox" class="alert alert-secondary d-none"></div>
+
+                <!-- 文件結果 -->
+                <div id="results" class="row row-cols-1 row-cols-md-2 g-3"></div>
+
+                <!-- 輸入區 -->
+                <div class="mt-3">
+                    <form id="askForm" class="row g-2">
+                        <div class="col">
+                            <input id="askInput" class="form-control" placeholder="輸入問題，例如：最近漏洞通報與處置建議？" autocomplete="off" />
+                        </div>
+                        <div class="col-auto d-flex gap-2">
+                            <button id="btnVoice" class="btn btn-outline-secondary ripple" type="button">🎤</button>
+                            <button class="btn btn-primary ripple" type="submit">送出</button>
+                            <button id="btnClear" class="btn btn-outline-secondary ripple" type="button">清空</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        /* ===== 元件 ===== */
+        const menuItems = document.querySelectorAll('.app-menu');
+        const topics = document.querySelectorAll('.app-topic');
+        const noteBox = document.getElementById('noteBox');
+        const msgs = document.getElementById('messages');
+        const results = document.getElementById('results');
+        const summary = document.getElementById('summaryBox');
+        const form = document.getElementById('askForm');
+        const input = document.getElementById('askInput');
+        const btnClear = document.getElementById('btnClear');
+        const btnVoice = document.getElementById('btnVoice');
+
+        let currentMode = 'consult';
+
+        /* ===== 左側切換 ===== */
+        menuItems.forEach(it => {
+            it.addEventListener('click', () => {
+                menuItems.forEach(x => x.classList.remove('active'));
+                it.classList.add('active');
+                currentMode = it.dataset.mode;
+                noteBox.innerHTML = `已切換至「<b>${it.textContent.trim()}</b>」。`;
+                msgs.innerHTML = "";
+                results.innerHTML = "";
+                summary.classList.add("d-none");
+            });
+        });
+
+        /* ===== 主題快捷鍵 ===== */
+        topics.forEach(tp => {
+            tp.addEventListener('click', () => {
+                const p = tp.dataset.prompt;
+                input.value = `請提供「${p}」的作業重點與處置流程`;
+                input.focus();
+            });
+        });
+
+        /* ===== 送出 ===== */
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+            const q = input.value.trim();
+            if (!q) return;
+
+            pushUser(q);
+            input.value = "";
+            pushBot("查詢中…");
+
+            await sleep(400);
+
+            const data = {
+              answer: "根據 ISO27001 作業流程：檢視資產、評估影響、修補、紀錄、審核。",
+              items: [
+                { title:"2025/10 漏洞通報與修補建議", source:"SharePoint", modifiedAt:"2025-10-30", snippet:"新增 CVE-XXXX 修補建議。" },
+                { title:"ISO27001 - 帳號權限管理作業", source:"SharePoint", modifiedAt:"2025-10-22", snippet:"定期盤點帳號、回收無效帳號。" }
+              ]
+            };
+
+            replaceLastBot(data.answer);
+            summary.classList.remove("d-none");
+            summary.textContent = data.answer;
+            results.innerHTML = "";
+            data.items.forEach(addResultCard);
+        });
+
+        /* 清空 */
+        btnClear.addEventListener('click', () => {
+            msgs.innerHTML = "";
+            results.innerHTML = "";
+            summary.classList.add('d-none');
+        });
+
+        /* 語音提示 */
+        btnVoice.addEventListener('click', () => {
+            alert("語音功能之後接 Web Speech API。");
+        });
+
+        /* 介面函式 */
+        function pushUser(t){ msgs.insertAdjacentHTML("beforeend",`<div class="msg msg-user">${escape(t)}</div>`); }
+        function pushBot(t){ msgs.insertAdjacentHTML("beforeend",`<div class="msg msg-bot" data-bot="1">${escape(t)}</div>`); }
+        function replaceLastBot(t){
+            const last = [...document.querySelectorAll('[data-bot="1"]')].pop();
+            if(last) last.innerHTML = escape(t);
+        }
+        function addResultCard(x){
+          results.insertAdjacentHTML("beforeend", `
+            <div class="col"><div class="card result-card h-100"><div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong>${escape(x.title)}</strong>
+                <span class="badge bg-success-subtle text-success-emphasis">${escape(x.source)}</span>
+              </div>
+              <div class="text-secondary small mb-2">${x.modifiedAt}</div>
+              <div>${escape(x.snippet)}</div>
+            </div></div></div>`);
+        }
+        function escape(s){return (s||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]) );}
+        const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+        /* ===== 波紋效果 ===== */
+        document.addEventListener('click', function(e){
+          const btn = e.target.closest('.ripple');
+          if(!btn) return;
+          const rect = btn.getBoundingClientRect();
+          const ink = document.createElement('span');
+          ink.className = 'ripple-ink';
+          const size = Math.max(rect.width, rect.height) * 2;
+          ink.style.width = ink.style.height = size + "px";
+          ink.style.left = (e.clientX - rect.left - size/2) + "px";
+          ink.style.top = (e.clientY - rect.top - size/2) + "px";
+          btn.appendChild(ink);
+          ink.addEventListener('animationend', ()=>ink.remove());
+        });
+    </script>
+}
