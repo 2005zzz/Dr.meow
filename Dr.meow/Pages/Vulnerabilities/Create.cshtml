@@ -2,45 +2,45 @@
 @model Dr.meow.Pages.Vulnerabilities.CreateModel
 
 @{
-    ViewData["Title"] = "·s¼WÅÜ§ó¥Ó½Ð/º|¬}³ø§i";
+    ViewData["Title"] = "ï¿½sï¿½Wï¿½Ü§ï¿½Ó½ï¿½/ï¿½|ï¿½}ï¿½ï¿½ï¿½i";
 }
 
 <div class="container mt-4">
     <div class="card shadow-lg">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">¸ê°TÅÜ§ó³æ / º|¬}°lÂÜ</h4>
+            <h4 class="mb-0">ï¿½ï¿½Tï¿½Ü§ï¿½ï¿½ / ï¿½|ï¿½}ï¿½lï¿½ï¿½</h4>
         </div>
         <div class="card-body">
 
             <form method="post">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                <h5 class="mt-3 text-primary">°ò¥»¸ê°T</h5>
+                <h5 class="mt-3 text-primary">ï¿½ò¥»¸ï¿½T</h5>
                 <hr class="mt-0" />
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="Vulnerability.Title" class="control-label fw-bold">1. ¨t²Î/¤u³æÃþ§O (¨Ï¥ÎTitle)</label>
-                            <input asp-for="Vulnerability.Title" class="form-control" placeholder="¨Ò¦p¡GEIP / DevOps / Dr.meow ¼Ò²Õ" />
+                            <label asp-for="Vulnerability.Title" class="control-label fw-bold">1. ï¿½tï¿½ï¿½/ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½O (ï¿½Ï¥ï¿½Title)</label>
+                            <input asp-for="Vulnerability.Title" class="form-control" placeholder="ï¿½Ò¦pï¿½GEIP / DevOps / Dr.meow ï¿½Ò²ï¿½" />
                             <span asp-validation-for="Vulnerability.Title" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="Vulnerability.AssignedTo" class="control-label fw-bold">2. ³æ¸¹/«ü¬£¹ï¶H (¨Ï¥ÎAssignedTo)</label>
-                            <input asp-for="Vulnerability.AssignedTo" class="form-control" placeholder="¨Ò¦p¡GCHG2023001 ©Î ©Ó¿ì¤H" />
+                            <label asp-for="Vulnerability.AssignedTo" class="control-label fw-bold">2. ï¿½æ¸¹/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½H (ï¿½Ï¥ï¿½AssignedTo)</label>
+                            <input asp-for="Vulnerability.AssignedTo" class="form-control" placeholder="ï¿½Ò¦pï¿½GCHG2023001 ï¿½ï¿½ ï¿½Ó¿ï¿½H" />
                             <span asp-validation-for="Vulnerability.AssignedTo" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
 
-                <h5 class="mt-4 text-primary">ÅÜ§ó/º|¬}¸Ô±¡</h5>
+                <h5 class="mt-4 text-primary">ï¿½Ü§ï¿½/ï¿½|ï¿½}ï¿½Ô±ï¿½</h5>
                 <hr class="mt-0" />
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label asp-for="Vulnerability.Description" class="control-label fw-bold">3. ÅÜ§ó/º|¬}¤º®e (Description)</label>
-                            <textarea asp-for="Vulnerability.Description" class="form-control" rows="4" placeholder="½Ð¸Ô²Ó´y­zÅÜ§ó¤º®e©Îº|¬}µo²{¨BÆJ¤Î¼vÅT¡C"></textarea>
+                            <label asp-for="Vulnerability.Description" class="control-label fw-bold">3. ï¿½Ü§ï¿½/ï¿½|ï¿½}ï¿½ï¿½ï¿½e (Description)</label>
+                            <textarea asp-for="Vulnerability.Description" class="form-control" rows="4" placeholder="ï¿½Ð¸Ô²Ó´yï¿½zï¿½Ü§ó¤º®eï¿½Îº|ï¿½}ï¿½oï¿½{ï¿½Bï¿½Jï¿½Î¼vï¿½Tï¿½C"></textarea>
                             <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>
                         </div>
                     </div>
@@ -49,19 +49,19 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="control-label fw-bold mb-2">4. ÅÜ§óÃþ«¬ / º|¬}ª¬ºA (Status)</label>
+                            <label class="control-label fw-bold mb-2">4. ï¿½Ü§ï¿½ï¿½ï¿½ï¿½ï¿½ / ï¿½|ï¿½}ï¿½ï¿½ï¿½A (Status)</label>
                             <div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="³æ¿W/¼Ð·Ç" id="statusStandard" class="form-check-input" />
-                                    <label class="form-check-label" for="statusStandard">³æ¿W/¼Ð·Ç</label>
+                                    <input type="radio" asp-for="Vulnerability.Status" value="ï¿½ï¿½W/ï¿½Ð·ï¿½" id="statusStandard" class="form-check-input" />
+                                    <label class="form-check-label" for="statusStandard">ï¿½ï¿½W/ï¿½Ð·ï¿½</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="ºò«æ" id="statusEmergency" class="form-check-input" />
-                                    <label class="form-check-label" for="statusEmergency">ºò«æ</label>
+                                    <input type="radio" asp-for="Vulnerability.Status" value="ï¿½ï¿½ï¿½" id="statusEmergency" class="form-check-input" />
+                                    <label class="form-check-label" for="statusEmergency">ï¿½ï¿½ï¿½</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="¨Ò¦æ" id="statusRoutine" class="form-check-input" />
-                                    <label class="form-check-label" for="statusRoutine">¨Ò¦æ</label>
+                                    <input type="radio" asp-for="Vulnerability.Status" value="ï¿½Ò¦ï¿½" id="statusRoutine" class="form-check-input" />
+                                    <label class="form-check-label" for="statusRoutine">ï¿½Ò¦ï¿½</label>
                                 </div>
                             </div>
                             <span asp-validation-for="Vulnerability.Status" class="text-danger"></span>
@@ -69,19 +69,19 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="control-label fw-bold mb-2">5. ¼vÅT»P­·ÀIµû¦ô (Severity)</label>
+                            <label class="control-label fw-bold mb-2">5. ï¿½vï¿½Tï¿½Pï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ (Severity)</label>
                             <div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="§C" id="severityLow" class="form-check-input" />
-                                    <label class="form-check-label" for="severityLow">§C­·ÀI</label>
+                                    <input type="radio" asp-for="Vulnerability.Severity" value="ï¿½C" id="severityLow" class="form-check-input" />
+                                    <label class="form-check-label" for="severityLow">ï¿½Cï¿½ï¿½ï¿½I</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="¤¤" id="severityMedium" class="form-check-input" />
-                                    <label class="form-check-label" for="severityMedium">¤¤­·ÀI</label>
+                                    <input type="radio" asp-for="Vulnerability.Severity" value="ï¿½ï¿½" id="severityMedium" class="form-check-input" />
+                                    <label class="form-check-label" for="severityMedium">ï¿½ï¿½ï¿½ï¿½ï¿½I</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="°ª" id="severityHigh" class="form-check-input" />
-                                    <label class="form-check-label" for="severityHigh">°ª­·ÀI</label>
+                                    <input type="radio" asp-for="Vulnerability.Severity" value="ï¿½ï¿½" id="severityHigh" class="form-check-input" />
+                                    <label class="form-check-label" for="severityHigh">ï¿½ï¿½ï¿½ï¿½ï¿½I</label>
                                 </div>
                             </div>
                             <span asp-validation-for="Vulnerability.Severity" class="text-danger"></span>
@@ -89,28 +89,28 @@
                     </div>
                 </div>
 
-                <h5 class="mt-4 text-primary">¹ê¬I»P´ú¸Õ­p¹º</h5>
+                <h5 class="mt-4 text-primary">ï¿½ï¿½Iï¿½Pï¿½ï¿½ï¿½Õ­pï¿½ï¿½</h5>
                 <hr class="mt-0" />
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="Vulnerability.FoundDate" class="control-label fw-bold">6. ¹w­p¹ê¬I¤é´Á (FoundDate)</label>
+                            <label asp-for="Vulnerability.FoundDate" class="control-label fw-bold">6. ï¿½wï¿½pï¿½ï¿½Iï¿½ï¿½ï¿½ (FoundDate)</label>
                             <input asp-for="Vulnerability.FoundDate" class="form-control" type="date" />
                             <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="control-label fw-bold mb-2">7. ´ú¸Õ»P¦^´_­p¹º (¶ÈÅã¥Ü¿ï¶µ)</label>
+                            <label class="control-label fw-bold mb-2">7. ï¿½ï¿½ï¿½Õ»Pï¿½^ï¿½_ï¿½pï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½Ü¿ï¶µ)</label>
                             <div>
                                 <div class="form-check">
                                   
                                     <input class="form-check-input" type="checkbox" checked id="testPlan">
-                                    <label class="form-check-label" for="testPlan">´ú¸Õ­p¹º: §¹¾ã´ú¸Õ</label>
+                                    <label class="form-check-label" for="testPlan">ï¿½ï¿½ï¿½Õ­pï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" checked id="recoveryPlan">
-                                    <label class="form-check-label" for="recoveryPlan">¦^´_­p¹º: §Ö³t¦^´_</label>
+                                    <label class="form-check-label" for="recoveryPlan">ï¿½^ï¿½_ï¿½pï¿½ï¿½: ï¿½Ö³tï¿½^ï¿½_</label>
                                 </div>
                             </div>
                         </div>
@@ -118,8 +118,8 @@
                 </div>
 
                 <div class="form-group mt-4">
-                    <input type="submit" value="´£¥æ¥Ó½Ð (Create)" class="btn btn-success btn-lg shadow" />
-                    <a asp-page="Index" class="btn btn-secondary btn-lg ms-2">ªð¦^¦Cªí</a>
+                    <input type="submit" value="ï¿½ï¿½ï¿½ï¿½Ó½ï¿½ (Create)" class="btn btn-success btn-lg shadow" />
+                    <a asp-page="Index" class="btn btn-secondary btn-lg ms-2">ï¿½ï¿½^ï¿½Cï¿½ï¿½</a>
                 </div>
             </form>
 
