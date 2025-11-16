@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient<ISearchService, SearchService>();
 
+
 builder.Services.AddDbContext<DrMeowDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DrMeowConnection")));
 

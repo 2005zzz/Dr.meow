@@ -14,17 +14,22 @@ namespace Dr.meow.Pages.Api
         }
 
         // GET /api/search?keyword=xxx
-        public async Task<IActionResult> OnGetAsync(string keyword, CancellationToken ct)
+        public async Task<IActionResult> OnGetAsync(string? keyword, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(keyword))
             {
                 return new JsonResult(new { error = "keyword is required" });
             }
 
-            // 呼叫同學的 SearchService（已經在 Program.cs 註冊過）
+            // 呼叫 SearchService，搜尋 RAG 後端
             var result = await _searchService.SearchAsync(keyword, ct);
 
-            // 直接回傳 JSON 給前端 JS
+            if (result == null)
+            {
+                return new JsonResult(new { error = "後端沒有回傳資料" });
+            }
+
+            // 回傳 JSON
             return new JsonResult(result);
         }
     }

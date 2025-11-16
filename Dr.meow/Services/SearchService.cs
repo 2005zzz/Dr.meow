@@ -12,60 +12,86 @@ namespace Dr.meow.Services
     {
         private readonly HttpClient _http;
         private readonly string _baseUrl;
-        private readonly string _apiKey;
 
         public SearchService(HttpClient http, IConfiguration config)
         {
             _http = http;
+
+            // 從 appsettings.json 讀取 RAG API 的 URL
             _baseUrl = config["ExternalSearch:BaseUrl"] ?? string.Empty;
-            _apiKey = config["ExternalSearch:ApiKey"] ?? string.Empty;
         }
 
         public async Task<SearchResponse> SearchAsync(string keyword, CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(_baseUrl))
             {
-                // 還沒設定 BaseUrl 的友善提示
                 return new SearchResponse
                 {
-                    Answer = "尚未在 appsettings.json 設定 ExternalSearch:BaseUrl。"
+                    Answer = "尚未設定 ExternalSearch:BaseUrl。"
                 };
             }
 
             try
             {
-                // 這裡先假設你同學的 API 是 GET ?keyword=...
-                var url = $"{_baseUrl}?keyword={Uri.EscapeDataString(keyword)}";
-
-                using var req = new HttpRequestMessage(HttpMethod.Get, url);
-
-                if (!string.IsNullOrEmpty(_apiKey))
+                // 🔥 建立 RAG 請求物件
+                var request = new RagQueryRequest
                 {
-                    // 若對方用別的 header（例如 api-key），再改這一行就好
-                    req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {_apiKey}");
-                }
+                    Question = keyword
+                };
 
-                using var resp = await _http.SendAsync(req, ct);
+                // 🔥 呼叫後端 RAG API（POST）
+                var response = await _http.PostAsJsonAsync(
+                    $"{_baseUrl}/api/rag/query",
+                    request,
+                    ct
+                );
 
-                if (!resp.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var body = await resp.Content.ReadAsStringAsync(ct);
+                    var body = await response.Content.ReadAsStringAsync(ct);
                     return new SearchResponse
                     {
-                        Answer = $"外部 API 呼叫失敗（{(int)resp.StatusCode}）：{body}"
+                        Answer = $"RAG API 呼叫失敗 ({(int)response.StatusCode}): {body}"
                     };
                 }
 
-                // 假設對方回傳的 json 結構長得跟 SearchResponse 一樣
-                var data = await resp.Content.ReadFromJsonAsync<SearchResponse>(cancellationToken: ct);
-                return data ?? new SearchResponse { Answer = "外部 API 沒有傳回內容。" };
+                // 🔥 解析 JSON 結果
+                var rag = await response.Content.ReadFromJsonAsync<RagQueryResponse>(cancellationToken: ct);
+
+                if (rag == null)
+                {
+                    return new SearchResponse { Answer = "後端沒回傳內容。" };
+                }
+
+                // 🔥 組成前端要的格式
+                var result = new SearchResponse
+                {
+                    Answer = rag.Answer ?? "",
+                    Items = new List<SearchItem>()
+                };
+
+                if (rag.Sources != null)
+                {
+                    foreach (var s in rag.Sources)
+                    {
+                        result.Items.Add(new SearchItem
+                        {
+                            Title = s.Title,
+                            Snippet = s.Snippet,
+                            Url = s.Url,
+                            Source = "RAG",   // 你要顯示來源名字也可以改
+                            ModifiedAt = null
+                        });
+                    }
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
-                // 連不到、port 沒開、DNS 錯誤 都會進這裡
                 return new SearchResponse
                 {
-                    Answer = $"外部搜尋服務無法連線：{ex.Message}"
+                    Answer = $"搜尋服務連線失敗：{ex.Message}"
                 };
             }
         }

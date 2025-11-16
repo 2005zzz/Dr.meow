@@ -1,17 +1,13 @@
-﻿namespace Dr.meow.Models
+﻿namespace WebApp.Models
 {
-    public class SearchItem
+    public class RagQueryRequest
     {
-        public string? Title { get; set; }
-        public string? Url { get; set; }
-        public string? Source { get; set; }
-        public DateTime? ModifiedAt { get; set; }
-        public string? Snippet { get; set; }
+        public string Question { get; set; }
     }
 
-    public class SearchResponse
+    public class RagQueryResponse
     {
-        public string? Answer { get; set; }
-        public List<SearchItem> Items { get; set; } = new();
+        public string Answer { get; set; }
     }
 }
+
