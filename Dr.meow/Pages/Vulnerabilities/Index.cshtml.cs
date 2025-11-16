@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Dr.meow.Data;
 using Dr.meow.Models;
-using ClosedXML.Excel; // ½T«O¦³³o¤@¦æ!
+using ClosedXML.Excel; 
 
 namespace Dr.meow.Pages.Vulnerabilities
 {
@@ -26,41 +26,39 @@ namespace Dr.meow.Pages.Vulnerabilities
         {
             if (_context.Vulnerability != null)
             {
-                // Åª¨ú©Ò¦³º|¬}¸ê®Æ¨ì¦Cªí­¶¼Ò«¬¤¤
+           
                 Vulnerability = await _context.Vulnerability.ToListAsync();
+                //Vulnerability = new List<Vulnerability>(); // æš«æ™‚çµ¦ç©ºæ¸…å–®
+
             }
         }
 
-        // ***** ·s¼W¶×¥X Excel ªº Action Method *****
-        // ³o¬O¨Ï¥ÎªÌÂIÀ»¡u¶×¥X Excel ³ø§i¡v«ö¶s®É·|°õ¦æªº¤èªk
+      
         public async Task<IActionResult> OnGetExportToExcel()
         {
-            // 1. ±q¸ê®Æ®wÅª¨ú©Ò¦³¼Æ¾Ú
+           
             var vulnerabilities = await _context.Vulnerability.ToListAsync();
 
-            // 2. «Ø¥ß Excel ¬¡­¶Ã¯
             using (var workbook = new XLWorkbook())
             {
-                // 3. ·s¼W¤u§@ªí
-                var worksheet = workbook.Worksheets.Add("º|¬}°lÂÜ³ø§i");
+                
+                var worksheet = workbook.Worksheets.Add("ï¿½|ï¿½}ï¿½lï¿½Ü³ï¿½ï¿½i");
 
-                // 4. ³]©w¼ÐÃD¦æ (¥]§t±z³Ì·s·s¼WªºÄæ¦ì)
+
                 var currentRow = 1;
                 worksheet.Cell(currentRow, 1).Value = "ID";
-                worksheet.Cell(currentRow, 2).Value = "¨t²Î/¤u³æÃþ§O";
-                worksheet.Cell(currentRow, 3).Value = "ª¬ºA/ÅÜ§óÃþ«¬";
-                worksheet.Cell(currentRow, 4).Value = "ÄY­««×/­·ÀI";
-                // worksheet.Cell(currentRow, 5).Value = "¹ê¬I¤é´Á";
-                worksheet.Cell(currentRow, 6).Value = "³æ¸¹/«ü¬£¹ï¶H";
-                worksheet.Cell(currentRow, 7).Value = "¤º®e/´y­z";
-                // worksheet.Cell(currentRow, 8).Value = "´ú¸Õ­p¹º";
-                // worksheet.Cell(currentRow, 9).Value = "¦^´_­p¹º";
-
-                // ±N¼ÐÃD¦æ³]¬°²ÊÅé
+                worksheet.Cell(currentRow, 2).Value = "ï¿½tï¿½ï¿½/ï¿½uï¿½ï¿½ï¿½ï¿½ï¿½O";
+                worksheet.Cell(currentRow, 3).Value = "ï¿½ï¿½ï¿½A/ï¿½Ü§ï¿½ï¿½ï¿½ï¿½ï¿½";
+                worksheet.Cell(currentRow, 4).Value = "ï¿½Yï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½I";
+             
+                worksheet.Cell(currentRow, 6).Value = "ï¿½æ¸¹/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½H";
+                worksheet.Cell(currentRow, 7).Value = "ï¿½ï¿½ï¿½e/ï¿½yï¿½z";
+              
+              
                 worksheet.Range(currentRow, 1, currentRow, 9).Style.Font.Bold = true;
                 worksheet.Range(currentRow, 1, currentRow, 9).Style.Fill.BackgroundColor = XLColor.LightGray;
 
-                // 5. ¼g¤J¸ê®Æ
+           
                 foreach (var vulnerability in vulnerabilities)
                 {
                     currentRow++;
@@ -68,23 +66,23 @@ namespace Dr.meow.Pages.Vulnerabilities
                     worksheet.Cell(currentRow, 2).Value = vulnerability.Title;
                     worksheet.Cell(currentRow, 3).Value = vulnerability.Status;
                     worksheet.Cell(currentRow, 4).Value = vulnerability.Severity;
-                    worksheet.Cell(currentRow, 5).Value = vulnerability.FoundDate.ToString("yyyy/MM/dd"); // ®æ¦¡¤Æ¤é´Á
+                    worksheet.Cell(currentRow, 5).Value = vulnerability.FoundDate.ToString("yyyy/MM/dd"); // ï¿½æ¦¡ï¿½Æ¤ï¿½ï¿½
                     worksheet.Cell(currentRow, 6).Value = vulnerability.AssignedTo;
                     worksheet.Cell(currentRow, 7).Value = vulnerability.Description;
                     // worksheet.Cell(currentRow, 8).Value = vulnerability.TestPlan;
                     // worksheet.Cell(currentRow, 9).Value = vulnerability.RecoveryPlan;
                 }
 
-                // 6. ¦Û°Ê½Õ¾ãÄæ¼e
+             
                 worksheet.Columns().AdjustToContents();
 
-                // 7. ±N¬¡­¶Ã¯¼g¤J°O¾ÐÅé¬y¨Ã¶Ç¦^
+               
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
                     var content = stream.ToArray();
                     var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                    var fileName = $"º|¬}°lÂÜ³ø§i_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    var fileName = $"ï¿½|ï¿½ï¿½lï¿½Ü³ï¿½ï¿½i_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
 
                     return File(content, contentType, fileName);
                 }

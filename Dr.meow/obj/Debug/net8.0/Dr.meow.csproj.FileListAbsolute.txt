@@ -695,3 +695,11 @@ C:\Users\anna4\Dr.meow\Dr.meow\obj\Debug\net8.0\staticwebassets.upToDateCheck.tx
 C:\Users\anna4\Dr.meow\Dr.meow\obj\Debug\net8.0\Dr.meow.csproj.Up2Date
 C:\Users\anna4\Dr.meow\Dr.meow\obj\Debug\net8.0\Dr.meow.genruntimeconfig.cache
 C:\Users\anna4\Dr.meow\Dr.meow\obj\Debug\net8.0\ref\Dr.meow.dll
+C:\Users\anna4\Dr.meow\Dr.meow\bin\Debug\net8.0\ClosedXML.dll
+C:\Users\anna4\Dr.meow\Dr.meow\bin\Debug\net8.0\ClosedXML.Parser.dll
+C:\Users\anna4\Dr.meow\Dr.meow\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+C:\Users\anna4\Dr.meow\Dr.meow\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\anna4\Dr.meow\Dr.meow\bin\Debug\net8.0\ExcelNumberFormat.dll
+C:\Users\anna4\Dr.meow\Dr.meow\bin\Debug\net8.0\RBush.dll
+C:\Users\anna4\Dr.meow\Dr.meow\bin\Debug\net8.0\SixLabors.Fonts.dll
+C:\Users\anna4\Dr.meow\Dr.meow\bin\Debug\net8.0\System.IO.Packaging.dll

@@ -1,12 +1,33 @@
 {
-  "answer": "根據查詢：建議先盤點受影響系統，執行修補並產出紀錄；重大事件需通報資安單位。",
+  "answer": "根據最近的資安作業要求：請先確認受影響系統、評估風險、執行修補或緩解措施，並產出紀錄；若屬重大事件，需通報資安單位與完成追蹤。",
   "items": [
     {
       "title": "2025/10 漏洞通報與修補建議",
-      "url": "#",
+      "url": "https://example.com/sharepoint/vulnerability/2025-10",
       "source": "SharePoint",
-      "modifiedAt": "2025-10-18T19:11:25Z",
-      "snippet": "本月新增多項 CVE，建議優先處理…"
+      "modifiedAt": "2025-10-30T09:11:25Z",
+      "snippet": "本月新增 CVE-2025-XXXX，建議系統管理者立即更新修補或採取替代方案，並同步更新資產清單記錄。"
+    },
+    {
+      "title": "ISO27001 - 帳號權限管理作業規範",
+      "url": "https://example.com/sharepoint/iso27001-access-control",
+      "source": "SharePoint",
+      "modifiedAt": "2025-10-22T08:15:00Z",
+      "snippet": "帳號申請需經主管核准並定期盤點，停用帳號需於 3 日內移除，以減少潛在風險。"
+    },
+    {
+      "title": "資安事件通報流程與聯絡窗口",
+      "url": "https://example.com/sharepoint/incident-report",
+      "source": "SharePoint",
+      "modifiedAt": "2025-10-18T10:05:00Z",
+      "snippet": "資安事件需依嚴重程度分級，通知窗口與追蹤進度需留存於事件管理系統。"
+    },
+    {
+      "title": "電腦設備異常處理流程",
+      "url": "https://example.com/sharepoint/device-failure",
+      "source": "SharePoint",
+      "modifiedAt": "2025-09-28T12:30:00Z",
+      "snippet": "異常硬體需先隔離後送修，並記錄序號與負責人以利資產追蹤。"
     }
   ]
 }
