@@ -426,3 +426,31 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Ignore Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+
+# Temporary files
+*.cache
+*.log
+*.pdb
+
+# .NET user secrets
+**/secrets.json
+
+# Unit test results
+TestResults/
+
+# Others
+*.dll
+*.exe
+
+# Mac 產生的檔案（如果有人用 Mac）
+*.DS_Store
+

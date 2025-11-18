@@ -1,12 +1,15 @@
 using Dr.meow.Data;
 using Microsoft.EntityFrameworkCore;
+using Dr.meow.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddHttpClient<ISearchService, SearchService>();
 
-// ���U��Ʈw�A��
+
 builder.Services.AddDbContext<DrMeowDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DrMeowConnection")));
 
