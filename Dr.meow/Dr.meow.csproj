@@ -7,34 +7,48 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="NewFolder4\**" />
-	  <Compile Remove="NewFolder5\**" />
-	  <Compile Remove="NewFolder6\**" />
-	  <Compile Remove="NewFolder\**" />
-	  <Compile Remove="Pages\NewFolder\**" />
-	  <Content Remove="NewFolder4\**" />
-	  <Content Remove="NewFolder5\**" />
-	  <Content Remove="NewFolder6\**" />
-	  <Content Remove="NewFolder\**" />
-	  <Content Remove="Pages\NewFolder\**" />
-	  <EmbeddedResource Remove="NewFolder4\**" />
-	  <EmbeddedResource Remove="NewFolder5\**" />
-	  <EmbeddedResource Remove="NewFolder6\**" />
-	  <EmbeddedResource Remove="NewFolder\**" />
-	  <EmbeddedResource Remove="Pages\NewFolder\**" />
-	  <None Remove="NewFolder4\**" />
-	  <None Remove="NewFolder5\**" />
-	  <None Remove="NewFolder6\**" />
-	  <None Remove="NewFolder\**" />
-	  <None Remove="Pages\NewFolder\**" />
+		  <Compile Remove="NewFolder4\**" />
+		  <Compile Remove="NewFolder5\**" />
+		  <Compile Remove="NewFolder6\**" />
+		  <Compile Remove="NewFolder\**" />
+		  <Compile Remove="Pages\NewFolder\**" />
+		  <Content Remove="NewFolder4\**" />
+		  <Content Remove="NewFolder5\**" />
+		  <Content Remove="NewFolder6\**" />
+		  <Content Remove="NewFolder\**" />
+		  <Content Remove="Pages\NewFolder\**" />
+		  <EmbeddedResource Remove="NewFolder4\**" />
+		  <EmbeddedResource Remove="NewFolder5\**" />
+		  <EmbeddedResource Remove="NewFolder6\**" />
+		  <EmbeddedResource Remove="NewFolder\**" />
+		  <EmbeddedResource Remove="Pages\NewFolder\**" />
+		  <None Remove="NewFolder4\**" />
+		  <None Remove="NewFolder5\**" />
+		  <None Remove="NewFolder6\**" />
+		  <None Remove="NewFolder\**" />
+		  <None Remove="Pages\NewFolder\**" />
+	</ItemGroup>
+
+	<!-- === [ 新增：確保 NewFolder1 和 NewFolder2 的 C# 檔案被包含 ] === -->
+	<ItemGroup>
+		<!-- 包含 Pages 資料夾及其子資料夾中的所有 C# 檔案 -->
+		<Compile Include="Pages\**\*.cs" />
+
+		<!-- 包含 NewFolder1 (Models) 中的所有 C# 檔案 -->
+		<Compile Include="NewFolder1\**\*.cs" />
+
+		<!-- 包含 NewFolder2 (Data Context) 中的所有 C# 檔案 -->
+		<Compile Include="NewFolder2\**\*.cs" />
+	</ItemGroup>
+	<!-- ========================================================== -->
+
+
+	<ItemGroup>
+		  <Compile Remove="Pages\Index.cshtml.cshtml.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Pages\Index.cshtml.cshtml.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Remove="Pages\Index.cshtml.cshtml" />
+		  <Content Remove="Pages\Index.cshtml.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -53,5 +67,6 @@
 
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 	</ItemGroup>
+
 
 </Project>
