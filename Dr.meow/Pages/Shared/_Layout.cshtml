@@ -66,16 +66,45 @@
 
 </head>
 <body class="d-flex flex-column min-vh-100">
+    @{
+        // 目前 Razor Page 名稱，例如 "/Login"、"/AdminHome"、"/UserHome"
+        var currentPage = (ViewContext.RouteData.Values["page"] as string) ?? "";
+        var showBell = !string.Equals(currentPage, "/Login", StringComparison.OrdinalIgnoreCase);
+    }
 
     <!-- ✅ 頂部綠色導覽列 -->
     <header>
         <nav class="navbar border-bottom box-shadow mb-3" style="background-color:#3AB6A7;">
-            <div class="container d-flex align-items-center">
+            <div class="container d-flex align-items-center justify-content-between">
+                <!-- 左側 LOGO -->
                 <a class="navbar-brand d-flex align-items-center gap-3 text-white" asp-page="/Index">
-                    <img src="~/images/drmeow-logo.png" alt="Dr.Meow Logo" style="height:60px;width:auto;border-radius:10px;">
+                    <img src="~/images/drmeow-logo.png" alt="Dr.Meow Logo"
+                         style="height:60px;width:auto;border-radius:10px;">
                     <span class="fw-bold" style="font-size:1.4rem;">Dr.meow</span>
                 </a>
-                <ul class="navbar-nav ms-auto"></ul>
+
+                <!-- 右上角鈴鐺通知按鈕：只有不是 Login 頁才顯示 -->
+                @if (showBell)
+                {
+                    <div class="dropdown">
+                        <button class="btn btn-light position-relative" id="notifyBell" data-bs-toggle="dropdown">
+                            <span class="fs-5">🔔查看通知</span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                3
+                            </span>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="width: 260px;">
+                            <li class="dropdown-header fw-bold">通知中心</li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li><a class="dropdown-item small" href="#">📄 您有 1 筆待審核表單</a></li>
+                            <li><a class="dropdown-item small" href="#">🛠️ DevOps-20231027-001 已提交</a></li>
+                            <li><a class="dropdown-item small" href="#">❌ 有表單被退回需要處理</a></li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li><a class="dropdown-item text-center small text-primary" href="#">查看全部通知 &gt;</a></li>
+                        </ul>
+                    </div>
+                }
             </div>
         </nav>
     </header>
@@ -95,5 +124,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-
 </html>

@@ -17,7 +17,7 @@
             m.classList.add('active');
             const mode = m.dataset.mode;
             if (mode) {
-                modeTag.textContent = mode === 'consult' ? 'RAG 顧問' : mode === 'forms' ? '表單管理' : '報表分析';
+                modeTag.textContent = mode === 'consult' ? 'RAG 顧問' : mode === 'forms' ? '新增表單' : '報表分析'; '表單管理';
                 addTip(`已切換至「${modeTag.textContent}」。`, 'success');
                 if (mode === 'reports') addTip(`開啟報表頁：<a href="${REPORTS_URL}" target="_blank">Reports</a>`, 'info');
                 return;

@@ -1,72 +1,65 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Dr.meow.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Dr.meow.Services
 {
     public class SearchService : ISearchService
     {
-        private readonly HttpClient _http;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<SearchService> _logger;
         private readonly string _baseUrl;
-        private readonly string _apiKey;
 
-        public SearchService(HttpClient http, IConfiguration config)
+        public SearchService(
+            HttpClient httpClient,
+            IConfiguration configuration,
+            ILogger<SearchService> logger)
         {
-            _http = http;
-            _baseUrl = config["ExternalSearch:BaseUrl"] ?? string.Empty;
-            _apiKey = config["ExternalSearch:ApiKey"] ?? string.Empty;
+            _httpClient = httpClient;
+            _logger = logger;
+
+            // appsettings.json 的 ExternalSearch:BaseUrl
+            _baseUrl = configuration["ExternalSearch:BaseUrl"] ?? string.Empty;
         }
 
-        public async Task<SearchResponse> SearchAsync(string keyword, CancellationToken ct = default)
+        public async Task<List<SearchItem>> SearchAsync(string keyword, CancellationToken ct = default)
         {
+            var results = new List<SearchItem>();
+
             if (string.IsNullOrWhiteSpace(_baseUrl))
             {
-                // 還沒設定 BaseUrl 的友善提示
-                return new SearchResponse
-                {
-                    Answer = "尚未在 appsettings.json 設定 ExternalSearch:BaseUrl。"
-                };
+                _logger.LogWarning("ExternalSearch:BaseUrl 未設定。");
+                return results;
             }
+
+            // 這裡的 /api/search 要改成你同學實際的路徑
+            var url = $"{_baseUrl.TrimEnd('/')}/api/search?keyword={Uri.EscapeDataString(keyword)}";
 
             try
             {
-                // 這裡先假設你同學的 API 是 GET ?keyword=...
-                var url = $"{_baseUrl}?keyword={Uri.EscapeDataString(keyword)}";
+                using var resp = await _httpClient.GetAsync(url, ct);
+                resp.EnsureSuccessStatusCode();
 
-                using var req = new HttpRequestMessage(HttpMethod.Get, url);
-
-                if (!string.IsNullOrEmpty(_apiKey))
+                var options = new JsonSerializerOptions
                 {
-                    // 若對方用別的 header（例如 api-key），再改這一行就好
-                    req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {_apiKey}");
-                }
+                    PropertyNameCaseInsensitive = true
+                };
 
-                using var resp = await _http.SendAsync(req, ct);
+                await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+                var data = await JsonSerializer.DeserializeAsync<List<SearchItem>>(stream, options, ct);
 
-                if (!resp.IsSuccessStatusCode)
-                {
-                    var body = await resp.Content.ReadAsStringAsync(ct);
-                    return new SearchResponse
-                    {
-                        Answer = $"外部 API 呼叫失敗（{(int)resp.StatusCode}）：{body}"
-                    };
-                }
-
-                // 假設對方回傳的 json 結構長得跟 SearchResponse 一樣
-                var data = await resp.Content.ReadFromJsonAsync<SearchResponse>(cancellationToken: ct);
-                return data ?? new SearchResponse { Answer = "外部 API 沒有傳回內容。" };
+                return data ?? results;
             }
             catch (Exception ex)
             {
-                // 連不到、port 沒開、DNS 錯誤 都會進這裡
-                return new SearchResponse
-                {
-                    Answer = $"外部搜尋服務無法連線：{ex.Message}"
-                };
+                _logger.LogError(ex, "呼叫外部搜尋服務失敗。");
+                return results;
             }
         }
     }

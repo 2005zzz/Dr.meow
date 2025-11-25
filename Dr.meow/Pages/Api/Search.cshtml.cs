@@ -1,6 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Dr.meow.Models;
+using Dr.meow.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Dr.meow.Services;
 
 namespace Dr.meow.Pages.Api
 {
@@ -13,19 +18,15 @@ namespace Dr.meow.Pages.Api
             _searchService = searchService;
         }
 
-        // GET /api/search?keyword=xxx
         public async Task<IActionResult> OnGetAsync(string keyword, CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(keyword))
             {
-                return new JsonResult(new { error = "keyword is required" });
+                return new JsonResult(Array.Empty<SearchItem>());
             }
 
-            // 呼叫同學的 SearchService（已經在 Program.cs 註冊過）
-            var result = await _searchService.SearchAsync(keyword, ct);
-
-            // 直接回傳 JSON 給前端 JS
-            return new JsonResult(result);
+            var items = await _searchService.SearchAsync(keyword, ct);
+            return new JsonResult(items);
         }
     }
 }

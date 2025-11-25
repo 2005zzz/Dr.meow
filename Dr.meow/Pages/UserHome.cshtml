@@ -1,0 +1,345 @@
+﻿@page "/UserHome"
+@model Dr.meow.Pages.UserHomeModel
+
+@{
+    ViewData["Title"] = "使用者顧問中心";
+}
+
+<div class="row g-3">
+    <!-- 左側選單 -->
+    <aside class="col-12 col-lg-3">
+        <div class="card shadow-sm">
+            <div class="list-group list-group-flush app-sidebar">
+                <div class="list-group-item text-secondary small text-uppercase">
+                    功能
+                    <span class="float-end text-muted small">
+                        @Model.Account（使用者）
+                    </span>
+                </div>
+
+                <!-- RAG 顧問：預設 mode=consult -->
+                <a class="list-group-item list-group-item-action app-menu active"
+                   data-mode="consult">
+                    RAG 顧問
+                </a>
+
+                <!-- 新增表單：照舊直接跳頁 -->
+                <a class="list-group-item list-group-item-action"
+                   asp-page="/Vulnerabilities/Create">
+                    新增表單
+                </a>
+
+                <!-- 查看表單：同頁切換、Ajax 載入 -->
+                <a class="list-group-item list-group-item-action app-menu"
+                   data-mode="forms">
+                    查看表單
+                </a>
+
+                <div class="list-group-item text-secondary small text-uppercase">問答歷史</div>
+
+                <a class="list-group-item list-group-item-action text-danger" asp-page="/Login">
+                    登出
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 右側主區 -->
+    <section class="col-12 col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Dr.Meow 使用者顧問中心</h5>
+            </div>
+            <div class="card-body">
+                <div id="noteBox" class="alert alert-info py-2">
+                    您目前以「使用者」登入，可向 RAG 顧問提問，並填寫變更／漏洞表單。
+                </div>
+
+                <!-- RAG 顧問區塊：預設顯示 -->
+                <div id="ragArea">
+                    <div id="messages" class="chat-stream mb-3"></div>
+                    <div id="summaryBox" class="alert alert-secondary d-none"></div>
+                    <div id="results" class="row row-cols-1 row-cols-md-2 g-3 mt-1"></div>
+
+                    <form id="askForm" class="row g-2 mt-2">
+                        <div class="col">
+                            <input id="askInput" class="form-control"
+                                   placeholder="輸入問題，例如：最近漏洞通報與處置建議？" autocomplete="off" />
+                        </div>
+                        <div class="col-auto d-flex gap-2">
+                            <button id="btnVoice" class="btn btn-outline-secondary" type="button">🔍 語音</button>
+                            <button class="btn btn-primary" type="submit">送出</button>
+                            <button id="btnClear" class="btn btn-outline-secondary" type="button">清空</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 查看表單區塊：一開始隱藏，點「查看表單」才顯示 -->
+                <div id="formsArea" class="d-none">
+                    <div id="formsContainer">
+                        <!-- 第一次切換時由 JS 透過 Ajax 載入 FormsList 的 HTML -->
+                        載入中…
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        // ✅ TODO：把這個改成你實際的 FormsList Partial View 路徑
+        // 例如 Razor Page: /Vulnerabilities/FormsList?handler=Partial
+        const FORMS_URL = '/Forms/FormsList';
+
+
+        // 後端 RAG Razor Page API
+        const API_URL = '/Api/Search';
+
+        /* 抓 DOM */
+        const menuItems = document.querySelectorAll('.app-menu');
+        const topics    = document.querySelectorAll('.app-topic');
+        const noteBox   = document.getElementById('noteBox');
+
+        const ragArea   = document.getElementById('ragArea');
+        const formsArea = document.getElementById('formsArea');
+        const formsContainer = document.getElementById('formsContainer');
+
+        const msgs      = document.getElementById('messages');
+        const results   = document.getElementById('results');
+        const summary   = document.getElementById('summaryBox');
+        const form      = document.getElementById('askForm');
+        const input     = document.getElementById('askInput');
+        const btnClear  = document.getElementById('btnClear');
+        const btnVoice  = document.getElementById('btnVoice');
+
+        let formsLoaded = false;
+
+        /* 左側點選高亮 + 模式切換 */
+        menuItems.forEach(it => {
+            it.addEventListener('click', () => {
+                menuItems.forEach(x => x.classList.remove('active'));
+                it.classList.add('active');
+
+                const mode = it.dataset.mode;
+                if (!mode) return;
+
+                if (mode === 'consult') {
+                    // 顧問模式：顯示 RAG，隱藏表單
+                    ragArea.classList.remove('d-none');
+                    formsArea.classList.add('d-none');
+                    noteBox.textContent = '您目前在「RAG 顧問」模式，可向系統提問相關問題。';
+
+                    // 顧問區切換時順便清一下畫面
+                    msgs.innerHTML = '';
+                    results.innerHTML = '';
+                    summary.classList.add('d-none');
+                }
+                else if (mode === 'forms') {
+                    // 查看表單模式：顯示表單列表，隱藏 RAG
+                    ragArea.classList.add('d-none');
+                    formsArea.classList.remove('d-none');
+                    noteBox.textContent = '您目前在「查看表單」模式，可瀏覽已填寫的變更／漏洞表單。';
+
+                    if (!formsLoaded) {
+                        loadFormsList();
+                    }
+                }
+            });
+        });
+
+        /* 第一次進入「查看表單」時，Ajax 抓 FormsList HTML 塞進來 */
+        async function loadFormsList() {
+            formsContainer.textContent = '載入中…';
+            try {
+                const resp = await fetch(FORMS_URL, { method: 'GET' });
+                if (!resp.ok) {
+                    const txt = await resp.text();
+                    formsContainer.innerHTML = `載入失敗（${resp.status}）：${escapeHtml(txt)}`;
+                    return;
+                }
+                const html = await resp.text();
+                formsContainer.innerHTML = html;
+                formsLoaded = true;
+            } catch (err) {
+                console.error(err);
+                formsContainer.textContent = '載入失敗，請稍後再試。';
+            }
+        }
+
+        /* 主題快捷鍵：點一下幫你塞好 prompt（如果你有 .app-topic 的話） */
+        topics.forEach(tp => {
+            tp.addEventListener('click', () => {
+                input.value = `請提供「${tp.dataset.prompt}」的作業重點與處置流程`;
+                input.focus();
+            });
+        });
+
+        /* 送出：顯示泡泡 + 呼叫 /Api/Search 取得真實資料 */
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const q = input.value.trim();
+            if (!q) return;
+
+            // 使用者訊息泡泡
+            pushUser(q);
+            input.value = '';
+
+            // 先顯示「查詢中」
+            pushBot('查詢中，請稍候…');
+
+            try {
+                const resp = await fetch(`${API_URL}?keyword=${encodeURIComponent(q)}`);
+                if (!resp.ok) {
+                    const text = await resp.text();
+                    replaceLastBot(`後端發生錯誤（${resp.status}）：${text}`);
+                    summary.classList.add('d-none');
+                    results.innerHTML = '';
+                    return;
+                }
+
+                const data = await resp.json();   // List<SearchItem>
+
+                if (!Array.isArray(data)) {
+                    replaceLastBot('外部搜尋服務回傳的格式不正確。');
+                    summary.classList.add('d-none');
+                    results.innerHTML = '';
+                    return;
+                }
+
+                replaceLastBot('查詢完成！以下為相關文件。');
+
+                summary.classList.remove('d-none');
+                summary.textContent = data.length > 0
+                    ? `共找到 ${data.length} 筆相關文件。`
+                    : '沒有找到相關文件。';
+
+                results.innerHTML = '';
+                data.forEach(addResultCard);
+
+                scrollBottom();
+            } catch (err) {
+                console.error(err);
+                replaceLastBot('查詢失敗，請稍後再試。');
+                summary.classList.add('d-none');
+                results.innerHTML = '';
+            }
+        });
+
+        /* 清空按鈕：只清輸入框 */
+        btnClear.addEventListener('click', (e) => {
+            e.preventDefault();
+            input.value = '';
+        });
+
+        /* === 泡泡工具 === */
+        function pushUser(t) {
+            msgs.insertAdjacentHTML('beforeend', `
+            <div class="msg-row">
+              <div class="msg msg-user">${escapeHtml(t)}</div>
+            </div>`);
+        }
+        function pushBot(t) {
+            msgs.insertAdjacentHTML('beforeend', `
+            <div class="msg-row">
+              <div class="msg msg-bot" data-bot="1">${escapeHtml(t)}</div>
+            </div>`);
+        }
+        function replaceLastBot(t) {
+            const els = [...document.querySelectorAll('[data-bot="1"]')];
+            const last = els.pop();
+            if (last) last.innerHTML = escapeHtml(t);
+        }
+        function scrollBottom() {
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+        function escapeHtml(s) {
+            return (s || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m]));
+        }
+
+        /* 結果卡片渲染：對應 SearchItem 的欄位 */
+        function addResultCard(x) {
+            results.insertAdjacentHTML('beforeend', `
+            <div class="col">
+              <div class="card result-card h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="result-title">
+                      <a href="${x.url || '#'}" target="_blank">
+                        ${escapeHtml(x.title || '（無標題）')}
+                      </a>
+                    </div>
+                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                      ${escapeHtml(x.source || '')}
+                    </span>
+                  </div>
+                  <div class="text-secondary small mb-2">
+                    ${x.modifiedAt ? new Date(x.modifiedAt).toLocaleDateString() : ''}
+                  </div>
+                  <div class="mb-3">${escapeHtml(x.snippet || '')}</div>
+                  <div class="d-flex gap-2">
+                    <a class="btn btn-outline-primary btn-sm" target="_blank" href="${x.url || '#'}">開啟文件</a>
+                    <a class="btn btn-success btn-sm" href="/Incidents/New">新增為事件</a>
+                  </div>
+                </div>
+              </div>
+            </div>`);
+        }
+
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+        /* 語音：Web Speech API */
+        (function () {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return;
+
+            const recog = new SR();
+            recog.lang = 'zh-TW';
+            recog.continuous = false;
+            recog.interimResults = true;
+
+            let listening = false;
+
+            btnVoice.addEventListener('click', () => {
+                listening ? stop() : start();
+            });
+
+            function start() {
+                try {
+                    recog.start();
+                    listening = true;
+                    btnVoice.textContent = '🎙️ 辨識中…';
+                } catch (e) { }
+            }
+
+            function stop() {
+                try {
+                    recog.stop();
+                    listening = false;
+                    btnVoice.textContent = '🔍 語音';
+                } catch (e) { }
+            }
+
+            recog.onresult = (e) => {
+                let final = '', interim = '';
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    const text = e.results[i][0].transcript;
+                    if (e.results[i].isFinal) final += text;
+                    else interim += text;
+                }
+                input.value = (final || interim).trim();
+            };
+
+            recog.onend = () => {
+                listening = false;
+                btnVoice.textContent = '🔍 語音';
+            };
+        })();
+    </script>
+}

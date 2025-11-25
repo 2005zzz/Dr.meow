@@ -1,8 +1,210 @@
-﻿@page
+﻿@page "/Index"
 @model Dr.meow.Pages.IndexModel
 @{
     ViewData["Title"] = "顧問中心";
 }
+
+
+<!-- 這個頁面的專屬樣式（低飽和綠色 + 毛玻璃） -->
+<style>
+    /* 整體背景：非常淡的綠灰色，不會太花 */
+    body {
+        background: radial-gradient(circle at top left, #f4fbf7 0%, #eff7f6 40%, #e8f3f2 100%);
+    }
+
+    /* 主要內容寬度稍微收窄一點，偏居中 */
+    main .container,
+    body > .container {
+        max-width: 1100px;
+        margin-top: 18px;
+        margin-bottom: 24px;
+    }
+
+    /* 左右兩張主要卡片：毛玻玻璃 + 低飽和綠框 */
+    aside .card,
+    section .card {
+        border-radius: 20px;
+        border: 1px solid rgba(199, 223, 214, 0.95);   /* 淡淡綠 */
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: 0 16px 40px rgba(120, 146, 138, 0.18);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+
+    /* 卡片上方 header：柔和薄荷綠 */
+    .card-header {
+        background: linear-gradient(90deg, #d7eee5 0%, #cce7de 100%);
+        border-bottom: 1px solid #bfded3;
+        color: #244b45;
+        font-weight: 600;
+    }
+
+    /* 卡片下邊線：用一條乾淨的淺綠，取代之前那種重綠 */
+    section .card {
+        border-bottom: 4px solid #c5e4d7;
+    }
+
+    /* ===== 左側選單（低飽和綠版本） ===== */
+    .app-sidebar .list-group-item {
+        border: none;
+        background: transparent;
+        padding: 8px 12px;
+        margin: 2px 0;
+        border-radius: 9px;
+        transition: background 0.2s ease, color 0.2s ease;
+        font-size: 0.95rem;
+    }
+
+    /* 小標（功能 / 常見問題） */
+    .app-sidebar .list-group-item.text-secondary {
+        opacity: 0.7;
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+        margin-top: 8px;
+        background: transparent;
+    }
+
+    /* hover：微微變亮即可 */
+    .app-sidebar .app-menu:hover,
+    .app-sidebar .app-topic:hover {
+        background: rgba(163, 190, 181, 0.14);
+        cursor: pointer;
+    }
+
+    /* 選中：淡淡綠 & 左側細線 */
+    .app-sidebar .app-menu.active {
+        background: rgba(184, 218, 205, 0.5);
+        color: #265c51;
+        font-weight: 600;
+        border-left: 4px solid #95c9b3;
+        padding-left: 10px;
+        box-shadow: none;
+    }
+
+    /* ===== 提示列（noteBox） ===== */
+    #noteBox.alert {
+        border-radius: 16px;
+        border: 1px solid rgba(207, 229, 221, 0.9);
+        background: linear-gradient(90deg, rgba(235, 248, 242, 0.96), rgba(226, 244, 240, 0.96));
+        color: #315d56;
+        font-size: 0.9rem;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* ===== 聊天泡泡 ===== */
+    .chat-stream {
+        max-height: 320px;
+        overflow-y: auto;
+        padding: 6px 6px 10px 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        background: rgba(247, 250, 249, 0.8);
+        border-radius: 14px;
+        border: 1px solid rgba(214, 229, 223, 0.9);
+    }
+
+    .msg-row {
+        display: flex;
+        width: 100%;
+    }
+
+    .msg {
+        max-width: 74%;
+        padding: 8px 12px;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(230, 238, 234, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 8px 20px rgba(128, 148, 141, 0.16);
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .msg-user {
+        margin-left: auto;
+        background: linear-gradient(135deg, #b3dff2, #b2ddc6);
+        color: #173036;
+        border-color: rgba(215, 235, 229, 0.9);
+    }
+
+    .msg-bot {
+        margin-right: auto;
+        color: #27423f;
+    }
+
+    /* 總結區 */
+    #summaryBox {
+        border-radius: 16px;
+        border: 1px solid rgba(211, 230, 223, 0.95);
+        background: rgba(236, 248, 242, 0.96);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        font-size: 0.92rem;
+        color: #315d56;
+    }
+
+    /* 下方結果卡片 */
+    .result-card {
+        border-radius: 18px;
+        border: 1px solid rgba(218, 233, 227, 0.95);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 12px 28px rgba(137, 157, 149, 0.18);
+    }
+
+    .result-title a {
+        font-weight: 600;
+        color: #265e57;
+        text-decoration: none;
+    }
+
+    .result-title a:hover {
+        text-decoration: underline;
+    }
+
+    /* 輸入列 */
+    #askForm .form-control {
+        border-radius: 999px;
+        padding-left: 16px;
+        padding-right: 16px;
+        border: 1px solid rgba(184, 204, 197, 0.9);
+        box-shadow: 0 0 0 1px rgba(226, 232, 229, 0.7);
+    }
+
+    #askForm .btn-primary {
+        border-radius: 999px;
+        padding-left: 18px;
+        padding-right: 18px;
+        background: linear-gradient(135deg, #8fc4b4, #6ea89a);
+        border-color: transparent;
+        box-shadow: 0 8px 18px rgba(121, 165, 149, 0.4);
+    }
+
+    #askForm .btn-primary:hover {
+        background: linear-gradient(135deg, #7ab5a4, #5f968b);
+    }
+
+    #askForm .btn-outline-secondary {
+        border-radius: 999px;
+        border-color: rgba(163, 177, 172, 0.9);
+        color: #485a55;
+    }
+
+    #askForm .btn-outline-secondary:hover {
+        background: rgba(206, 219, 214, 0.6);
+        color: #273532;
+    }
+
+    /* footer 文字顏色稍微提亮（跟主題搭） */
+    .footer.text-muted {
+        background-color: transparent;
+        color: rgba(67, 88, 81, 0.9);
+    }
+</style>
 
 <div class="row g-3">
     <!-- 左側選單 -->
@@ -13,23 +215,31 @@
                 <!-- 標題：功能 -->
                 <div class="list-group-item text-secondary small text-uppercase">功能</div>
 
-                <!-- RAG 顧問（留在首頁，用 JS 切換模式） -->
+                <!-- RAG 顧問 -->
                 <a class="list-group-item list-group-item-action app-menu active"
                    data-mode="consult">
                     RAG 顧問
                 </a>
 
-                <!-- 表單管理（跳轉到 Vulnerabilities/Index.cshtml） -->
+                <!-- 新增表單（跳轉至列表頁） -->
                 <a class="list-group-item list-group-item-action"
                    asp-page="/Vulnerabilities/Index">
-                    表單管理
+                    新增表單
                 </a>
 
-                <!-- 報表分析（留在首頁，用 JS 切換模式） -->
+                <!-- 報表分析 -->
                 <a class="list-group-item list-group-item-action app-menu"
                    data-mode="reports">
                     報表分析
                 </a>
+
+                <!-- 表單管理（如果你要留在主頁切換也可） -->
+                <a class="list-group-item list-group-item-action app-menu"
+                   data-mode="forms">
+                    表單管理
+                </a>
+
+
 
                 <!-- 標題：常見問題 -->
                 <div class="list-group-item text-secondary small text-uppercase">常見問題</div>
@@ -43,22 +253,24 @@
         </div>
     </aside>
 
-
     <!-- 右側主區 -->
     <section class="col-12 col-lg-9">
         <div class="card shadow-sm">
             <div class="card-header bg-white">
-                <h5 class="mb-0">Dr.Meow（顧問中心）</h5>
+                <h5 class="mb-0">Dr.Meow 顧問中心</h5>
             </div>
             <div class="card-body">
                 <div id="noteBox" class="alert alert-info py-2">
                     左側可切換模式，下方輸入問題按送出。現在會呼叫後端 /Api/Search 取得真實資料。
                 </div>
 
-                <!-- ✅ 泡泡聊天區 -->
+                <!-- 泡泡聊天區 -->
                 <div id="messages" class="chat-stream mb-3"></div>
 
+                <!-- 總結／提示 -->
                 <div id="summaryBox" class="alert alert-secondary d-none"></div>
+
+                <!-- 搜尋結果卡片 -->
                 <div id="results" class="row row-cols-1 row-cols-md-2 g-3 mt-1"></div>
 
                 <!-- 輸入列 -->
@@ -80,14 +292,14 @@
 
 @section Scripts {
     <script>
-        // === 設定：真正打到 Razor Page 的 API ===
+        // 後端 Razor Page API
         const API_URL = '/Api/Search';
 
-        /* 取 DOM */
+        /* 抓 DOM */
         const menuItems = document.querySelectorAll('.app-menu');
         const topics    = document.querySelectorAll('.app-topic');
         const noteBox   = document.getElementById('noteBox');
-        const msgs      = document.getElementById('messages');   // <- 泡泡容器
+        const msgs      = document.getElementById('messages');
         const results   = document.getElementById('results');
         const summary   = document.getElementById('summaryBox');
         const form      = document.getElementById('askForm');
@@ -103,8 +315,9 @@
                 const mode = it.dataset.mode;
                 if (!mode) return;
                 const txt = mode === 'consult' ? 'RAG 顧問'
-                          : mode === 'forms'   ? '表單管理'
-                          : '報表分析';
+                    : mode === 'forms' ? '新增表單'
+                    : mode === 'reports' ? '報表分析'
+                    : '未知模式';
                 noteBox.textContent = `已切換至「${txt}」。`;
                 msgs.innerHTML = '';
                 results.innerHTML = '';
@@ -112,7 +325,7 @@
             });
         });
 
-        /* 主題快捷鍵 */
+        /* 主題快捷鍵：點一下幫你塞好 prompt */
         topics.forEach(tp => {
             tp.addEventListener('click', () => {
                 input.value = `請提供「${tp.dataset.prompt}」的作業重點與處置流程`;
@@ -120,17 +333,17 @@
             });
         });
 
-        /* 送出：顯示泡泡 + 呼叫 /Api/Search 拿真實資料 */
+        /* 送出：顯示泡泡 + 呼叫 /Api/Search 取得真實資料 */
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const q = input.value.trim();
             if (!q) return;
 
-            // 顯示使用者提問
+            // 使用者訊息泡泡
             pushUser(q);
             input.value = '';
 
-            // 顯示「查詢中」泡泡
+            // 先顯示「查詢中」
             pushBot('查詢中，請稍候…');
 
             try {
@@ -143,19 +356,28 @@
                     return;
                 }
 
-                const data = await resp.json();  // 預期是 { answer: "...", items: [...] }
+                const data = await resp.json();   // 預期為 List<SearchItem> → JS 就是 array
 
-                // 更新最後一則機器人訊息為真正的回答
-                const answerText = data.answer || '（沒有取得 AI 回覆）';
-                replaceLastBot(answerText);
+                if (!Array.isArray(data)) {
+                    // 格式不對
+                    replaceLastBot('外部搜尋服務回傳的格式不正確。');
+                    summary.classList.add('d-none');
+                    results.innerHTML = '';
+                    return;
+                }
 
-                // 上方 summary 區顯示一次總結
+                // 更新機器人泡泡
+                replaceLastBot('查詢完成！以下為相關文件。');
+
+                // summary 顯示「共幾筆」
                 summary.classList.remove('d-none');
-                summary.textContent = answerText;
+                summary.textContent = data.length > 0
+                    ? `共找到 ${data.length} 筆相關文件。`
+                    : '沒有找到相關文件。';
 
-                // 下方文件卡片
+                // 結果卡片
                 results.innerHTML = '';
-                (data.items || []).forEach(addResultCard);
+                data.forEach(addResultCard);
 
                 scrollBottom();
             } catch (err) {
@@ -166,11 +388,10 @@
             }
         });
 
-        /* 清空 */
-        btnClear.addEventListener('click', () => {
-            msgs.innerHTML = '';
-            results.innerHTML = '';
-            summary.classList.add('d-none');
+        /* 清空按鈕：只清輸入框 */
+        btnClear.addEventListener('click', (e) => {
+            e.preventDefault();
+            input.value = '';
         });
 
         /* === 泡泡工具 === */
@@ -196,11 +417,15 @@
         }
         function escapeHtml(s) {
             return (s || '').replace(/[&<>"']/g, m => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
             }[m]));
         }
 
-        /* 文件卡片 */
+        /* 結果卡片渲染：對應 SearchItem 的欄位 */
         function addResultCard(x) {
             results.insertAdjacentHTML('beforeend', `
             <div class="col">
@@ -234,16 +459,34 @@
         /* 語音：Web Speech API（可用 Chrome/Edge + localhost/HTTPS） */
         (function () {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) return;
+            if (!SR) return; // 瀏覽器不支援就當沒這功能
+
             const recog = new SR();
             recog.lang = 'zh-TW';
             recog.continuous = false;
             recog.interimResults = true;
 
             let listening = false;
-            btnVoice.addEventListener('click', () => { listening ? stop() : start(); });
-            function start() { try { recog.start(); listening = true; btnVoice.textContent = '🎙️ 辨識中…'; } catch (e) { } }
-            function stop() { try { recog.stop(); listening = false; btnVoice.textContent = '🔍 語音'; } catch (e) { } }
+
+            btnVoice.addEventListener('click', () => {
+                listening ? stop() : start();
+            });
+
+            function start() {
+                try {
+                    recog.start();
+                    listening = true;
+                    btnVoice.textContent = '🎙️ 辨識中…';
+                } catch (e) { }
+            }
+
+            function stop() {
+                try {
+                    recog.stop();
+                    listening = false;
+                    btnVoice.textContent = '🔍 語音';
+                } catch (e) { }
+            }
 
             recog.onresult = (e) => {
                 let final = '', interim = '';
@@ -254,7 +497,11 @@
                 }
                 input.value = (final || interim).trim();
             };
-            recog.onend = () => { listening = false; btnVoice.textContent = '🔍 語音'; };
+
+            recog.onend = () => {
+                listening = false;
+                btnVoice.textContent = '🔍 語音';
+            };
         })();
     </script>
 }
