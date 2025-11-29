@@ -1,20 +1,25 @@
 @page
 @model Dr.meow.Pages.Vulnerabilities.IndexModel
 
+@{
+    ViewData["Title"] = "變更 / 漏洞清單";
+}
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-4">新增變更申請單</h1>
+        <h1 class="display-4">系統變更／漏洞清單</h1>
         <div>
             <a asp-page-handler="ExportToExcel" class="btn btn-success shadow-sm me-2">
-                <i class="fas fa-file-excel me-1"></i> 匯出Excel檔案
+                <i class="fas fa-file-excel me-1"></i> 匯出 Excel 報表
             </a>
             <a asp-page="Create" class="btn btn-primary shadow-sm">
                 <i class="fas fa-plus-circle me-2"></i> 新增表單
             </a>
         </div>
     </div>
-    <table class="table">
-        <thead>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
             <tr>
                 <th>
                     @Html.DisplayNameFor(model => model.Vulnerability[0].Title)
@@ -34,34 +39,46 @@
                 <th>
                     @Html.DisplayNameFor(model => model.Vulnerability[0].Description)
                 </th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Vulnerability)
+            @if (Model.Vulnerability != null && Model.Vulnerability.Any())
+            {
+                foreach (var item in Model.Vulnerability)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Title)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Status)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Severity)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FoundDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.AssignedTo)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Description)
+                        </td>
+                        <td>
+                            <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1">編輯</a>
+                            <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1">詳細</a>
+                            <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">刪除</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Title)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Status)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Severity)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.FoundDate)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.AssignedTo)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                    <td>
-                        <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                        <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        目前尚無任何變更／漏洞資料。
                     </td>
                 </tr>
             }

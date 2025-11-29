@@ -1,4 +1,4 @@
-@page
+﻿@page
 @model Dr.meow.Pages.Vulnerabilities.CreateModel
 
 @{
@@ -7,16 +7,16 @@
 
 <div class="container mt-4">
     <div class="card shadow-lg">
-        <div class="card-header bg-primary text-black py-3">
-            <h2 class="mb-0">新增變更申請／漏洞報告</h2>
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">新增變更單申請</h4>
         </div>
         <div class="card-body">
 
             <form method="post">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                <h5 class="mt-3 text-primary">基本資訊</h5>
-                <hr class="mt-2" />
+                <h5 class="mt-3 text-primary">基本資料</h5>
+                <hr class="mt-0" />
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -34,7 +34,7 @@
                     </div>
                 </div>
 
-                <h5 class="mt-4 text-primary">變更/漏洞內容</h5>
+                <h5 class="mt-4 text-primary">變更內容</h5>
                 <hr class="mt-0" />
                 <div class="row mb-3">
                     <div class="col-md-12">
@@ -53,7 +53,7 @@
                             <div>
                                 <div class="form-check form-check-inline">
                                     <input type="radio" asp-for="Vulnerability.Status" value="標準/獨立" id="statusStandard" class="form-check-input" />
-                                    <label class="form-check-label" for="statusStandard">標準/獨立</label>
+                                    <label class="form-check-label" for="statusStandard">標準 /獨立</label>
                                 </div>
                                 <div class="form-check form-check-inline">
                                     <input type="radio" asp-for="Vulnerability.Status" value="緊急" id="statusEmergency" class="form-check-input" />
@@ -104,7 +104,7 @@
                             <label class="control-label fw-bold mb-2">7. 測試與復原確認 (僅供勾選)</label>
                             <div>
                                 <div class="form-check">
-
+                                  
                                     <input class="form-check-input" type="checkbox" checked id="testPlan">
                                     <label class="form-check-label" for="testPlan">測試計畫: 已規劃</label>
                                 </div>

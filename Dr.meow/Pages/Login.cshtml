@@ -1,0 +1,115 @@
+﻿@page
+@model Dr.meow.Pages.LoginModel
+
+@{
+    ViewData["Title"] = "登入";
+}
+
+<style>
+    /* Google 風格登入按鈕 */
+    .btn-google {
+        border-radius: 999px;
+        border: 1px solid #dadce0;
+        background-color: #ffffff;
+        color: #3c4043;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 16px;
+        box-shadow: 0 1px 2px rgba(0,0,0,.05);
+        transition: box-shadow .15s ease, background-color .15s ease;
+    }
+
+        .btn-google:hover {
+            background-color: #f7f8f8;
+            box-shadow: 0 1px 3px rgba(60,64,67,.3), 0 4px 8px rgba(60,64,67,.15);
+        }
+
+    .btn-google-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-google-icon img {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+</style>
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-lg" style="max-width: 420px; width: 100%;">
+        <div class="card-header text-center" style="background: linear-gradient(135deg,#8fc4b4,#6ea89a); color:white;">
+            <h4 class="mb-0">Dr.Meow 登入</h4>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger py-2">
+                    @Model.ErrorMessage
+                </div>
+            }
+
+            <form method="post">
+                <div class="mb-3">
+                    <label asp-for="Account" class="form-label">帳號</label>
+                    <input asp-for="Account" class="form-control" placeholder="例如：user 或 admin" />
+                    <span asp-validation-for="Account" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label">密碼</label>
+                    <input asp-for="Password" class="form-control" type="password" placeholder="預設：1234" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label d-block">登入身分</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="Role" value="user" id="roleUser" checked />
+                        <label class="form-check-label" for="roleUser">使用者</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="Role" value="admin" id="roleAdmin" />
+                        <label class="form-check-label" for="roleAdmin">管理者</label>
+                    </div>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-2">
+                    登入
+                </button>
+
+            
+                <button type="button" class="btn btn-google w-100 mt-1">
+                    <span class="btn-google-icon">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                    </span>
+                    <span>使用 Google 帳戶快速登入</span>
+                </button>
+
+                <div class="text-end mt-2">
+                    <a href="javascript:void(0)" class="small text-muted">
+                        忘記密碼？
+                    </a>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer text-muted small text-center">
+            測試帳號：user / admin　｜　密碼：1234
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
