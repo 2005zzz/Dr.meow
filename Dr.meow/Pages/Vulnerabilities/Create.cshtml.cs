@@ -127,7 +127,7 @@ namespace Dr.meow.Pages.Vulnerabilities
 
             // 2. 呼叫純 C# 郵件發送 (不使用 await，讓它在背景執行)
             // Task.Run 確保不會阻塞主線程，不影響使用者跳轉頁面
-            Task.Run(() => SendEmailNotification(Vulnerability));
+            await Task.Run(() => SendEmailNotification(Vulnerability));
 
             // 3. 導向列表頁面
             return RedirectToPage("./Index");
