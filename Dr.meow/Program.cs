@@ -2,7 +2,6 @@ using Dr.meow.Data;
 using Microsoft.EntityFrameworkCore;
 using Dr.meow.Services;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

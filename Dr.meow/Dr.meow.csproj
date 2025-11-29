@@ -6,50 +6,11 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
-	<ItemGroup>
-        <!-- 確保所有 C# 檔案被包含 (您的變更) -->
-        <Compile Include="Pages\**\*.cs" />
-        <Compile Include="NewFolder1\**\*.cs" /> 
-        <Compile Include="NewFolder2\**\*.cs" />
-        
-        <!-- [整合] 移除組員可能新增的舊資料夾引用 -->
-	    <Compile Remove="NewFolder4\**" />
-	    <Compile Remove="NewFolder5\**" />
-	    <Compile Remove="NewFolder6\**" />
-	    <Compile Remove="NewFolder\**" />
-	    <Compile Remove="Pages\NewFolder1\**" />
-	    <Compile Remove="Pages\NewFolder\**" />
-	    <Compile Remove="Pages\Index.cshtml.cshtml.cs" />
-	    <Compile Remove="Pages\OldIndex.cshtml.cs" />
-
-	    <Content Remove="NewFolder4\**" />
-	    <Content Remove="NewFolder5\**" />
-	    <Content Remove="NewFolder6\**" />
-	    <Content Remove="NewFolder\**" />
-	    <Content Remove="Pages\NewFolder1\**" />
-	    <Content Remove="Pages\NewFolder\**" />
-	    <Content Remove="Pages\Index.cshtml.cshtml" />
-	    <Content Remove="Pages\OldIndex.cshtml" />
-        
-	    <EmbeddedResource Remove="NewFolder4\**" />
-	    <EmbeddedResource Remove="NewFolder5\**" />
-	    <EmbeddedResource Remove="NewFolder6\**" />
-	    <EmbeddedResource Remove="NewFolder\**" />
-	    <EmbeddedResource Remove="Pages\NewFolder1\**" />
-	    <EmbeddedResource Remove="Pages\NewFolder\**" />
-	    <None Remove="NewFolder4\**" />
-	    <None Remove="NewFolder5\**" />
-	    <None Remove="NewFolder6\**" />
-	    <None Remove="NewFolder\**" />
-	    <None Remove="Pages\NewFolder1\**" />
-	    <None Remove="Pages\NewFolder\**" />
-        
-        <!-- 組員可能新增的模型檔案 (請依據實際情況調整路徑) -->
-        <Compile Include="Models\Searchstos.cs" />
-        
-	</ItemGroup>
-
-	<!-- NuGet 套件引用 (保留組員的分支中可能新增的任何套件) -->
+	<!--
+	*** 重點：只保留 PackageReference。
+	*** 現代 .NET Sdk 會自動包含所有 .cs 和 .cshtml 檔案，
+	*** 所以我們移除了所有手動的 <Compile Include...> 和 <Compile Remove...> 語句。
+	-->
 	<ItemGroup>
 		<PackageReference Include="ClosedXML" Version="0.105.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
@@ -67,5 +28,9 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 	</ItemGroup>
 
+	<!--
+	*** 請注意：如果 Models/Searchstos.cs 不在 Dr.meow 專案的根目錄下
+	*** 且不在任何已知資料夾內（如 Pages），.NET SDK 仍會自動找到它。
+	-->
 
 </Project>
