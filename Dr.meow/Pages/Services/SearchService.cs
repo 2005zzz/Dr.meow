@@ -1,98 +1,65 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Dr.meow.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Dr.meow.Services
 {
     public class SearchService : ISearchService
     {
-        private readonly HttpClient _http;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger<SearchService> _logger;
         private readonly string _baseUrl;
 
-        public SearchService(HttpClient http, IConfiguration config)
+        public SearchService(
+            HttpClient httpClient,
+            IConfiguration configuration,
+            ILogger<SearchService> logger)
         {
-            _http = http;
+            _httpClient = httpClient;
+            _logger = logger;
 
-            // 從 appsettings.json 讀取 RAG API 的 URL
-            _baseUrl = config["ExternalSearch:BaseUrl"] ?? string.Empty;
+            // appsettings.json 的 ExternalSearch:BaseUrl
+            _baseUrl = configuration["ExternalSearch:BaseUrl"] ?? string.Empty;
         }
 
-        public async Task<SearchResponse> SearchAsync(string keyword, CancellationToken ct = default)
+        public async Task<List<SearchItem>> SearchAsync(string keyword, CancellationToken ct = default)
         {
+            var results = new List<SearchItem>();
+
             if (string.IsNullOrWhiteSpace(_baseUrl))
             {
-                return new SearchResponse
-                {
-                    Answer = "尚未設定 ExternalSearch:BaseUrl。"
-                };
+                _logger.LogWarning("ExternalSearch:BaseUrl 未設定。");
+                return results;
             }
+
+            // 這裡的 /api/search 要改成你同學實際的路徑
+            var url = $"{_baseUrl.TrimEnd('/')}/api/search?keyword={Uri.EscapeDataString(keyword)}";
 
             try
             {
-                // 🔥 建立 RAG 請求物件
-                var request = new RagQueryRequest
+                using var resp = await _httpClient.GetAsync(url, ct);
+                resp.EnsureSuccessStatusCode();
+
+                var options = new JsonSerializerOptions
                 {
-                    Question = keyword
+                    PropertyNameCaseInsensitive = true
                 };
 
-                // 🔥 呼叫後端 RAG API（POST）
-                var response = await _http.PostAsJsonAsync(
-                    $"{_baseUrl}/api/rag/query",
-                    request,
-                    ct
-                );
+                await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+                var data = await JsonSerializer.DeserializeAsync<List<SearchItem>>(stream, options, ct);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var body = await response.Content.ReadAsStringAsync(ct);
-                    return new SearchResponse
-                    {
-                        Answer = $"RAG API 呼叫失敗 ({(int)response.StatusCode}): {body}"
-                    };
-                }
-
-                // 🔥 解析 JSON 結果
-                var rag = await response.Content.ReadFromJsonAsync<RagQueryResponse>(cancellationToken: ct);
-
-                if (rag == null)
-                {
-                    return new SearchResponse { Answer = "後端沒回傳內容。" };
-                }
-
-                // 🔥 組成前端要的格式
-                var result = new SearchResponse
-                {
-                    Answer = rag.Answer ?? "",
-                    Items = new List<SearchItem>()
-                };
-
-                if (rag.Sources != null)
-                {
-                    foreach (var s in rag.Sources)
-                    {
-                        result.Items.Add(new SearchItem
-                        {
-                            Title = s.Title,
-                            Snippet = s.Snippet,
-                            Url = s.Url,
-                            Source = "RAG",   // 你要顯示來源名字也可以改
-                            ModifiedAt = null
-                        });
-                    }
-                }
-
-                return result;
+                return data ?? results;
             }
             catch (Exception ex)
             {
-                return new SearchResponse
-                {
-                    Answer = $"搜尋服務連線失敗：{ex.Message}"
-                };
+                _logger.LogError(ex, "呼叫外部搜尋服務失敗。");
+                return results;
             }
         }
     }
