@@ -7,15 +7,16 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Dr.meow.Data;
 using Dr.meow.Models;
-using ClosedXML.Excel; 
+using ClosedXML.Excel;
+using System.IO;
 
 namespace Dr.meow.Pages.Vulnerabilities
 {
     public class IndexModel : PageModel
     {
-        private readonly Dr.meow.Data.DrMeowDbContext _context;
+        private readonly DrMeowDbContext _context;
 
-        public IndexModel(Dr.meow.Data.DrMeowDbContext context)
+        public IndexModel(DrMeowDbContext context)
         {
             _context = context;
         }
@@ -26,63 +27,55 @@ namespace Dr.meow.Pages.Vulnerabilities
         {
             if (_context.Vulnerability != null)
             {
-           
                 Vulnerability = await _context.Vulnerability.ToListAsync();
-                //Vulnerability = new List<Vulnerability>(); // 暫時給空清單
-
             }
         }
 
-      
+        // 匯出 Excel
         public async Task<IActionResult> OnGetExportToExcel()
         {
-           
             var vulnerabilities = await _context.Vulnerability.ToListAsync();
 
             using (var workbook = new XLWorkbook())
             {
-                
-                var worksheet = workbook.Worksheets.Add("�|�}�l�ܳ��i");
+                // 工作表名稱
+                var worksheet = workbook.Worksheets.Add("變更 / 漏洞報表");
 
-
+                // 標題列
                 var currentRow = 1;
                 worksheet.Cell(currentRow, 1).Value = "ID";
-                worksheet.Cell(currentRow, 2).Value = "�t��/�u�����O";
-                worksheet.Cell(currentRow, 3).Value = "���A/�ܧ�����";
-                worksheet.Cell(currentRow, 4).Value = "�Y����/���I";
-             
-                worksheet.Cell(currentRow, 6).Value = "�渹/������H";
-                worksheet.Cell(currentRow, 7).Value = "���e/�y�z";
-              
-              
-                worksheet.Range(currentRow, 1, currentRow, 9).Style.Font.Bold = true;
-                worksheet.Range(currentRow, 1, currentRow, 9).Style.Fill.BackgroundColor = XLColor.LightGray;
+                worksheet.Cell(currentRow, 2).Value = "標題 / 系統名稱";
+                worksheet.Cell(currentRow, 3).Value = "狀態";
+                worksheet.Cell(currentRow, 4).Value = "嚴重程度";
+                worksheet.Cell(currentRow, 5).Value = "發現日期";
+                worksheet.Cell(currentRow, 6).Value = "指派對象";
+                worksheet.Cell(currentRow, 7).Value = "描述";
 
-           
-                foreach (var vulnerability in vulnerabilities)
+                // 標題格式
+                worksheet.Range(currentRow, 1, currentRow, 7).Style.Font.Bold = true;
+                worksheet.Range(currentRow, 1, currentRow, 7).Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                // 內容列
+                foreach (var v in vulnerabilities)
                 {
                     currentRow++;
-                    worksheet.Cell(currentRow, 1).Value = vulnerability.Id;
-                    worksheet.Cell(currentRow, 2).Value = vulnerability.Title;
-                    worksheet.Cell(currentRow, 3).Value = vulnerability.Status;
-                    worksheet.Cell(currentRow, 4).Value = vulnerability.Severity;
-                    worksheet.Cell(currentRow, 5).Value = vulnerability.FoundDate.ToString("yyyy/MM/dd"); // �榡�Ƥ��
-                    worksheet.Cell(currentRow, 6).Value = vulnerability.AssignedTo;
-                    worksheet.Cell(currentRow, 7).Value = vulnerability.Description;
-                    // worksheet.Cell(currentRow, 8).Value = vulnerability.TestPlan;
-                    // worksheet.Cell(currentRow, 9).Value = vulnerability.RecoveryPlan;
+                    worksheet.Cell(currentRow, 1).Value = v.Id;
+                    worksheet.Cell(currentRow, 2).Value = v.Title;
+                    worksheet.Cell(currentRow, 3).Value = v.Status;
+                    worksheet.Cell(currentRow, 4).Value = v.Severity;
+                    worksheet.Cell(currentRow, 5).Value = v.FoundDate.ToString("yyyy/MM/dd");
+                    worksheet.Cell(currentRow, 6).Value = v.AssignedTo;
+                    worksheet.Cell(currentRow, 7).Value = v.Description;
                 }
 
-             
                 worksheet.Columns().AdjustToContents();
 
-               
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
                     var content = stream.ToArray();
                     var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                    var fileName = $"�|��l�ܳ��i_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    var fileName = $"漏洞清單_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
 
                     return File(content, contentType, fileName);
                 }

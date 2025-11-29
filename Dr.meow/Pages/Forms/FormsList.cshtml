@@ -1,0 +1,162 @@
+﻿@page
+@model Dr.meow.Pages.Forms.FormsListModel
+@{
+    Layout = null;   // 關閉 _Layout.cshtml，避免多一層版頭版尾
+}
+
+<style>
+    /* 卡片整體風格 */
+    .custom-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        background: #fff;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: transform 0.2s;
+    }
+
+        .custom-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+    .card-header-custom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .ticket-id {
+        font-weight: 700;
+        color: #333;
+        font-size: 1.1rem;
+    }
+
+    .badge-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .badge-system {
+        color: #0d6efd;
+        border: 1px solid #0d6efd;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-status {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+
+    .status-approved {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        border: 1px solid #badbcc;
+    }
+
+    .status-rejected {
+        background-color: #f8d7da;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+    }
+
+    .summary-text {
+        color: #555;
+        font-size: 1rem;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+
+    .meta-info {
+        font-size: 0.9rem;
+        color: #666;
+        background-color: #f9f9f9;
+        padding: 10px;
+        border-radius: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .badge-risk {
+        background-color: #eee;
+        color: #444;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+
+    .view-btn {
+        display: block;
+        text-align: right;
+        margin-top: 10px;
+        color: #0d6efd;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .view-btn:hover {
+            text-decoration: underline;
+        }
+</style>
+
+<div class="custom-card">
+    <div class="card-header-custom">
+        <span class="ticket-id"># DevOps-20231027-001</span>
+
+        <div class="badge-group">
+            <span class="badge-status status-pending">審核中</span>
+            <span class="badge-system">EIP</span>
+        </div>
+    </div>
+
+    <div class="summary-text">
+        <strong>變更摘要：</strong> 更新資料庫連線模組，修正連線逾時問題，預計提升系統穩定性...
+    </div>
+
+    <div class="meta-info">
+        <div>📂 <strong>類別：</strong>DevOps</div>
+        <div>📅 <strong>實施：</strong>2023/10/30 (07:00)</div>
+        <div>🛡️ <strong>風險：</strong><span class="badge-risk">低風險</span></div>
+    </div>
+
+    <a href="#" class="view-btn">查看完整內容 ></a>
+</div>
+
+<div class="custom-card">
+    <div class="card-header-custom">
+        <span class="ticket-id"># DevOps-20231028-005</span>
+        <div class="badge-group">
+            <span class="badge-status status-approved">已核准</span>
+            <span class="badge-system">HIS</span>
+        </div>
+    </div>
+
+    <div class="summary-text">
+        <strong>變更摘要：</strong> HIS 系統例行性維護與備份作業...
+    </div>
+
+    <div class="meta-info">
+        <div>📂 <strong>類別：</strong>Routine</div>
+        <div>📅 <strong>實施：</strong>2023/11/01 (00:00)</div>
+        <div>🛡️ <strong>風險：</strong><span class="badge-risk">低風險</span></div>
+    </div>
+
+    <a href="#" class="view-btn">查看完整內容 ></a>
+</div>
