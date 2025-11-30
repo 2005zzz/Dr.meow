@@ -1,0 +1,16 @@
+bin/
+obj/
+*.user
+*.cache
+*.ide
+*.dll
+*.pdb
+*.exe
+*.json
+*.db
+*.log
+*.tmp
+*.db-wal
+*.db-shm
+staticwebassets/
+.scopedcss/
