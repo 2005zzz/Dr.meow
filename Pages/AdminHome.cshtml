@@ -1,0 +1,106 @@
+﻿@page "/AdminHome"
+@model Dr.meow.Pages.AdminHomeModel
+
+@{
+    ViewData["Title"] = "管理者後台";
+}
+
+<div class="row g-3">
+
+    <!-- 左側選單 -->
+    <aside class="col-12 col-lg-3">
+        <div class="card shadow-sm">
+            <div class="list-group list-group-flush app-sidebar">
+
+                <div class="list-group-item text-secondary small text-uppercase">
+                    管理功能
+                    <span class="float-end text-muted small">
+                        @Model.Account（管理者）
+                    </span>
+                </div>
+
+                <!-- ⭐ 改為 AJAX 模式切換 -->
+                <a class="list-group-item list-group-item-action app-admin"
+                   data-mode="management">
+                    表單列表 / 管理
+                </a>
+
+                <a class="list-group-item list-group-item-action app-admin"
+                   data-mode="reports">
+                    報表分析
+                </a>
+
+                <a class="list-group-item list-group-item-action text-danger" asp-page="/Login">
+                    登出
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 右側主區 -->
+    <section class="col-12 col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Dr.Meow 管理者後台</h5>
+            </div>
+
+            <div class="card-body">
+
+                <!-- 提示區 -->
+                <div id="noteBox" class="alert alert-info py-2 mb-3">
+                    您目前以「管理者」登入，可檢視並管理所有使用者送出的變更／漏洞表單。
+                </div>
+
+                <!-- ⭐ 右側內容區：會被 AJAX 替換 -->
+                <div id="adminContent">
+                    <p class="text-muted">
+                        左側選單可切換管理功能（例如：表單列表 / 報表分析）。
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        const adminContent = document.getElementById("adminContent");
+        const noteBox = document.getElementById("noteBox");
+
+        // ⭐ 點擊左側管理功能
+        document.querySelectorAll(".app-admin").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const mode = btn.dataset.mode;
+
+                if (mode === "management") {
+                    noteBox.textContent = "已切換至「表單列表 / 管理」。";
+                    loadAdminContent("/Forms/Management");
+                }
+                else if (mode === "reports") {
+                    noteBox.textContent = "已切換至「報表分析」。";
+                    loadAdminContent("/Admin/Reports"); // 之後如果有報表頁面再改
+                }
+            });
+        });
+
+        // ⭐ AJAX 載入後端頁面（已去 Layout）
+        async function loadAdminContent(url) {
+            adminContent.innerHTML = "載入中…";
+
+            try {
+                const resp = await fetch(url);
+
+                if (!resp.ok) {
+                    adminContent.innerHTML = `載入失敗 (${resp.status})`;
+                    return;
+                }
+
+                const html = await resp.text();
+                adminContent.innerHTML = html;
+            } catch (err) {
+                adminContent.innerHTML = "載入失敗，請稍後重試。";
+            }
+        }
+    </script>
+}
