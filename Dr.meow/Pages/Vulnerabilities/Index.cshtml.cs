@@ -39,7 +39,7 @@ namespace Dr.meow.Pages.Vulnerabilities
             using (var workbook = new XLWorkbook())
             {
                 // 工作表名稱
-                var worksheet = workbook.Worksheets.Add("變更 / 漏洞報表");
+                var worksheet = workbook.Worksheets.Add("變更 ／ 漏洞報表");
 
                 // 標題列
                 var currentRow = 1;

@@ -8,14 +8,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Dr.meow.Data;
 using Dr.meow.Models;
 using System.Diagnostics;
-// *** 新增：郵件相關的命名空間 ***
-using System.Net.Mail;
-using System.Net;
+// *** 郵件相關的 using 已被刪除 ***
 
 namespace Dr.meow.Pages.Vulnerabilities
 {
-    // *** Power Automate 相關的類別 NewVulnerabilityPayload 已被移除 ***
-
     public class CreateModel : PageModel
     {
         private readonly DrMeowDbContext _context;
@@ -34,66 +30,8 @@ namespace Dr.meow.Pages.Vulnerabilities
         [BindProperty]
         public Vulnerability Vulnerability { get; set; } = default!;
 
-        // === [ 1. 純 C# 郵件發送方法 ] ===
-        private void SendEmailNotification(Vulnerability newVulnerability)
-        {
-            // 檢查收件人郵箱是否有效 (RequesterEmail 來自表單提交)
-            if (string.IsNullOrWhiteSpace(newVulnerability.RequesterEmail))
-            {
-                System.Diagnostics.Debug.WriteLine("[Email Skip] 請求者信箱為空，跳過郵件發送。");
-                return;
-            }
-
-            try
-            {
-                // ⚠️ 必填資訊：請【替換】成您自己的 SMTP 伺服器資訊
-                // 如果使用 Gmail：Host=smtp.gmail.com, Port=587, 密碼請使用 App Password
-                const string SmtpHost = "smtp.gmail.com"; // 例如: "smtp.gmail.com"
-                const int SmtpPort = 587; // 標準連線埠
-                const string SmtpUsername = "10932041@mail.hcsh.tp.edu.tw"; // <--- 【請替換】
-                const string SmtpPassword = "wrbr mjgq dlbh qflu"; // <--- 【請替換】
-
-                // 建立 MailMessage
-                var mail = new MailMessage();
-                mail.From = new MailAddress(SmtpUsername, "Dr. Meow 系統通知"); // 寄件人
-                mail.To.Add(newVulnerability.RequesterEmail); // 收件人：填表人信箱
-                mail.Subject = $"✅ 漏洞回報單已建立：{newVulnerability.Title} (ID: {newVulnerability.Id})";
-                mail.IsBodyHtml = true;
-
-                // 郵件內容
-                mail.Body = $@"
-                    <h2>您的漏洞回報單已成功建立</h2>
-                    <p>感謝您提交此回報單。詳細資訊如下：</p>
-                    <ul>
-                        <li><strong>回報單編號:</strong> {newVulnerability.Id}</li>
-                        <li><strong>標題:</strong> {newVulnerability.Title}</li>
-                        <li><strong>狀態:</strong> {newVulnerability.Status}</li>
-                        <li><strong>嚴重性:</strong> {newVulnerability.Severity}</li>
-                        <li><strong>指派給:</strong> {newVulnerability.AssignedTo ?? "未指派"}</li>
-                        <li><strong>詳細描述:</strong> {newVulnerability.Description}</li>
-                    </ul>
-                    <p>系統將會盡快處理您的回報。</p>
-                ";
-
-                // 設定 SmtpClient
-                using (var smtpClient = new SmtpClient(SmtpHost, SmtpPort))
-                {
-                    smtpClient.EnableSsl = true; // 啟用 SSL/TLS
-                    smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                    smtpClient.UseDefaultCredentials = false;
-                    smtpClient.Credentials = new NetworkCredential(SmtpUsername, SmtpPassword);
-
-                    smtpClient.Send(mail); // 發送郵件
-                    System.Diagnostics.Debug.WriteLine($"[Email Success] 郵件已發送至 {newVulnerability.RequesterEmail}");
-                }
-            }
-            catch (Exception ex)
-            {
-                // 郵件發送失敗不會阻擋資料庫儲存，僅記錄錯誤
-                System.Diagnostics.Debug.WriteLine($"[Email Failure] 郵件發送失敗，收件人: {newVulnerability.RequesterEmail}。錯誤: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[Email Failure] 內層錯誤: {ex.InnerException?.Message}");
-            }
-        }
+        // === [ 1. 純 C# 郵件發送方法 - 已移除 ] ===
+        // 相關方法已移除，以符合您的要求。
 
         // === [ 2. OnPostAsync - 核心邏輯 ] ===
         public async Task<IActionResult> OnPostAsync()
@@ -125,12 +63,10 @@ namespace Dr.meow.Pages.Vulnerabilities
                 return Page();
             }
 
-            // 2. 呼叫純 C# 郵件發送 (不使用 await，讓它在背景執行)
-            // Task.Run 確保不會阻塞主線程，不影響使用者跳轉頁面
-            await Task.Run(() => SendEmailNotification(Vulnerability));
+            // 2. 郵件發送步驟已移除。
 
             // 3. 導向列表頁面
-            return RedirectToPage("./Index");
+            return RedirectToPage("Index");
         }
     }
 }

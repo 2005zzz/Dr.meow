@@ -2,12 +2,12 @@
 @model Dr.meow.Pages.Vulnerabilities.IndexModel
 
 @{
-    ViewData["Title"] = "變更 / 漏洞清單";
+    ViewData["Title"] = "變更 ／ 漏洞清單";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-4">系統變更／漏洞清單</h1>
+        <h1 class="display-4 text-dark">系統變更／漏洞清單</h1>
         <div>
             <a asp-page-handler="ExportToExcel" class="btn btn-success shadow-sm me-2">
                 <i class="fas fa-file-excel me-1"></i> 匯出 Excel 報表
@@ -21,24 +21,12 @@
     <table class="table table-hover align-middle">
         <thead class="table-light">
             <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Vulnerability[0].Title)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Vulnerability[0].Status)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Vulnerability[0].Severity)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Vulnerability[0].FoundDate)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Vulnerability[0].AssignedTo)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Vulnerability[0].Description)
-                </th>
+                <th>表單類別</th>
+                <th>狀態</th>
+                <th>嚴重性</th>
+                <th>填寫日期</th>
+                <th>指派對象</th>
+                <th>描述</th>
                 <th>操作</th>
             </tr>
         </thead>
