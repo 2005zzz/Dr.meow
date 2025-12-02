@@ -1,0 +1,235 @@
+﻿@page
+@model Dr.meow.Pages.RegisterModel
+@{
+    ViewData["Title"] = "註冊帳號";
+}
+
+<style>
+    /* ⭐ 整體註冊卡片外觀（跟 Login 一致） */
+    .register-card {
+        max-width: 560px;
+        width: 100%;
+        border-radius: 24px;
+        border: 1px solid rgba(255,255,255,0.9);
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+        overflow: hidden;
+    }
+
+    .register-header {
+        padding: 18px;
+        /* ⬇⬇ 這裡改成比較淺的薄荷漸層 ⬇⬇ */
+        background-image: linear-gradient(135deg,#c8f4ea,#36b7a3);
+        color: #ffffff;
+        border-bottom: 1px solid rgba(255,255,255,0.4);
+    }
+
+        .register-header h4 {
+            font-size: 1.35rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .register-header small {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+    .register-card .card-body {
+        padding: 26px 40px 22px;
+    }
+
+    .register-card .card-footer {
+        border-top: none;
+        border-bottom-left-radius: 24px;
+        border-bottom-right-radius: 24px;
+    }
+
+    /* 🌿 主色：註冊按鈕（跟登入按鈕同色系漸層） */
+    .btn-register-main {
+        border-radius: 999px;
+        width: 100%;
+        padding: 12px;
+        font-size: 1.08rem;
+        font-weight: 600;
+        border: none;
+        background-image: linear-gradient(135deg, #8fdacb, #36b7a3);
+        color: #ffffff;
+        box-shadow: 0 10px 22px rgba(21, 113, 98, 0.22);
+        transition: background-image 0.2s ease, transform 0.18s ease, box-shadow 0.2s ease;
+    }
+
+        .btn-register-main:hover {
+            background-image: linear-gradient(135deg, #65e5cf, #2fa896);
+            transform: translateY(-2px);
+            box-shadow: 0 16px 30px rgba(21, 113, 98, 0.28);
+        }
+
+        .btn-register-main:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 16px rgba(21, 113, 98, 0.2);
+        }
+
+    /* Google 風格按鈕（沿用 Login） */
+    .btn-google {
+        border-radius: 999px;
+        border: 1px solid #dadce0;
+        background-color: #ffffff;
+        color: #3c4043;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 16px;
+        box-shadow: 0 1px 2px rgba(0,0,0,.05);
+        transition: box-shadow .15s ease, background-color .15s ease, transform .15s ease;
+    }
+
+        .btn-google:hover {
+            background-color: #f7f8f8;
+            box-shadow: 0 3px 8px rgba(60,64,67,.15);
+            transform: translateY(-1px);
+        }
+
+    .btn-google-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-google-icon img {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+    /* 自訂分隔線 */
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: #7b8a8f;
+        font-size: 0.85rem;
+        margin: 1.1rem 0;
+    }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #dde5ea;
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .6em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .6em;
+        }
+
+    /* 表單 label / 補充文字顏色微調，跟主題比較搭 */
+    .form-label.fw-bold.text-secondary {
+        color: #4f646b !important;
+    }
+
+    .form-text.x-small.text-muted {
+        font-size: 0.78rem;
+    }
+</style>
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="card register-card border-0">
+        <div class="card-header text-center register-header">
+            <h4 class="mb-0 fw-bold">註冊 Dr.Meow</h4>
+            <small>建立您的專屬帳戶</small>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger py-2 text-center mb-3">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>@Model.ErrorMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert alert-success py-2 text-center mb-3">
+                    <i class="bi bi-check-circle-fill me-2"></i>@Model.SuccessMessage
+                    <div class="mt-2">
+                        <a asp-page="/Login" class="btn btn-sm btn-success px-3">前往登入</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="Input.Name" class="form-label fw-bold text-secondary">真實姓名</label>
+                        <input asp-for="Input.Name" class="form-control" placeholder="請輸入您的姓名" />
+                        <span asp-validation-for="Input.Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Email" class="form-label fw-bold text-secondary">電子郵件</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Input.Email" class="form-control" placeholder="name@example.com" />
+                        </div>
+                        <div class="form-text x-small text-muted">我們會發送驗證信至此信箱</div>
+                        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Account" class="form-label fw-bold text-secondary">設定帳號</label>
+                        <input asp-for="Input.Account" class="form-control" placeholder="請設定登入帳號" />
+                        <span asp-validation-for="Input.Account" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Password" class="form-label fw-bold text-secondary">設定密碼</label>
+                        <input asp-for="Input.Password" class="form-control" type="password" placeholder="請輸入密碼" />
+                        <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Input.ConfirmPassword" class="form-label fw-bold text-secondary">確認密碼</label>
+                        <input asp-for="Input.ConfirmPassword" class="form-control" type="password" placeholder="請再次輸入密碼" />
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn-register-main mb-1">
+                        立即註冊
+                    </button>
+                </form>
+
+                <div class="divider">或</div>
+
+                <button type="button" class="btn btn-google w-100 mb-1">
+                    <span class="btn-google-icon">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                    </span>
+                    <span>使用 Google 帳戶註冊</span>
+                </button>
+            }
+        </div>
+
+        <div class="card-footer text-center bg-light py-3">
+            <span class="text-muted small">已經有帳號了嗎？</span>
+            <a asp-page="/Login" class="text-decoration-none fw-bold" style="color: #2fa9a0;">
+                點此登入
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -5,10 +5,70 @@
     ViewData["Title"] = "使用者顧問中心";
 }
 
+<style>
+    /* 左側選單卡片本身稍微圓一點 */
+    .app-sidebar.card {
+        border-radius: 22px;
+        border: none;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+    }
+
+    /* 列表容器 */
+    .app-sidebar {
+        border-radius: 22px;
+        overflow: hidden;
+    }
+
+        /* 每一個選單項目的共同樣式 */
+        .app-sidebar .list-group-item {
+            border: none;
+            background-color: #ffffff;
+            padding: 0.8rem 1.1rem;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.15s ease;
+        }
+
+            /* 第一行標題不要浮起 */
+            .app-sidebar .list-group-item.text-uppercase {
+                background-color: transparent;
+                font-size: 0.78rem;
+                letter-spacing: 0.08em;
+                color: #999;
+                padding: 0.75rem 1.1rem;
+            }
+
+        /* 滑過一般選項：微浮起＋柔陰影＋淡綠底 */
+        .app-sidebar .list-group-item-action:hover {
+            transform: translateY(-2px);
+            background-color: #e9f9f5;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+        }
+
+        /* active 狀態：保持選取背景＋不會太凸 */
+        .app-sidebar .list-group-item.app-menu.active {
+            background-color: #d6f6ee;
+            color: #1f6e61;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 登出顏色維持紅色，但也有 hover 浮起 */
+        .app-sidebar .list-group-item.text-danger {
+            color: #e45b5b;
+            font-weight: 500;
+        }
+
+            .app-sidebar .list-group-item.text-danger:hover {
+                background-color: #ffecec;
+                box-shadow: 0 6px 14px rgba(228, 91, 91, 0.16);
+                transform: translateY(-2px);
+            }
+</style>
+
 <div class="row g-3">
     <!-- 左側選單 -->
     <aside class="col-12 col-lg-3">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm app-sidebar">
             <div class="list-group list-group-flush app-sidebar">
                 <div class="list-group-item text-secondary small text-uppercase">
                     功能
@@ -77,7 +137,6 @@
                 <!-- 查看表單區塊：一開始隱藏，點「查看表單」才顯示 -->
                 <div id="formsArea" class="d-none">
                     <div id="formsContainer">
-                        <!-- 第一次切換時由 JS 透過 Ajax 載入 FormsList 的 HTML -->
                         載入中…
                     </div>
                 </div>
@@ -88,15 +147,9 @@
 
 @section Scripts {
     <script>
-        // ✅ TODO：把這個改成你實際的 FormsList Partial View 路徑
-        // 例如 Razor Page: /Vulnerabilities/FormsList?handler=Partial
         const FORMS_URL = '/Forms/FormsList';
-
-
-        // 後端 RAG Razor Page API
         const API_URL = '/Api/Search';
 
-        /* 抓 DOM */
         const menuItems = document.querySelectorAll('.app-menu');
         const topics    = document.querySelectorAll('.app-topic');
         const noteBox   = document.getElementById('noteBox');
@@ -115,7 +168,6 @@
 
         let formsLoaded = false;
 
-        /* 左側點選高亮 + 模式切換 */
         menuItems.forEach(it => {
             it.addEventListener('click', () => {
                 menuItems.forEach(x => x.classList.remove('active'));
@@ -125,18 +177,15 @@
                 if (!mode) return;
 
                 if (mode === 'consult') {
-                    // 顧問模式：顯示 RAG，隱藏表單
                     ragArea.classList.remove('d-none');
                     formsArea.classList.add('d-none');
                     noteBox.textContent = '您目前在「RAG 顧問」模式，可向系統提問相關問題。';
 
-                    // 顧問區切換時順便清一下畫面
                     msgs.innerHTML = '';
                     results.innerHTML = '';
                     summary.classList.add('d-none');
                 }
                 else if (mode === 'forms') {
-                    // 查看表單模式：顯示表單列表，隱藏 RAG
                     ragArea.classList.add('d-none');
                     formsArea.classList.remove('d-none');
                     noteBox.textContent = '您目前在「查看表單」模式，可瀏覽已填寫的變更／漏洞表單。';
@@ -148,7 +197,6 @@
             });
         });
 
-        /* 第一次進入「查看表單」時，Ajax 抓 FormsList HTML 塞進來 */
         async function loadFormsList() {
             formsContainer.textContent = '載入中…';
             try {
@@ -167,7 +215,6 @@
             }
         }
 
-        /* 主題快捷鍵：點一下幫你塞好 prompt（如果你有 .app-topic 的話） */
         topics.forEach(tp => {
             tp.addEventListener('click', () => {
                 input.value = `請提供「${tp.dataset.prompt}」的作業重點與處置流程`;
@@ -175,17 +222,14 @@
             });
         });
 
-        /* 送出：顯示泡泡 + 呼叫 /Api/Search 取得真實資料 */
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const q = input.value.trim();
             if (!q) return;
 
-            // 使用者訊息泡泡
             pushUser(q);
             input.value = '';
 
-            // 先顯示「查詢中」
             pushBot('查詢中，請稍候…');
 
             try {
@@ -198,7 +242,7 @@
                     return;
                 }
 
-                const data = await resp.json();   // List<SearchItem>
+                const data = await resp.json();
 
                 if (!Array.isArray(data)) {
                     replaceLastBot('外部搜尋服務回傳的格式不正確。');
@@ -226,13 +270,11 @@
             }
         });
 
-        /* 清空按鈕：只清輸入框 */
         btnClear.addEventListener('click', (e) => {
             e.preventDefault();
             input.value = '';
         });
 
-        /* === 泡泡工具 === */
         function pushUser(t) {
             msgs.insertAdjacentHTML('beforeend', `
             <div class="msg-row">
@@ -263,7 +305,6 @@
             }[m]));
         }
 
-        /* 結果卡片渲染：對應 SearchItem 的欄位 */
         function addResultCard(x) {
             results.insertAdjacentHTML('beforeend', `
             <div class="col">
@@ -292,9 +333,6 @@
             </div>`);
         }
 
-        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
-        /* 語音：Web Speech API */
         (function () {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) return;

@@ -2,6 +2,7 @@
 @model Dr.meow.Pages.LoginModel
 
 @{
+    Layout = "_LoginLayout";   // 使用上面那個跟主 Layout 同風格的版面
     ViewData["Title"] = "登入";
 }
 
@@ -42,69 +43,135 @@
             height: 18px;
             display: block;
         }
+
+    /* 🌿 主題色登入按鈕（Mint Breeze） */
+    .btn-login-mint {
+        border-radius: 999px;
+        width: 100%;
+        padding: 10px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        border: none;
+        background: linear-gradient(135deg, #8fdacb, #64bba8);
+        color: white;
+        box-shadow: 0 6px 14px rgba(47,110,100,0.25);
+        transition: 0.18s ease;
+    }
+
+        .btn-login-mint:hover {
+            background: linear-gradient(135deg, #7bcbbd, #51a798);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(47,110,100,0.28);
+        }
+
+    /* 讓整個登入卡片更漂亮：變寬、變圓、縮短一點 */
+    .login-card {
+        max-width: 450px; /* 🔥 直接加到 560，比較有存在感 */
+        width: 100%;
+        border-radius: 24px;
+        overflow: hidden;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.9);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+    }
+
+        .login-card .card-header {
+            border-bottom: none;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+        }
+
+        .login-card .card-body {
+            padding: 22px 36px 18px;
+        }
+
+        .login-card .card-footer {
+            border-top: none;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            padding: 10px 20px;
+        }
+
+        .login-card .mb-3 {
+            margin-bottom: 0.75rem !important;
+        }
 </style>
 
-<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="card shadow-lg" style="max-width: 420px; width: 100%;">
-        <div class="card-header text-center" style="background: linear-gradient(135deg,#8fc4b4,#6ea89a); color:white;">
-            <h4 class="mb-0">Dr.Meow 登入</h4>
-        </div>
-        <div class="card-body">
-            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-            {
-                <div class="alert alert-danger py-2">
-                    @Model.ErrorMessage
+<div class="card login-card">
+    <!-- 卡片 Header -->
+    <div class="card-header text-center"
+         style="background: linear-gradient(135deg,#7bcbbd,#3AB6A7);
+                color:white;
+                padding: 18px;">
+        <h4 class="mb-0">登入系統</h4>
+    </div>
+
+    <!-- 卡片 Body -->
+    <div class="card-body">
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger py-2 mb-3">
+                @Model.ErrorMessage
+            </div>
+        }
+
+        <form method="post">
+            <div class="mb-3">
+                <label asp-for="Account" class="form-label">帳號</label>
+                <input asp-for="Account" class="form-control" placeholder="例如：user 或 admin" />
+                <span asp-validation-for="Account" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">密碼</label>
+                <input asp-for="Password" class="form-control" type="password" placeholder="預設：1234" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label d-block">登入身分</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input"
+                           type="radio" asp-for="Role" value="user" id="roleUser" checked />
+                    <label class="form-check-label" for="roleUser">使用者</label>
                 </div>
-            }
 
-            <form method="post">
-                <div class="mb-3">
-                    <label asp-for="Account" class="form-label">帳號</label>
-                    <input asp-for="Account" class="form-control" placeholder="例如：user 或 admin" />
-                    <span asp-validation-for="Account" class="text-danger"></span>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input"
+                           type="radio" asp-for="Role" value="admin" id="roleAdmin" />
+                    <label class="form-check-label" for="roleAdmin">管理者</label>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Password" class="form-label">密碼</label>
-                    <input asp-for="Password" class="form-control" type="password" placeholder="預設：1234" />
-                    <span asp-validation-for="Password" class="text-danger"></span>
-                </div>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label d-block">登入身分</label>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" asp-for="Role" value="user" id="roleUser" checked />
-                        <label class="form-check-label" for="roleUser">使用者</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" asp-for="Role" value="admin" id="roleAdmin" />
-                        <label class="form-check-label" for="roleAdmin">管理者</label>
-                    </div>
-                    <span asp-validation-for="Role" class="text-danger"></span>
-                </div>
+            <!-- 🌿 主題色登入按鈕 -->
+            <button type="submit" class="btn-login-mint mb-3">
+                登入
+            </button>
 
-                <button type="submit" class="btn btn-primary w-100 mb-2">
-                    登入
-                </button>
+            <!-- Google 登入，導到註冊 -->
+            <a asp-page="/Register" class="btn btn-google w-100 mt-1">
+                <span class="btn-google-icon">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                </span>
+                <span>使用 Google 帳戶快速登入</span>
+            </a>
 
-            
-                <button type="button" class="btn btn-google w-100 mt-1">
-                    <span class="btn-google-icon">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-                    </span>
-                    <span>使用 Google 帳戶快速登入</span>
-                </button>
+            <div class="text-end mt-2">
+                <a href="javascript:void(0)" class="small text-muted">
+                    忘記密碼？
+                </a>
+            </div>
+        </form>
+    </div>
 
-                <div class="text-end mt-2">
-                    <a href="javascript:void(0)" class="small text-muted">
-                        忘記密碼？
-                    </a>
-                </div>
-            </form>
-        </div>
-        <div class="card-footer text-muted small text-center">
-            測試帳號：user / admin　｜　密碼：1234
-        </div>
+    <!-- 卡片 Footer -->
+    <div class="card-footer text-muted small text-center">
+        測試帳號：user / admin　｜　密碼：1234
     </div>
 </div>
 

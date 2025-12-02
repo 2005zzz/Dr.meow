@@ -15,7 +15,7 @@
    背景（薄荷清爽 + 極淡漸層）
    =========================================== */
 body {
-    background: linear-gradient( 180deg, #f7fdfc 0%, #ecfaf7 40%, #dff7f2 100% );
+    background: linear-gradient(180deg, #f7fdfc 0%, #ecfaf7 40%, #dff7f2 100%);
     font-family: "Segoe UI", sans-serif;
 }
 
@@ -36,8 +36,9 @@ body {
     box-shadow: 0 4px 14px rgba(0,0,0,0.05);
 }
 
-    .navbar a,
-    .navbar-brand {
+    /* ✅ 只讓品牌 / nav-link 變白，不要把 dropdown 裡的 a 也弄白 */
+    .navbar .navbar-brand,
+    .navbar .nav-link {
         color: #ffffff !important;
         font-weight: 600;
     }
@@ -190,4 +191,15 @@ section .card,
     text-align: center;
     padding: 20px 0;
     color: rgba(0,0,0,0.45);
+}
+
+/* ===========================================
+   🔔 通知下拉文字顏色修正
+   =========================================== */
+
+/* 確保通知 dropdown 裡面的文字是深色 */
+.dropdown-menu.notifications-dropdown,
+.dropdown-menu.notifications-dropdown .dropdown-item,
+.dropdown-menu.notifications-dropdown .dropdown-header {
+    color: #333 !important;
 }
