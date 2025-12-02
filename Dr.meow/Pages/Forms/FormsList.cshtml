@@ -1,7 +1,8 @@
 ﻿@page
 @model Dr.meow.Pages.Forms.FormsListModel
 @{
-    Layout = null;   // 關閉 _Layout.cshtml，避免多一層版頭版尾
+    ViewData["Title"] = "卡片式變更/漏洞清單";
+    Layout = null;  // 關閉 _Layout.cshtml，避免多一層版頭版尾
 }
 
 <style>
@@ -34,6 +35,12 @@
         font-size: 1.1rem;
     }
 
+    .assigned-to { /* 新增的指派對象樣式 */
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+    }
+
     .badge-group {
         display: flex;
         gap: 8px;
@@ -47,29 +54,31 @@
         border-radius: 4px;
         font-size: 0.85rem;
         font-weight: 600;
+        background-color: #eaf3ff;
     }
 
     .badge-status {
         padding: 3px 10px;
-        border-radius: 20px;
+        border-radius: 4px;
         font-size: 0.85rem;
         font-weight: 500;
         display: inline-block;
     }
 
-    .status-pending {
+    /* 狀態顏色根據您提供的中文狀態進行調整 */
+    .status-pending { /* 適用於 '審核中' 或預設 */
         background-color: #fff3cd;
         color: #856404;
         border: 1px solid #ffeeba;
     }
 
-    .status-approved {
+    .status-approved { /* 適用於 '標準/獨立', '例行' */
         background-color: #d1e7dd;
         color: #0f5132;
         border: 1px solid #badbcc;
     }
 
-    .status-rejected {
+    .status-rejected { /* 適用於 '緊急' 或 '高風險' */
         background-color: #f8d7da;
         color: #842029;
         border: 1px solid #f5c2c7;
@@ -80,6 +89,8 @@
         font-size: 1rem;
         margin-bottom: 15px;
         line-height: 1.5;
+        border-left: 3px solid #0d6efd; /* 增加左側條狀裝飾 */
+        padding-left: 10px;
     }
 
     .meta-info {
@@ -92,15 +103,42 @@
         flex-wrap: wrap;
         gap: 15px;
         align-items: center;
+        margin-top: 15px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #333;
     }
 
     .badge-risk {
-        background-color: #eee;
-        color: #444;
         padding: 2px 8px;
         border-radius: 4px;
         font-size: 0.85rem;
+        font-weight: 600;
     }
+
+    .risk-low {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .risk-medium {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .risk-high {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
 
     .view-btn {
         display: block;
@@ -116,47 +154,87 @@
         }
 </style>
 
-<div class="custom-card">
-    <div class="card-header-custom">
-        <span class="ticket-id"># DevOps-20231027-001</span>
+<div class="container-fluid pt-3">
+    @if (Model.VulnerabilityList != null && Model.VulnerabilityList.Any())
+    {
+        // 迴圈遍歷後端傳來的數據清單
+        @foreach (var item in Model.VulnerabilityList)
+        {
+            // ----------------------------------------------------
+            // 1. 根據 Status 屬性設定主狀態的 CSS 類別
+            // ----------------------------------------------------
+            string statusClass = "status-pending";
+            if (item.Status == "標準/獨立" || item.Status == "例行")
+            {
+                statusClass = "status-approved";
+            }
+            else if (item.Status == "緊急") // 將 '緊急' 視為需要關注的狀態 (Rejected 顏色)
+            {
+                statusClass = "status-rejected";
+            }
 
-        <div class="badge-group">
-            <span class="badge-status status-pending">審核中</span>
-            <span class="badge-system">EIP</span>
+            // ----------------------------------------------------
+            // 2. 根據 Severity 屬性設定風險等級的 CSS 類別
+            // ----------------------------------------------------
+            string riskClass = "risk-low";
+            if (item.Severity == "中")
+            {
+                riskClass = "risk-medium";
+            }
+            else if (item.Severity == "高")
+            {
+                riskClass = "risk-high";
+            }
+
+            <div class="custom-card">
+                <div class="card-header-custom">
+                    <!-- 紀錄 ID 作為單號 -->
+                    <div class="d-flex flex-column">
+                        <span class="ticket-id"># @item.Id</span>
+                        <!-- 指派對象 -->
+                        <span class="assigned-to">指派給：@item.AssignedTo</span>
+                    </div>
+
+                    <div class="badge-group">
+                        <!-- 系統/表單類別 -->
+                        <span class="badge-system">@item.Title</span>
+                    </div>
+                </div>
+
+                <div class="summary-text">
+                    <!-- 變更/影響內容 (詳細描述) -->
+                    <strong>變更摘要：</strong> @item.Description
+                </div>
+
+                <div class="meta-info">
+                    <div class="meta-item">
+                        <div class="meta-item">
+                            <span class="meta-label">🏷️ 變更類型：</span>
+                            <!-- 變更類型/狀態 -->
+                        <span class="badge-status @statusClass">@item.Status</span>
+                    </div>
+                        <span class="meta-label">📅 預計實施：</span>
+                        <!-- 預計實施日期 -->
+                        <span>@item.FoundDate.ToString("yyyy/MM/dd")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">🛡️ 風險評估：</span>
+                        <!-- 影響與風險評估 -->
+                        <span class="badge-risk @riskClass">@item.Severity</span>
+                    </div>
+                </div>
+                <p>DEBUG：Severity = "@item.Severity"</p>
+
+
+                <!-- 連結到詳細資料頁面 -->
+                <a asp-page="/Vulnerabilities/Details" asp-route-id="@item.Id" class="view-btn">查看完整內容 ></a>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info mt-4">
+            目前沒有任何變更或漏洞紀錄。
         </div>
-    </div>
-
-    <div class="summary-text">
-        <strong>變更摘要：</strong> 更新資料庫連線模組，修正連線逾時問題，預計提升系統穩定性...
-    </div>
-
-    <div class="meta-info">
-        <div>📂 <strong>類別：</strong>DevOps</div>
-        <div>📅 <strong>實施：</strong>2023/10/30 (07:00)</div>
-        <div>🛡️ <strong>風險：</strong><span class="badge-risk">低風險</span></div>
-    </div>
-
-    <a href="#" class="view-btn">查看完整內容 ></a>
-</div>
-
-<div class="custom-card">
-    <div class="card-header-custom">
-        <span class="ticket-id"># DevOps-20231028-005</span>
-        <div class="badge-group">
-            <span class="badge-status status-approved">已核准</span>
-            <span class="badge-system">HIS</span>
-        </div>
-    </div>
-
-    <div class="summary-text">
-        <strong>變更摘要：</strong> HIS 系統例行性維護與備份作業...
-    </div>
-
-    <div class="meta-info">
-        <div>📂 <strong>類別：</strong>Routine</div>
-        <div>📅 <strong>實施：</strong>2023/11/01 (00:00)</div>
-        <div>🛡️ <strong>風險：</strong><span class="badge-risk">低風險</span></div>
-    </div>
-
-    <a href="#" class="view-btn">查看完整內容 ></a>
+    }
 </div>
