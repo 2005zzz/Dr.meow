@@ -2,156 +2,179 @@
 @model Dr.meow.Pages.Forms.FormsListModel
 @{
     ViewData["Title"] = "卡片式變更/漏洞清單";
-    Layout = null;  // 關閉 _Layout.cshtml，避免多一層版頭版尾
+    Layout = null;  // 關閉 _Layout.cshtml，避免多一層版頭版尾
 }
 
 <style>
+
     /* 卡片整體風格 */
-    .custom-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        background: #fff;
-        padding: 20px;
-        margin-bottom: 15px;
-        transition: transform 0.2s;
+        .custom-card {
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                background: #fff;
+                padding: 20px;
+                margin-bottom: 15px;
+                transition: transform 0.2s;
+
     }
 
-        .custom-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                .custom-card:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+
         }
 
-    .card-header-custom {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
+        .card-header-custom {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+
     }
 
-    .ticket-id {
-        font-weight: 700;
-        color: #333;
-        font-size: 1.1rem;
+        .ticket-id {
+                font-weight: 700;
+                color: #333;
+                font-size: 1.1rem;
+
     }
 
-    .assigned-to { /* 新增的指派對象樣式 */
-        font-size: 0.9rem;
-        color: #666;
-        margin-top: 5px;
+        .assigned-to { /* 新增的指派對象樣式 */
+                font-size: 0.9rem;
+                color: #666;
+                margin-top: 5px;
+
     }
 
-    .badge-group {
-        display: flex;
-        gap: 8px;
-        align-items: center;
+        .badge-group {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+
     }
 
-    .badge-system {
-        color: #0d6efd;
-        border: 1px solid #0d6efd;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        background-color: #eaf3ff;
+        .badge-system {
+                color: #0d6efd;
+                border: 1px solid #0d6efd;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                background-color: #eaf3ff;
+
     }
 
-    .badge-status {
-        padding: 3px 10px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: inline-block;
+        .badge-status {
+                padding: 3px 10px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+                font-weight: 500;
+                display: inline-block;
+
     }
+
 
     /* 狀態顏色根據您提供的中文狀態進行調整 */
-    .status-pending { /* 適用於 '審核中' 或預設 */
-        background-color: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeeba;
+        .status-pending { /* 適用於 '審核中' 或預設 */
+                background-color: #fff3cd;
+                color: #856404;
+                border: 1px solid #ffeeba;
+
     }
 
-    .status-approved { /* 適用於 '標準/獨立', '例行' */
-        background-color: #d1e7dd;
-        color: #0f5132;
-        border: 1px solid #badbcc;
+        .status-approved { /* 適用於 '標準/獨立', '例行' */
+                background-color: #d1e7dd;
+                color: #0f5132;
+                border: 1px solid #badbcc;
+
     }
 
-    .status-rejected { /* 適用於 '緊急' 或 '高風險' */
-        background-color: #f8d7da;
-        color: #842029;
-        border: 1px solid #f5c2c7;
+        .status-rejected { /* 適用於 '緊急' 或 '高風險' */
+                background-color: #f8d7da;
+                color: #842029;
+                border: 1px solid #f5c2c7;
+
     }
 
-    .summary-text {
-        color: #555;
-        font-size: 1rem;
-        margin-bottom: 15px;
-        line-height: 1.5;
-        border-left: 3px solid #0d6efd; /* 增加左側條狀裝飾 */
-        padding-left: 10px;
+        .summary-text {
+                color: #555;
+                font-size: 1rem;
+                margin-bottom: 15px;
+                line-height: 1.5;
+                border-left: 3px solid #0d6efd; /* 增加左側條狀裝飾 */
+                padding-left: 10px;
+
     }
 
-    .meta-info {
-        font-size: 0.9rem;
-        color: #666;
-        background-color: #f9f9f9;
-        padding: 10px;
-        border-radius: 6px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        align-items: center;
-        margin-top: 15px;
+        .meta-info {
+                font-size: 0.9rem;
+                color: #666;
+                background-color: #f9f9f9;
+                padding: 10px;
+                border-radius: 6px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 15px;
+                align-items: center;
+                margin-top: 15px;
+
     }
 
-    .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
+        .meta-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+
     }
 
-    .meta-label {
-        font-weight: 600;
-        color: #333;
+        .meta-label {
+                font-weight: 600;
+                color: #333;
+
     }
 
-    .badge-risk {
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        font-weight: 600;
+        .badge-risk {
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+                font-weight: 600;
+
     }
 
-    .risk-low {
-        background-color: #d1e7dd;
-        color: #0f5132;
+        .risk-low {
+                background-color: #d1e7dd;
+                color: #0f5132;
+
     }
 
-    .risk-medium {
-        background-color: #fff3cd;
-        color: #856404;
+        .risk-medium {
+                background-color: #fff3cd;
+                color: #856404;
+
     }
 
-    .risk-high {
-        background-color: #f8d7da;
-        color: #842029;
+        .risk-high {
+                background-color: #f8d7da;
+                color: #842029;
+
     }
 
 
-    .view-btn {
-        display: block;
-        text-align: right;
-        margin-top: 10px;
-        color: #0d6efd;
-        text-decoration: none;
-        font-weight: 500;
+        .view-btn {
+                display: block;
+                text-align: right;
+                margin-top: 10px;
+                color: #0d6efd;
+                text-decoration: none;
+                font-weight: 500;
+
     }
 
-        .view-btn:hover {
-            text-decoration: underline;
-        }
+            .view-btn:hover {
+                    text-decoration: underline;
+
+    }
 </style>
 
 <div class="container-fluid pt-3">
@@ -211,8 +234,8 @@
                         <div class="meta-item">
                             <span class="meta-label">🏷️ 變更類型：</span>
                             <!-- 變更類型/狀態 -->
-                        <span class="badge-status @statusClass">@item.Status</span>
-                    </div>
+                            <span class="badge-status @statusClass">@item.Status</span>
+                        </div>
                         <span class="meta-label">📅 預計實施：</span>
                         <!-- 預計實施日期 -->
                         <span>@item.FoundDate.ToString("yyyy/MM/dd")</span>
@@ -223,11 +246,24 @@
                         <span class="badge-risk @riskClass">@item.Severity</span>
                     </div>
                 </div>
-                <p>DEBUG：Severity = "@item.Severity"</p>
 
+                <!-- 動作按鈕區塊：將單一連結替換為完整的 card-footer 結構 -->
+                <div class="card-footer text-end pt-3">
+                    @* 【編輯連結】: 指向 /Vulnerabilities/Create，進入編輯模式 *@
+                    <a asp-page="/Vulnerabilities/Create" asp-route-id="@item.Id" class="btn btn-sm btn-info me-2">
+                        <i class="fas fa-edit"></i> 編輯
+                    </a>
 
-                <!-- 連結到詳細資料頁面 -->
-                <a asp-page="/Vulnerabilities/Details" asp-route-id="@item.Id" class="view-btn">查看完整內容 ></a>
+                    @* 【刪除連結】: 指向 /Vulnerabilities/Delete，如果 Delete 頁面存在 *@
+                    <a asp-page="/Vulnerabilities/Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash-alt"></i> 刪除
+                    </a>
+
+                    @* 【查看完整內容】: 連結到編輯頁面，用於快速查看和編輯 (此連結是多餘的，但如果需要保留，請用這個) *@
+                    <a asp-page="/Vulnerabilities/Create" asp-route-id="@item.Id" class="btn btn-link">
+                        查看完整內容 &gt;
+                    </a>
+                </div>
             </div>
         }
     }
