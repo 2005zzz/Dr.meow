@@ -1,15 +1,74 @@
-﻿@page "/AdminHome"
+﻿﻿page "/AdminHome"
 @model Dr.meow.Pages.AdminHomeModel
 
 @{
     ViewData["Title"] = "管理者後台";
 }
 
+<style>
+    /* 左側選單卡片外觀（可跟 UserHome 一致） */
+    .admin-sidebar-card {
+        border-radius: 22px;
+        border: none;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+    }
+
+    .app-sidebar {
+        border-radius: 22px;
+        overflow: hidden;
+    }
+
+        /* 每一個選單項目共用樣式 */
+        .app-sidebar .list-group-item {
+            border: none;
+            background-color: #ffffff;
+            padding: 0.8rem 1.1rem;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.15s ease;
+        }
+
+            /* 標題列不需要浮起效果 */
+            .app-sidebar .list-group-item.text-uppercase {
+                background-color: transparent;
+                font-size: 0.78rem;
+                letter-spacing: 0.08em;
+                color: #999;
+                padding: 0.75rem 1.1rem;
+            }
+
+        /* 滑鼠滑過一般選項：微浮起＋淡綠底＋柔陰影 */
+        .app-sidebar .list-group-item-action:hover {
+            transform: translateY(-2px);
+            background-color: #e9f9f5;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+        }
+
+        /* active 狀態：固定高亮色 */
+        .app-sidebar .list-group-item.app-admin.active {
+            background-color: #d6f6ee;
+            color: #1f6e61;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 登出維持紅色，但仍有 hover 浮起效果 */
+        .app-sidebar .list-group-item.text-danger {
+            color: #e45b5b;
+            font-weight: 500;
+        }
+
+            .app-sidebar .list-group-item.text-danger:hover {
+                background-color: #ffecec;
+                box-shadow: 0 6px 14px rgba(228, 91, 91, 0.16);
+                transform: translateY(-2px);
+            }
+</style>
+
 <div class="row g-3">
 
     <!-- 左側選單 -->
     <aside class="col-12 col-lg-3">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm admin-sidebar-card">
             <div class="list-group list-group-flush app-sidebar">
 
                 <div class="list-group-item text-secondary small text-uppercase">
@@ -20,7 +79,7 @@
                 </div>
 
                 <!-- ⭐ 改為 AJAX 模式切換 -->
-                <a class="list-group-item list-group-item-action app-admin"
+                <a class="list-group-item list-group-item-action app-admin active"
                    data-mode="management">
                     表單列表 / 管理
                 </a>
@@ -67,10 +126,15 @@
     <script>
         const adminContent = document.getElementById("adminContent");
         const noteBox = document.getElementById("noteBox");
+        const adminMenus = document.querySelectorAll(".app-admin");
 
         // ⭐ 點擊左側管理功能
-        document.querySelectorAll(".app-admin").forEach(btn => {
+        adminMenus.forEach(btn => {
             btn.addEventListener("click", () => {
+                // 切換 active 樣式
+                adminMenus.forEach(x => x.classList.remove("active"));
+                btn.classList.add("active");
+
                 const mode = btn.dataset.mode;
 
                 if (mode === "management") {

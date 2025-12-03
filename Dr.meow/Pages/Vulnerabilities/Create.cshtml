@@ -5,82 +5,237 @@
     ViewData["Title"] = "新增變更申請單";
 }
 
-<div class="container mt-4">
-    <div class="card shadow-lg">
-        <div class="card-header bg-primary text-black">
-            <h4 class="mb-0">新增變更單申請</h4>
-        </div>
-        <div class="card-body">
+<style>
+    /* 整頁限定在這個容器裡，避免影響其它頁面 */
+    .vuln-create-page .card {
+        border-radius: 22px;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(255,255,255,0.9);
+        box-shadow: 0 18px 40px rgba(47,110,100,0.18);
+        overflow: hidden;
+    }
 
+    .vuln-create-page .create-header {
+        background: linear-gradient(135deg, #8fdacb, #64bba8);
+        color: #ffffff;
+        padding: 18px 26px;
+        border-bottom: 1px solid rgba(255,255,255,0.6);
+    }
+
+        .vuln-create-page .create-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: .03em;
+        }
+
+    .vuln-create-page .card-body {
+        padding: 24px 26px 22px;
+    }
+
+    /* 區塊標題 + 小圓點 */
+    .vuln-create-page .section-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        margin-bottom: 4px;
+        color: #2f6e64;
+        font-weight: 700;
+        font-size: 1.02rem;
+    }
+
+    .vuln-create-page .section-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #8fdacb, #64bba8);
+        box-shadow: 0 0 0 4px rgba(143,218,203,0.25);
+    }
+
+    .vuln-create-page hr {
+        margin-top: 4px;
+        margin-bottom: 16px;
+        border-color: rgba(143,218,203,0.55);
+        opacity: .8;
+    }
+
+    /* 欄位樣式 */
+    .vuln-create-page .form-label,
+    .vuln-create-page .control-label {
+        font-weight: 600;
+        color: #304241;
+    }
+
+    .vuln-create-page .form-control {
+        border-radius: 12px;
+        border: 1px solid rgba(143,218,203,0.7);
+        box-shadow: 0 0 0 1px rgba(143,218,203,0.18);
+        font-size: 0.95rem;
+    }
+
+    .vuln-create-page textarea.form-control {
+        border-radius: 14px;
+    }
+
+    .vuln-create-page .form-control:focus {
+        border-color: #64bba8;
+        box-shadow: 0 0 0 3px rgba(100,187,168,0.28);
+    }
+
+    /* radio / checkbox */
+    .vuln-create-page .form-check-input:checked {
+        background-color: #64bba8;
+        border-color: #64bba8;
+    }
+
+    .vuln-create-page .form-check-label {
+        font-weight: 500;
+        color: #425b58;
+    }
+
+    /* 錯誤提示 */
+    .vuln-create-page .alert-danger {
+        border-radius: 14px;
+    }
+
+    /* 按鈕區 */
+    .vuln-create-page .btn-create {
+        border-radius: 999px;
+        padding: 8px 26px;
+        font-weight: 600;
+        border: none;
+        background: linear-gradient(135deg, #8fdacb, #64bba8);
+        color: #ffffff;
+        box-shadow: 0 10px 24px rgba(47,110,100,0.3);
+        transition: 0.18s ease;
+    }
+
+        .vuln-create-page .btn-create:hover {
+            background: linear-gradient(135deg, #7bcbbd, #51a798);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px rgba(47,110,100,0.35);
+        }
+
+    .vuln-create-page .btn-back {
+        border-radius: 999px;
+        padding: 8px 22px;
+        font-weight: 500;
+        border: 1px solid #cfd4da;
+        background-color: #f7f7f8;
+        color: #4c5a64;
+        transition: 0.15s ease;
+    }
+
+        .vuln-create-page .btn-back:hover {
+            background-color: #eceff3;
+        }
+
+    @@media (max-width: 768px) {
+        .vuln-create-page .card-body {
+            padding: 18px 16px 20px;
+        }
+    }
+</style>
+
+<div class="vuln-create-page container mt-4">
+    <div class="card shadow-lg">
+        <div class="create-header">
+            <h2 class="mb-0">新增變更申請／漏洞報告</h2>
+        </div>
+
+        <div class="card-body">
             <form method="post">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                <h5 class="mt-3 text-primary">基本資料</h5>
-                <hr class="mt-0" />
+                <!-- 基本資訊 -->
+                <div class="section-title">
+                    <span class="section-dot"></span>
+                    <span>基本資訊</span>
+                </div>
+                <hr />
                 <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <div class="form-group">
-                            <label asp-for="Vulnerability.Title" class="control-label fw-bold">1. 系統/表單類別 (對應Title)</label>
-                            <input asp-for="Vulnerability.Title" class="form-control" placeholder="例如：EIP / DevOps / Dr.meow 系統" />
+                            <label asp-for="Vulnerability.Title" class="control-label">1. 系統/表單類別 (對應 Title)</label>
+                            <input asp-for="Vulnerability.Title" class="form-control"
+                                   placeholder="例如：EIP / DevOps / Dr.meow 系統" />
                             <span asp-validation-for="Vulnerability.Title" class="text-danger"></span>
                         </div>
                     </div>
+
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="Vulnerability.AssignedTo" class="control-label fw-bold">2. 單號/指派對象 (對應AssignedTo)</label>
-                            <input asp-for="Vulnerability.AssignedTo" class="form-control" placeholder="例如：CHG2023001 或 申請人" />
+                            <label asp-for="Vulnerability.AssignedTo" class="control-label">2. 單號/指派對象 (對應 AssignedTo)</label>
+                            <input asp-for="Vulnerability.AssignedTo" class="form-control"
+                                   placeholder="例如：CHG2023001 或 申請人" />
                             <span asp-validation-for="Vulnerability.AssignedTo" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
 
-                <h5 class="mt-4 text-primary">變更內容</h5>
-                <hr class="mt-0" />
+                <!-- 變更/漏洞內容 -->
+                <div class="section-title mt-3">
+                    <span class="section-dot"></span>
+                    <span>變更／漏洞內容</span>
+                </div>
+                <hr />
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label asp-for="Vulnerability.Description" class="control-label fw-bold">3. 變更/影響內容 (Description)</label>
-                            <textarea asp-for="Vulnerability.Description" class="form-control" rows="4" placeholder="請詳細說明變更內容或影響範圍與目的。"></textarea>
+                            <label asp-for="Vulnerability.Description" class="control-label">
+                                3. 變更／影響內容 (Description)
+                            </label>
+                            <textarea asp-for="Vulnerability.Description" class="form-control" rows="4"
+                                      placeholder="請詳細說明變更內容或影響範圍與目的。"></textarea>
                             <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
 
                 <div class="row mb-3">
-                    <div class="col-md-6">
+                    <!-- 狀態 -->
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <div class="form-group">
-                            <label class="control-label fw-bold mb-2">4. 變更類型 / 狀態 (Status)</label>
+                            <label class="control-label mb-2">4. 變更類型／狀態 (Status)</label>
                             <div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="標準/獨立" id="statusStandard" class="form-check-input" />
-                                    <label class="form-check-label" for="statusStandard">標準 /獨立</label>
+                                    <input type="radio" asp-for="Vulnerability.Status" value="標準/獨立"
+                                           id="statusStandard" class="form-check-input" />
+                                    <label class="form-check-label" for="statusStandard">標準／獨立</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="緊急" id="statusEmergency" class="form-check-input" />
+                                    <input type="radio" asp-for="Vulnerability.Status" value="緊急"
+                                           id="statusEmergency" class="form-check-input" />
                                     <label class="form-check-label" for="statusEmergency">緊急</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="例行" id="statusRoutine" class="form-check-input" />
+                                    <input type="radio" asp-for="Vulnerability.Status" value="例行"
+                                           id="statusRoutine" class="form-check-input" />
                                     <label class="form-check-label" for="statusRoutine">例行</label>
                                 </div>
                             </div>
                             <span asp-validation-for="Vulnerability.Status" class="text-danger"></span>
                         </div>
                     </div>
+
+                    <!-- 風險評估 -->
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="control-label fw-bold mb-2">5. 影響與風險評估 (Severity)</label>
+                            <label class="control-label mb-2">5. 影響與風險評估 (Severity)</label>
                             <div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="低" id="severityLow" class="form-check-input" />
+                                    <input type="radio" asp-for="Vulnerability.Severity" value="低"
+                                           id="severityLow" class="form-check-input" />
                                     <label class="form-check-label" for="severityLow">低風險</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="中" id="severityMedium" class="form-check-input" />
+                                    <input type="radio" asp-for="Vulnerability.Severity" value="中"
+                                           id="severityMedium" class="form-check-input" />
                                     <label class="form-check-label" for="severityMedium">中風險</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="高" id="severityHigh" class="form-check-input" />
+                                    <input type="radio" asp-for="Vulnerability.Severity" value="高"
+                                           id="severityHigh" class="form-check-input" />
                                     <label class="form-check-label" for="severityHigh">高風險</label>
                                 </div>
                             </div>
@@ -89,40 +244,48 @@
                     </div>
                 </div>
 
-                <h5 class="mt-4 text-primary">實施與復原計畫</h5>
-                <hr class="mt-0" />
+                <!-- 實施與復原計畫 -->
+                <div class="section-title mt-3">
+                    <span class="section-dot"></span>
+                    <span>實施與復原計畫</span>
+                </div>
+                <hr />
                 <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-6 mb-3 mb-md-0">
                         <div class="form-group">
-                            <label asp-for="Vulnerability.FoundDate" class="control-label fw-bold">6. 預計實施日期 (FoundDate)</label>
+                            <label asp-for="Vulnerability.FoundDate" class="control-label">
+                                6. 預計實施日期 (FoundDate)
+                            </label>
                             <input asp-for="Vulnerability.FoundDate" class="form-control" type="date" />
                             <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
                         </div>
                     </div>
+
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="control-label fw-bold mb-2">7. 測試與復原確認 (僅供勾選)</label>
+                            <label class="control-label mb-2">7. 測試與復原確認 (僅供勾選)</label>
                             <div>
                                 <div class="form-check">
-
-                                    <input class="form-check-input" type="checkbox" checked id="testPlan">
-                                    <label class="form-check-label" for="testPlan">測試計畫: 已規劃</label>
+                                    <input class="form-check-input" type="checkbox" checked id="testPlan" />
+                                    <label class="form-check-label" for="testPlan">測試計畫：已規劃</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" checked id="recoveryPlan">
-                                    <label class="form-check-label" for="recoveryPlan">復原計畫: 已規劃</label>
+                                    <input class="form-check-input" type="checkbox" checked id="recoveryPlan" />
+                                    <label class="form-check-label" for="recoveryPlan">復原計畫：已規劃</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- 按鈕 -->
                 <div class="form-group mt-4">
-                    <input type="submit" value="新增表單 (Create)" class="btn btn-success btn-lg shadow" />
-                    <a asp-page="Index" class="btn btn-secondary btn-lg ms-2">返回清單</a>
+                    <input type="submit" value="新增表單 (Create)" class="btn-create" />
+                    <a asp-page="/UserHome" class="btn-back ms-2 text-decoration-none">返回主頁</a>
+
+
                 </div>
             </form>
-
         </div>
     </div>
 </div>
