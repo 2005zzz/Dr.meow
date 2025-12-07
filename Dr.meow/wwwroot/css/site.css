@@ -464,3 +464,6 @@ section .card {
     border-top: 1px solid rgba(255,255,255,0.35);
     margin-top: auto; /* ← 確保貼在最底部 */
 }
+.btn-edit, .btn-delete {
+    text-decoration: none !important; /* 強制移除底線 */
+}

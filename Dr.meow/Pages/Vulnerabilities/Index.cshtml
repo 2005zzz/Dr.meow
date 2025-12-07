@@ -2,70 +2,158 @@
 @model Dr.meow.Pages.Vulnerabilities.IndexModel
 
 @{
-    ViewData["Title"] = "變更 ／ 漏洞清單";
+    ViewData["Title"] = "變更／漏洞清單";
 }
 
+<style>
+    /* 整體背景柔和清爽 */
+    body {
+        background: #edf5f5 !important;
+        font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    /* 外框卡片美化 */
+    .vuln-card {
+        background: white;
+        border-radius: 18px;
+        padding: 26px;
+        box-shadow: 0 10px 28px rgba(0,0,0,.08);
+        border: 1px solid #e9efef;
+    }
+
+    /* 標題字體美化 */
+    .vuln-title {
+        font-size: 2.3rem;
+        font-weight: 700;
+        letter-spacing: .5px;
+        color: #2f4f4f;
+    }
+
+    /* 匯出按鈕改柔和綠灰色系 */
+    .btn-excel {
+        background: linear-gradient(135deg,#a0dacc,#6dbfae);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 8px 18px;
+        border-radius: 999px;
+        transition: .2s;
+        box-shadow: 0 3px 10px rgba(0,0,0,.08);
+    }
+
+        .btn-excel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,.12);
+        }
+
+    /* 表格風格 — 乾淨、圓角、分隔線淡灰色 */
+    table {
+        border-radius: 14px;
+        overflow: hidden;
+        background: white;
+        font-size: 0.95rem;
+    }
+
+    thead {
+        background: #f3f7f7;
+        color: #495e5e;
+        font-weight: 700;
+        border-bottom: 2px solid #e4eaea;
+    }
+
+    tbody tr:hover {
+        background: #f7fcfc;
+        transition: .15s;
+    }
+
+    /* 編輯刪除按鈕改質感細框 */
+    .btn-edit {
+        border-radius: 25px;
+        font-size: .85rem;
+        padding: 4px 12px;
+        border: 1px solid #4a92d8;
+        color: #1f6ac9;
+        background: white;
+    }
+
+        .btn-edit:hover {
+            background: #e9f2ff;
+        }
+
+    .btn-delete {
+        border-radius: 25px;
+        font-size: .85rem;
+        padding: 4px 12px;
+        border: 1px solid #d46c6c;
+        color: #be3f3f;
+        background: white;
+    }
+
+        .btn-delete:hover {
+            background: #fff0f0;
+        }
+
+    /* 無資料時 UI 提示 */
+    .empty-row {
+        background: #f8fbfb;
+        color: #9fa7a7;
+        font-size: 1rem;
+    }
+
+</style>
+
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-4 text-dark">系統變更／漏洞清單</h1>
-        <div>
-            <a asp-page-handler="ExportToExcel" class="btn btn-success shadow-sm me-2">
-                <i class="fas fa-file-excel me-1"></i> 匯出 Excel 報表
+    <div class="vuln-card">
+
+        <!-- 標題區 -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="vuln-title">📄 系統變更 / 漏洞清單</div>
+
+            <a asp-page-handler="ExportToExcel" class="btn-excel">
+                匯出 Excel 報表
             </a>
         </div>
-    </div>
 
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>類別</th>
-                <th>狀態</th>
-                <th>嚴重性</th>
-                <th>填寫日期</th>
-                <th>指派對象</th>
-                <th>描述</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Vulnerability != null && Model.Vulnerability.Any())
-            {
-                foreach (var item in Model.Vulnerability)
+        <!-- Data Table -->
+        <table class="table align-middle text-center">
+            <thead>
+                <tr>
+                    <th>類別</th>
+                    <th>狀態</th>
+                    <th>嚴重性</th>
+                    <th>填寫日期</th>
+                    <th>指派對象</th>
+                    <th>描述</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Vulnerability?.Any() == true)
+                {
+                    foreach (var item in Model.Vulnerability)
+                    {
+                        <tr>
+                            <td>@item.Title</td>
+                            <td>@item.Status</td>
+                            <td>@item.Severity</td>
+                            <td>@item.FoundDate.ToShortDateString()</td>
+                            <td>@item.AssignedTo</td>
+                            <td>@item.Description</td>
+
+                            <td>
+                                <a asp-page="./Edit" asp-route-id="@item.Id" class="btn-edit me-1">編輯</a>
+                                <a asp-page="./Delete" asp-route-id="@item.Id" class="btn-delete">刪除</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Title)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Status)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Severity)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.FoundDate)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.AssignedTo)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Description)
-                        </td>
-                        <td>
-                            <a asp-page="./Create" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1">編輯</a>
-                            <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">刪除</a>
-                        </td>
+                        <td colspan="7" class="empty-row py-4">目前尚無任何變更／漏洞資料</td>
                     </tr>
                 }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="7" class="text-center text-muted py-4">
-                        目前尚無任何變更／漏洞資料。
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>

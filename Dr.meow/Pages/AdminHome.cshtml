@@ -26,7 +26,9 @@
                 </a>
 
                 <a class="list-group-item list-group-item-action app-admin"
-                   data-mode="reports">
+                   data-mode="reports"
+                   asp-page="/Vulnerabilities/Index">
+                    <!-- 【重點修改】新增 asp-page 屬性，指向根目錄下的 Index 頁面 -->
                     列表清單
                 </a>
 
@@ -79,7 +81,7 @@
                 }
                 else if (mode === "reports") {
                     noteBox.textContent = "已切換至「列表清單」。";
-                    loadAdminContent("/Vulnerabilities/Index"); // 之後如果有報表頁面再改
+                    loadAdminContent("/Vulnerability/Index"); // 之後如果有報表頁面再改
                 }
             });
         });
