@@ -138,6 +138,18 @@
 </style>
 
 <div class="vuln-create-page container mt-4">
+    <!-- ⭐ 【狀態訊息通知框 (Alert)】 ⭐ -->
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+        <!-- 檢查訊息內容決定樣式：包含 "錯誤" 或 "❌" 使用 danger，否則使用 success -->
+    var alertClass = statusMessage.Contains("錯誤") || statusMessage.Contains("❌") ? "alert-danger" : "alert-success";
+        <div class="alert @alertClass alert-dismissible fade show mb-4 shadow-sm" role="alert">
+            <strong>新增成功✅</strong> @Html.Raw(statusMessage)
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+}
+
+<div class="vuln-create-page container mt-4">
     <div class="card shadow-lg">
         <div class="create-header">
             <h2 class="mb-0">新增變更申請／漏洞報告</h2>
@@ -281,7 +293,6 @@
                 <!-- 按鈕 -->
                 <div class="form-group mt-4">
                     <input type="submit" value="新增表單 (Create)" class="btn-create" />
-                    <a asp-page="/UserHome" class="btn-back ms-2 text-decoration-none">返回主頁</a>
 
 
                 </div>

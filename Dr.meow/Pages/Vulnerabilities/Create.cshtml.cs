@@ -55,18 +55,19 @@ namespace Dr.meow.Pages.Vulnerabilities
                 _context.Vulnerability.Add(Vulnerability);
                 await _context.SaveChangesAsync();
                 System.Diagnostics.Debug.WriteLine("[DB Success] 資料庫儲存成功。ID: " + Vulnerability.Id);
+                TempData["StatusMessage"] = $"表單 '{Vulnerability.Title}' (ID: {Vulnerability.Id}) 已提交，等待審核。";
             }
             catch (Exception dbEx)
             {
                 System.Diagnostics.Debug.WriteLine($"[DB Failure] 儲存資料庫時發生嚴重錯誤: {dbEx.Message}");
-                ModelState.AddModelError(string.Empty, "資料庫儲存失敗，請檢查欄位是否超出長度或資料庫是否已更新 (Migration)。詳細錯誤已記錄在 Output 視窗。");
+                ModelState.AddModelError(string.Empty, "新增表單失敗，請檢查各項欄位是否有缺失。");
                 return Page();
             }
 
             // 2. 郵件發送步驟已移除。
 
             // 3. 導向列表頁面
-            return RedirectToPage("Index");
+            return RedirectToPage();
         }
     }
 }

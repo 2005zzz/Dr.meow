@@ -1,55 +1,253 @@
-@page
+﻿@page
 @model Dr.meow.Pages.Vulnerabilities.DetailsModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "表單詳細內容";
 }
 
-<h1>Details</h1>
+<style>
+    .vuln-details-page .card {
+        border-radius: 22px;
+        background: rgba(255,255,255,0.96);
+        border: 1px solid rgba(255,255,255,0.9);
+        box-shadow: 0 18px 40px rgba(47,110,100,0.18);
+        overflow: hidden;
+    }
 
-<div>
-    <h4>Vulnerability</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Vulnerability.Title)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Vulnerability.Title)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Vulnerability.Status)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Vulnerability.Status)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Vulnerability.Severity)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Vulnerability.Severity)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Vulnerability.FoundDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Vulnerability.FoundDate)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Vulnerability.AssignedTo)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Vulnerability.AssignedTo)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Vulnerability.Description)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Vulnerability.Description)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-page="./Edit" asp-route-id="@Model.Vulnerability.Id">Edit</a> |
-    <a asp-page="./">Back to List</a>
+    .vuln-details-page .details-header {
+        background: linear-gradient(135deg,#8fdacb,#64bba8);
+        color: #ffffff;
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.6);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .vuln-details-page .details-header-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.16);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .vuln-details-page .details-header-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+    }
+
+    .vuln-details-page .card-body {
+        padding: 22px 26px 20px;
+    }
+
+    .vuln-details-page dl {
+        margin-bottom: 0.5rem;
+    }
+
+    .vuln-details-page dt {
+        font-weight: 600;
+        color: #425b58;
+        margin-top: 0.35rem;
+    }
+
+    .vuln-details-page dd {
+        margin-bottom: 0.35rem;
+    }
+
+    /* 小 chip 樣式 */
+    .vuln-details-page .field-chip {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        background: #f2faf8;
+        border: 1px solid rgba(143,218,203,0.7);
+        color: #2f6e64;
+    }
+
+    /* 狀態 / 風險等級顏色 */
+    .vuln-details-page .status-chip {
+        background: #e7f7f4;
+        border-color: rgba(100,187,168,0.8);
+        color: #2f6e64;
+    }
+
+    .vuln-details-page .severity-low {
+        background: #e6f6ff;
+        border-color: #9fd3ff;
+        color: #1f567a;
+    }
+
+    .vuln-details-page .severity-medium {
+        background: #fff6e1;
+        border-color: #ffd08a;
+        color: #8a5a17;
+    }
+
+    .vuln-details-page .severity-high {
+        background: #ffe9ea;
+        border-color: #ff9ba0;
+        color: #8a1f2a;
+    }
+
+    .vuln-details-page .desc-box {
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #f8fbfb;
+        border: 1px solid rgba(143,218,203,0.4);
+        min-height: 48px;
+    }
+
+    /* 按鈕區 */
+    .vuln-details-page .btn-edit {
+        border-radius: 999px;
+        padding: 8px 24px;
+        font-weight: 600;
+        border: none;
+        background: linear-gradient(135deg,#8fdacb,#64bba8);
+        color: #ffffff;
+        box-shadow: 0 10px 22px rgba(47,110,100,0.28);
+        transition: 0.18s ease;
+        text-decoration: none;
+    }
+
+    .vuln-details-page .btn-edit:hover {
+        background: linear-gradient(135deg,#7bcbbd,#51a798);
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(47,110,100,0.32);
+        color: #ffffff;
+    }
+
+    /* 刪除按鈕樣式 */
+    .vuln-details-page .btn-delete {
+        border-radius: 999px;
+        padding: 8px 22px;
+        font-weight: 600;
+        border: 1px solid #e04444;
+        background-color: #f3b7b7;
+        color: #ffffff;
+        text-decoration: none;
+        transition: 0.15s ease;
+    }
+
+        .vuln-details-page .btn-delete:hover {
+            background-color: #e0a0a0;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+    .vuln-details-page .btn-back {
+        border-radius: 999px;
+        padding: 8px 22px;
+        font-weight: 500;
+        border: 1px solid #cfd4da;
+        background-color: #f7f7f8;
+        color: #4c5a64;
+        text-decoration: none;
+        transition: 0.15s ease;
+    }
+
+    .vuln-details-page .btn-back:hover {
+        background-color: #eceff3;
+        color: #4c5a64;
+        text-decoration: none;
+    }
+</style>
+
+<div class="vuln-details-page container mt-4 mb-4">
+    <div class="card">
+        <!-- Header -->
+        <div class="details-header">
+            <div class="details-header-icon">
+                📄
+            </div>
+            <div>
+                <div class="details-header-title">表單詳細內容</div>
+                <div class="small" style="opacity:.9;">
+                    檢視這筆變更／漏洞申請的完整資訊。
+                </div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">
+                    系統 / 表單類別 (Title)
+                </dt>
+                <dd class="col-sm-9">
+                    <span class="field-chip">
+                        @Html.DisplayFor(model => model.Vulnerability.Title)
+                    </span>
+                </dd>
+
+                <dt class="col-sm-3">
+                    變更狀態 (Status)
+                </dt>
+                <dd class="col-sm-9">
+                    <span class="field-chip status-chip">
+                        @Html.DisplayFor(model => model.Vulnerability.Status)
+                    </span>
+                </dd>
+
+                <dt class="col-sm-3">
+                    風險等級 (Severity)
+                </dt>
+                <dd class="col-sm-9">
+                    @{
+                        var sev = Model.Vulnerability.Severity?.Trim();
+                        var sevClass = sev == "高" ? "severity-high"
+                                      : sev == "中" ? "severity-medium"
+                                      : "severity-low";
+                    }
+                    <span class="field-chip @sevClass">
+                        @Html.DisplayFor(model => model.Vulnerability.Severity)
+                    </span>
+                </dd>
+
+                <dt class="col-sm-3">
+                    發現 / 預計日期 (FoundDate)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Vulnerability.FoundDate)
+                </dd>
+
+                <dt class="col-sm-3">
+                    單號 / 指派對象 (AssignedTo)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.Vulnerability.AssignedTo)
+                </dd>
+
+                <dt class="col-sm-3">
+                    變更 / 影響說明 (Description)
+                </dt>
+                <dd class="col-sm-9">
+                    <div class="desc-box">
+                        @Html.DisplayFor(model => model.Vulnerability.Description)
+                    </div>
+                </dd>
+            </dl>
+
+            <div class="mt-4">
+                <a asp-page="./Create"
+                   asp-route-id="@Model.Vulnerability.Id"
+                   class="btn-edit">
+                    編輯表單
+                </a>
+
+                <a asp-page="./Delete"
+                   asp-route-id="@Model.Vulnerability.Id"
+                   class="btn-delete ms-2">
+                    刪除表單
+                </a>
+
+            </div>
+        </div>
+    </div>
 </div>

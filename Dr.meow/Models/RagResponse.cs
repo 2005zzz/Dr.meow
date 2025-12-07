@@ -12,9 +12,10 @@ namespace Dr.meow.Models
     // 這是每一個引用來源的詳細資料
     public class RagSourceDoc
     {
-        public string FileName { get; set; } = "";
-        public string Page { get; set; } = "";
-        public string Content { get; set; } = ""; // 原始文件內容
-        public double Score { get; set; }         // 相關度分數 (選用)
+        public string FileName { get; set; }
+        public List<string> Pages { get; set; } = new();
+        public Dictionary<string, string> PageContents { get; set; } = new();
+        public double Score { get; set; }
     }
+
 }

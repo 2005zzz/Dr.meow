@@ -213,7 +213,7 @@
                 <div class="card-header-custom">
                     <!-- 紀錄 ID 作為單號 -->
                     <div class="d-flex flex-column">
-                        <span class="ticket-id"># @item.Id</span>
+                        <span class="ticket-id">表單號碼 @item.Id</span>
                         <!-- 指派對象 -->
                         <span class="assigned-to">指派給：@item.AssignedTo</span>
                     </div>
@@ -249,17 +249,7 @@
 
                 <!-- 動作按鈕區塊：將單一連結替換為完整的 card-footer 結構 -->
                 <div class="card-footer text-end pt-3">
-                    @* 【編輯連結】: 指向 /Vulnerabilities/Create，進入編輯模式 *@
-                    <a asp-page="/Vulnerabilities/Create" asp-route-id="@item.Id" class="btn btn-sm btn-info me-2">
-                        <i class="fas fa-edit"></i> 編輯
-                    </a>
-
-                    @* 【刪除連結】: 指向 /Vulnerabilities/Delete，如果 Delete 頁面存在 *@
-                    <a asp-page="/Vulnerabilities/Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
-                        <i class="fas fa-trash-alt"></i> 刪除
-                    </a>
-
-                    @* 【查看完整內容】: 連結到編輯頁面，用於快速查看和編輯 (此連結是多餘的，但如果需要保留，請用這個) *@
+                        @* 【查看完整內容】: 連結到編輯頁面，用於快速查看和編輯 (此連結是多餘的，但如果需要保留，請用這個) *@
                     <a asp-page="/Vulnerabilities/Details" asp-route-id="@item.Id" class="btn btn-link">
                         查看完整內容 &gt;
                     </a>

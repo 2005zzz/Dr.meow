@@ -2,7 +2,7 @@
 @model Dr.meow.Pages.LoginModel
 
 @{
-    Layout = "_LoginLayout";   // 使用上面那個跟主 Layout 同風格的版面
+    Layout = "_LoginLayout";
     ViewData["Title"] = "登入";
 }
 
@@ -44,7 +44,7 @@
             display: block;
         }
 
-    /* 🌿 主題色登入按鈕（Mint Breeze） */
+
     .btn-login-mint {
         border-radius: 999px;
         width: 100%;
@@ -64,9 +64,9 @@
             box-shadow: 0 8px 16px rgba(47,110,100,0.28);
         }
 
-    /* 讓整個登入卡片更漂亮：變寬、變圓、縮短一點 */
+
     .login-card {
-        max-width: 450px; /* 🔥 直接加到 560，比較有存在感 */
+        max-width: 450px;
         width: 100%;
         border-radius: 24px;
         overflow: hidden;
@@ -97,6 +97,38 @@
         .login-card .mb-3 {
             margin-bottom: 0.75rem !important;
         }
+
+
+    .btn-register-secondary {
+        width: 100%;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid #dde9e7;
+        padding: 10px 0;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #3FAEA0;
+        text-align: center;
+        display: block;
+        margin-top: 10px;
+        text-decoration: none !important;
+        box-shadow: 0 3px 12px rgba(0,0,0,.05);
+        transition: .2s ease;
+    }
+
+        .btn-register-secondary:hover {
+            background: #f7fdfa;
+            border-color: #8fdacb;
+            color: #2da192;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(47,110,100,.14);
+        }
+
+        .btn-register-secondary:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(47,110,100,.10);
+        }
+
 </style>
 
 <div class="card login-card">
@@ -153,13 +185,22 @@
                 登入
             </button>
 
-            <!-- Google 登入，導到註冊 -->
-            <a asp-page="/Register" class="btn btn-google w-100 mt-1">
+
+            <button type="button" class="btn btn-google w-100 mt-1">
                 <span class="btn-google-icon">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
                 </span>
                 <span>使用 Google 帳戶快速登入</span>
-            </a>
+            </button>
+
+            <div class="text-center mt-3">
+                <div class="text-muted mb-1">還沒有帳號嗎？</div>
+
+
+                <a asp-page="/Register" class="btn-register-secondary">
+                    立即註冊
+                </a>
+            </div>
 
             <div class="text-end mt-2">
                 <a href="javascript:void(0)" class="small text-muted">
