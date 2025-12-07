@@ -83,23 +83,33 @@
         </div>
     </section>
 </div>
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasSource" aria-labelledby="offcanvasSourceLabel">
-    <div class="offcanvas-header bg-light">
+<div class="offcanvas offcanvas-end meow-offcanvas" tabindex="-1" id="offcanvasSource">
+    <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasSourceLabel">📄 原始文件內容</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
+
     <div class="offcanvas-body">
-        <h6 id="sourceTitle" class="text-primary fw-bold mb-3 border-bottom pb-2"></h6>
-        <div id="sourceContent" class="p-3 bg-light border rounded font-monospace small" style="white-space: pre-wrap;">
+        <h6 id="sourceTitle" class="fw-bold mb-3"></h6>
+
+        <!-- ⭐ 玻璃內容區 -->
+        <div id="sourceContent" class="meow-source-box">
         </div>
-        <div class="mt-3 text-end">
-            <small class="text-muted">來源：RAG 知識庫</small>
+
+        <div class="rag-footer">
+            來源：RAG 知識庫
         </div>
+
     </div>
 </div>
 
+
 @section Scripts {
     <script>
+            let globalSourceMap = {};   // <-- 全域來源索引庫
+                const messageSources = {};   // key: messageId → value: sources array
+
+
         // ✅ TODO：把這個改成你實際的 FormsList Partial View 路徑
         // 例如 Razor Page: /Vulnerabilities/FormsList?handler=Partial
         const FORMS_URL = '/Forms/FormsList';
@@ -203,7 +213,7 @@
             const loadingId = pushBot('查詢中，請稍候…', true);
 
             try {
-                        const resp = await fetch(API_URL, {
+            const resp = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -219,14 +229,21 @@
 
                 const data = await resp.json(); // { answer: "...", items: [...] }
                 console.log("收到後端資料:", data);
+                const sources = data.items || data.sources || data.Sources || [];
 
-                // 儲存來源資料供點擊使用
-                currentSources = data.items || data.sources || data.Sources || [];
+                /** 🧠 儲存「這一題」的所有文件 */
+                messageSources[loadingId] = sources;
 
-                // 處理回答文字：將 [來源: xxx] 轉為超連結
-                // 若 answer 為空，給預設值
+                /** 🧠 建立全域文件索引（不覆蓋舊的） */
+                sources.forEach(s => {
+                const key = s.title || s.fileName;
+                    if (key && !globalSourceMap[key]) {
+                        globalSourceMap[key] = s;
+                    }
+                });
+                // 📝 處理回答文字 → 把 [來源: xxx] 轉成可點擊連結，綁定這一題的 msgId
                 const rawAnswer = data.answer || data.Answer || '（沒有取得 AI 回覆）';
-                const formattedAnswer = formatText(rawAnswer);
+                const formattedAnswer = formatText(rawAnswer, loadingId);
 
                 // 更新機器人訊息
                 replaceBotMessage(loadingId, formattedAnswer);
@@ -237,7 +254,7 @@
 
                 // 下方文件卡片 (總覽用)
                 results.innerHTML = '';
-                (data.items || []).forEach(addResultCard);
+                sources.forEach(x => addResultCard(x, loadingId));
 
                 scrollBottom();
 
@@ -260,7 +277,7 @@
         });
 
         /* === 🔥 核心格式化工具 (Markdown + 引用連結) === */
-        function formatText(text) {
+        function formatText(text, msgId) {
             if (!text) return '';
 
             // 1. 先做基本的 HTML 跳脫 (防止 XSS，但保留我們後面要加的標籤)
@@ -276,49 +293,156 @@
             // 這裡簡單將換行符號 \n 轉為 <br>
             safeText = safeText.replace(/\n/g, '<br>');
 
-            // 4. 處理 [來源: xxx] -> 藍色超連結
-            // 支援 [來源: xxx] 或
-            safeText = safeText.replace(/\[(來源|cite):\s*(.*?)\]/gi, (match, label, fileName) => {
-                // 必須解碼 fileName (因為 escapeHtml 轉義了空格等)
-                // 但這裡 fileName 應該是單純文字，我們直接用
-                return `<a href="javascript:void(0)" class="citation-link text-decoration-none fw-bold" onclick="showSource('${fileName.trim()}')">📄 ${match}</a>`;
+            // 4. [來源: xxx] / [cite: xxx] -> 可點擊的 a 標籤
+            safeText = safeText.replace(/\[(來源|cite):\s*(.*?)\]/gi, (match, _label, fileName) => {
+                const name = (fileName || '').trim();
+                const safeNameForJs = escapeJs(name);        // 放進 onclick
+                const safeMatchText = escapeHtml(match);     // 顯示給使用者看的字
+
+                return `<a href="javascript:void(0)" class="citation-link text-decoration-none fw-bold" onclick="showSource('${safeNameForJs}', '${msgId}')">📄 ${safeMatchText}</a>`;
             });
 
             return safeText;
         }
 
         /* === 核心功能：顯示側邊欄 === */
-           /* === 核心功能：智慧側邊欄 (表格美化 + PDF 切換) === */
-        window.showSource = function(fileName) {
-            // 找出對應的資料
-            const target = currentSources.find(s => s.title && s.title.includes(fileName));
-            if (target) {
-                document.getElementById('sourceTitle').textContent = target.title;
-                document.getElementById('sourceContent').textContent = target.snippet || "(無內容)";
-                sourceOffcanvas.show();
-            } else {
-                alert(`抱歉，在本次檢索結果中找不到對應的文件片段：${fileName}`);
+        /* === 核心功能：顯示側邊欄（支援多文件下拉 + 頁面切換） === */
+        window.showSource = function (fileName, msgId) {
+            // 這一題的所有文件
+            const sourceList = messageSources[msgId] || [];
+
+            if (!sourceList.length && !fileName) {
+                alert('這一題沒有可用的文件來源');
+                return;
             }
 
-            // 設定標題
-            document.getElementById('sourceTitle').textContent = target.title;
-            const container = document.getElementById('sourceContentContainer'); // 確保 HTML 裡的 ID 是這個
+            // 根據 fileName 找出要先顯示哪一份文件
+            let activeIndex = 0;
+            if (fileName) {
+                const idx = sourceList.findIndex(s =>
+                    (s.title && s.title.includes(fileName)) ||
+                    (s.fileName && s.fileName.includes(fileName))
+                );
+                if (idx >= 0) activeIndex = idx;
+            }
 
-            // 渲染側邊欄：預設顯示文字
-            container.innerHTML = `
-                ${pdfButtonHtml}
-                <div id="textContentMode" class="card bg-light border-0">
-                    <div class="card-body p-3">
-                        <h6 class="text-secondary small fw-bold mb-2">
-                            <i class="bi bi-text-paragraph"></i> 文字摘要內容：
-                        </h6>
-                        <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.9rem; color: #333; font-family: var(--bs-font-monospace);">${escapeHtml(target.snippet)}</pre>
+            // 若這一題裡沒找到，但有全域索引，就單獨顯示那份
+            let currentDoc = sourceList[activeIndex];
+            if (!currentDoc && fileName) {
+                currentDoc = globalSourceMap[fileName];
+            }
+
+            if (!currentDoc) {
+                alert(`找不到文件來源：${fileName || '（未指定）'}`);
+                return;
+            }
+
+            const titleEl = document.getElementById("sourceTitle");
+            const container = document.getElementById("sourceContent");
+
+            let currentPageIndex = 0;
+
+            function renderPage() {
+                const pages = currentDoc.pages || [];
+                const contents = currentDoc.pageContents || {};
+
+                const pageKey = pages.length ? pages[currentPageIndex] : null;
+                const text = pageKey ? (contents[pageKey] || "(沒有內容)") : "(沒有內容)";
+
+                const docTitle = currentDoc.title || currentDoc.fileName || '未命名文件';
+                const totalPages = pages.length || 1;
+
+                // 標題顯示：文件名 + 頁數
+                titleEl.textContent = `${docTitle}（${totalPages} 頁）`;
+
+                const hasMultipleDocs = sourceList.length > 1;
+
+                // 上方文件下拉選單（同一題有多個文件時才出現）
+                let docSelectorHtml = '';
+                if (hasMultipleDocs) {
+                    const optionsHtml = sourceList.map((s, i) => {
+                        const label = s.title || s.fileName || `文件 ${i + 1}`;
+                        const selected = i === activeIndex ? 'selected' : '';
+                        return `<option value="${i}" ${selected}>${escapeHtml(label)}</option>`;
+                    }).join('');
+
+                    docSelectorHtml = `
+                        <div class="mb-2">
+                            <select class="form-select form-select-sm" id="meowDocSelect">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                    `;
+                }
+
+                // 頁碼切換控制列
+                const controlsHtml = `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <button class="meow-page-btn" id="btnPrevPage" ${currentPageIndex === 0 ? "disabled" : ""}>
+                            ‹
+                        </button>
+
+                        <span class="meow-page-info">
+                            第 ${currentPageIndex + 1} / ${totalPages} 頁
+                        </span>
+
+                        <button class="meow-page-btn" id="btnNextPage" ${currentPageIndex >= totalPages - 1 ? "disabled" : ""}>
+                            ›
+                        </button>
                     </div>
-                </div>
-                <div id="pdfContentMode" class="d-none">
-                </div>`;
+                `;
+
+                // 寫入內容
+                container.innerHTML = `
+                    ${docSelectorHtml}
+                    ${controlsHtml}
+                    <div class="p-3 bg-light border rounded font-monospace small"
+                         style="white-space: pre-wrap; line-height: 1.6;">
+                        ${escapeHtml(text)}
+                    </div>
+                `;
+
+                // 綁定文件選擇下拉
+                if (hasMultipleDocs) {
+                    const sel = document.getElementById('meowDocSelect');
+                    if (sel) {
+                        sel.addEventListener('change', (e) => {
+                            const idx = parseInt(e.target.value, 10);
+                            if (!isNaN(idx) && sourceList[idx]) {
+                                activeIndex = idx;
+                                currentDoc = sourceList[activeIndex];
+                                currentPageIndex = 0;   // 切文件時回到第一頁
+                                renderPage();
+                            }
+                        });
+                    }
+                }
+
+                // 綁定頁面切換按鈕
+                const prevBtn = document.getElementById("btnPrevPage");
+                const nextBtn = document.getElementById("btnNextPage");
+
+                prevBtn && prevBtn.addEventListener("click", () => {
+                    if (currentPageIndex > 0) {
+                        currentPageIndex--;
+                        renderPage();
+                    }
+                });
+
+                nextBtn && nextBtn.addEventListener("click", () => {
+                    if (currentPageIndex < totalPages - 1) {
+                        currentPageIndex++;
+                        renderPage();
+                    }
+                });
+            }
+
+            // 初始化顯示
+            renderPage();
             sourceOffcanvas.show();
         };
+
+
 
         /* === 泡泡工具 (維持你想要的樣式) === */
         function pushUser(t) {
@@ -378,33 +502,41 @@
             return (s || '').replace(/'/g, "\\'");
         }
 
-        /* 文件卡片 */
-        function addResultCard(x) {
-            // 卡片標題也做成可以點擊開側邊欄
+                /* 文件卡片：每一題自己的來源清單 */
+        function addResultCard(x, msgId) {
+            const title = x.title || x.fileName || '（無標題）';
+
             results.insertAdjacentHTML('beforeend', `
-            <div class="col">
-                <div class="card result-card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="card-title mb-0 text-truncate">
-                        <a href="javascript:void(0)" class="text-decoration-none" onclick="showSource('${escapeJs(x.title)}')">
-                        📄 ${escapeHtml(x.title || '（無標題）')}
-                        </a>
-                    </h6>
-                    <span class="badge bg-light text-dark border">Score: ${x.source || 'RAG'}</span>
-                    </div>
-                    <div class="text-muted small mb-2 text-truncate">
-                    ${escapeHtml(x.snippet || '')}
-                    </div>
-                    <div class="d-flex gap-2 mt-auto">
-                    <button class="btn btn-outline-primary btn-sm w-100" onclick="showSource('${escapeJs(x.title)}')">
-                        查看內文
-                    </button>
+                <div class="col">
+                    <div class="card result-card h-100 shadow-sm border-0">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0 text-truncate">
+                                    <a href="javascript:void(0)"
+                                       class="text-decoration-none"
+                                       onclick="showSource('${escapeJs(title)}', '${msgId}')">
+                                        📄 ${escapeHtml(title)}
+                                    </a>
+                                </h6>
+                                <span class="badge bg-light text-dark border">
+                                    Score: ${escapeHtml(x.source || 'RAG')}
+                                </span>
+                            </div>
+                            <div class="text-muted small mb-2 text-truncate">
+                                ${escapeHtml(x.snippet || '')}
+                            </div>
+                            <div class="d-flex gap-2 mt-auto">
+                                <button class="btn btn-outline-primary btn-sm w-100"
+                                        onclick="showSource('${escapeJs(title)}', '${msgId}')">
+                                    查看內文
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                </div>
-            </div>`);
+            `);
         }
+
 
         /* 語音：Web Speech API (維持原樣) */
         (function () {

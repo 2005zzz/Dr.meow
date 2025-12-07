@@ -75,21 +75,18 @@ namespace Dr.meow.Services
                     {
                         uiResult.Items.Add(new SearchItem
                         {
-                            // 組合標題：檔名 + 頁數
-                            Title = $"{src.FileName} (Page {src.Page})",
-
-                            // 內容：顯示原始文件片段
-                            Snippet = src.Content,
-
-                            // 連結：暫時用 #，未來可做成檔案下載連結
+                            Title = src.FileName,
+                            Snippet = src.PageContents[src.Pages[0]],    // 顯示第一頁預覽
                             Url = "#",
-
-                            // 來源標籤
                             Source = "RAG Knowledge Base",
+                            ModifiedAt = DateTime.Now,
 
-                            ModifiedAt = DateTime.Now // 或是 null
+                            // ⬇️ 新增：傳遞整份文件
+                            Pages = src.Pages,
+                            PageContents = src.PageContents
                         });
                     }
+
                 }
 
                 return uiResult;

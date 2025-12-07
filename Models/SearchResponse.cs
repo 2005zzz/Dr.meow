@@ -7,6 +7,9 @@
         public string? Source { get; set; }
         public DateTime? ModifiedAt { get; set; }
         public string? Snippet { get; set; }
+        public List<string> Pages { get; set; } = new();
+        public Dictionary<string, string> PageContents { get; set; } = new();
+
     }
 
     public class SearchResponse

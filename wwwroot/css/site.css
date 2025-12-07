@@ -344,3 +344,125 @@ section .card {
     background-color: transparent;
     color: rgba(255, 255, 255, 0.9);
 }
+/* =======================================================
+   🐾 Dr.Meow 專屬 — 厚玻璃 Offcanvas（macOS 風格）
+   ======================================================= */
+.meow-offcanvas {
+    width: 480px !important;
+    border-left: 0;
+    background: rgba(255, 255, 255, 0.25) !important;
+    backdrop-filter: blur(28px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
+    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.20);
+    border-radius: 22px 0 0 22px;
+    overflow: hidden;
+    padding-bottom: 16px;
+}
+
+    /* Offcanvas Header — 玻璃 + 亮邊 */
+    .meow-offcanvas .offcanvas-header {
+        background: rgba(255, 255, 255, 0.28);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+        padding: 16px 20px;
+    }
+
+    /* Title */
+    .meow-offcanvas .offcanvas-title {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #0f665d;
+    }
+
+/* 內容外層玻璃框 */
+.meow-source-box {
+    background: rgba(255, 255, 255, 0.40);
+    border-radius: 20px;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, .55);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    backdrop-filter: blur(23px);
+    -webkit-backdrop-filter: blur(23px);
+    max-height: 72vh;
+    overflow-y: auto;
+}
+
+/* =======================
+   ◀ ▶ 玻璃圓形切換按鈕
+   ======================= */
+.meow-page-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    color: #0a7770;
+    font-size: 1.4rem;
+    font-weight: 700;
+    transition: all .22s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .meow-page-btn:hover:not([disabled]) {
+        transform: scale(1.12);
+        background: rgba(255,255,255,0.65);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    }
+
+    .meow-page-btn:disabled {
+        opacity: .38;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+/* 頁碼文字 */
+.meow-page-info {
+    color: #0a6b62;
+    font-weight: 700;
+    font-size: 1rem;
+}
+/* =======================================================
+   🐾 修正版：Offcanvas 內容區塊全滿 + 底部固定來源
+   ======================================================= */
+
+/* 讓 Offcanvas 採用「上下分區」排版 */
+.meow-offcanvas .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px); /* 扣掉 header 高度 */
+    padding: 16px 20px;
+    gap: 14px;
+}
+
+/* ⭐ 白色內容框改為可拉伸（占滿剩餘空間） */
+.meow-source-box {
+    flex: 1;                         /* ← 讓白框自動填滿高度 */
+    background: rgba(255, 255, 255, 0.40);
+    border-radius: 20px;
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, .55);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    backdrop-filter: blur(23px);
+    -webkit-backdrop-filter: blur(23px);
+    overflow-y: auto;                /* ← 滾動在白框裡 */
+}
+
+/* 底部資訊（來源：RAG 知識庫）貼底 */
+.meow-offcanvas .rag-footer {
+    text-align: right;
+    color: #4b5f63;
+    font-size: .85rem;
+    opacity: .85;
+    padding-top: 4px;
+    padding-right: 4px;
+    border-top: 1px solid rgba(255,255,255,0.35);
+    margin-top: auto;               /* ← 確保貼在最底部 */
+}
+
+

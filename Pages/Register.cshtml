@@ -1,0 +1,163 @@
+﻿@page
+@model Dr.meow.Pages.RegisterModel
+@{
+    ViewData["Title"] = "註冊帳號";
+}
+
+<style>
+    /* 沿用 Login 的樣式，保持一致性 */
+    .btn-google {
+        border-radius: 999px;
+        border: 1px solid #dadce0;
+        background-color: #ffffff;
+        color: #3c4043;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 16px;
+        box-shadow: 0 1px 2px rgba(0,0,0,.05);
+        transition: box-shadow .15s ease, background-color .15s ease;
+    }
+
+        .btn-google:hover {
+            background-color: #f7f8f8;
+            box-shadow: 0 1px 3px rgba(60,64,67,.3), 0 4px 8px rgba(60,64,67,.15);
+        }
+
+    .btn-google-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-google-icon img {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+    /* 自訂分隔線 */
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin: 1rem 0;
+    }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .5em;
+        }
+</style>
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="card shadow-lg border-0" style="max-width: 450px; width: 100%; border-radius: 12px;">
+        <div class="card-header text-center py-3"
+             style="background: linear-gradient(135deg,#8fc4b4,#6ea89a)!important; color:white; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+
+            <h4 class="mb-0 fw-bold">註冊 Dr.Meow</h4>
+            <small style="opacity: 0.9;">建立您的專屬帳戶</small>
+
+        </div>
+
+        <div class="card-body p-4">
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger py-2 text-center">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>@Model.ErrorMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert alert-success py-2 text-center">
+                    <i class="bi bi-check-circle-fill me-2"></i>@Model.SuccessMessage
+                    <div class="mt-2">
+                        <a asp-page="/Login" class="btn btn-sm btn-success">前往登入</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <form method="post">
+                    <div class="mb-3">
+                        <label asp-for="Input.Name" class="form-label fw-bold text-secondary">真實姓名</label>
+                        <input asp-for="Input.Name" class="form-control" placeholder="請輸入您的姓名" />
+                        <span asp-validation-for="Input.Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Email" class="form-label fw-bold text-secondary">電子郵件</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Input.Email" class="form-control" placeholder="name@example.com" />
+                        </div>
+                        <div class="form-text x-small text-muted">我們會發送驗證信至此信箱</div>
+                        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Account" class="form-label fw-bold text-secondary">設定帳號</label>
+                        <input asp-for="Input.Account" class="form-control" placeholder="請設定登入帳號" />
+                        <span asp-validation-for="Input.Account" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Password" class="form-label fw-bold text-secondary">設定密碼</label>
+                        <input asp-for="Input.Password" class="form-control" type="password" placeholder="請輸入密碼" />
+                        <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Input.ConfirmPassword" class="form-label fw-bold text-secondary">確認密碼</label>
+                        <input asp-for="Input.ConfirmPassword" class="form-control" type="password" placeholder="請再次輸入密碼" />
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold fs-5 shadow-sm">
+                        立即註冊
+                    </button>
+                </form>
+
+                <div class="divider">或</div>
+
+                <button type="button" class="btn btn-google w-100">
+                    <span class="btn-google-icon">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                    </span>
+                    <span>使用 Google 帳戶註冊</span>
+                </button>
+            }
+        </div>
+
+        <div class="card-footer text-center bg-light py-3" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+            <span class="text-muted small">已經有帳號了嗎？</span>
+            <a asp-page="/Login" class="text-decoration-none fw-bold" style="color: #6ea89a;">
+                點此登入
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
