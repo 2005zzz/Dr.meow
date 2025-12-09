@@ -184,14 +184,20 @@
             <button type="submit" class="btn-login-mint mb-3">
                 登入
             </button>
+        </form>
+
+            <form method="post" asp-page-handler="GoogleLogin">
+                <button type="submit" class="btn btn-google w-100 mt-1">
+                    <span class="btn-google-icon">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                    </span>
+                    <span>使用 Google 帳戶快速登入</span>
+                </button>
+            </form>
 
 
-            <button type="button" class="btn btn-google w-100 mt-1">
-                <span class="btn-google-icon">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-                </span>
-                <span>使用 Google 帳戶快速登入</span>
-            </button>
+
+    
 
             <div class="text-center mt-3">
                 <div class="text-muted mb-1">還沒有帳號嗎？</div>
@@ -207,7 +213,6 @@
                     忘記密碼？
                 </a>
             </div>
-        </form>
     </div>
 
     <!-- 卡片 Footer -->
