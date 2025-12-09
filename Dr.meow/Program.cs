@@ -4,10 +4,14 @@ using Dr.meow.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// =====================================
+// ⭐ 服務註冊區 (DI Container)
+// =====================================
+
 // Razor Pages
 builder.Services.AddRazorPages();
 
-// ⭐ Session 服務
+// ⭐ Session 使用者登入狀態管理
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -16,7 +20,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// DbContext
+// ⭐ DbContext
 builder.Services.AddDbContext<DrMeowDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DrMeowDbContext")
@@ -26,6 +30,9 @@ builder.Services.AddDbContext<DrMeowDbContext>(options =>
 
 var app = builder.Build();
 
+// =====================================
+// ⭐ Middleware (執行管線)
+// =====================================
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -37,17 +44,17 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// 如果之後有 Identity 可以保留，現在也不會壞
+// 若未來加 Identity 或 JWT 可用
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ⭐ 一定要在 MapRazorPages 之前
+// ⭐ 必須在 MapRazorPages() 前
 app.UseSession();
 
-// Razor Pages 路由
+// Razor Pages Routing
 app.MapRazorPages();
 
-// ⭐ 讓根目錄一打開就是 Login
+// ⭐ 預設首頁 → Login
 app.MapGet("/", ctx =>
 {
     ctx.Response.Redirect("/Login");

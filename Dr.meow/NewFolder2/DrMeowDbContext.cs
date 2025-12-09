@@ -13,6 +13,7 @@ namespace Dr.meow.Data
 
         // 定義一個 Dbset，對應到 SQL Server 中的 Vulnerability 表格
         public DbSet<Vulnerability> Vulnerability { get; set; }
+        public DbSet<User> Users { get; set; }
 
         // 您未來可以將 QueryLog.cs 等其他模型加到這裡
     }
