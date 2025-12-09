@@ -4,6 +4,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>daf6abd2-983b-4c81-af1a-4197c3adeb40</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -35,6 +36,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="ClosedXML" Version="0.105.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
 
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
