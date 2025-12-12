@@ -4,6 +4,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>30e528cc-c0d1-4d60-9a89-74c9b11dc332</UserSecretsId>
 	</PropertyGroup>
 
 	<!--
@@ -12,7 +13,8 @@
 	*** 所以我們移除了所有手動的 <Compile Include...> 和 <Compile Remove...> 語句。
 	-->
 	<ItemGroup>
-		<PackageReference Include="ClosedXML" Version="0.105.0" />
+		<PackageReference Include="EPPlus" Version="6.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
 
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">

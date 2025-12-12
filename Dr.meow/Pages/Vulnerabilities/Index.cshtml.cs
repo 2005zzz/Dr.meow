@@ -7,8 +7,12 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Dr.meow.Data;
 using Dr.meow.Models;
-using ClosedXML.Excel;
 using System.IO;
+using System.Diagnostics;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System.Text.RegularExpressions;
+using System.Drawing;
 
 namespace Dr.meow.Pages.Vulnerabilities
 {
@@ -31,54 +35,92 @@ namespace Dr.meow.Pages.Vulnerabilities
             }
         }
 
-        // 匯出 Excel
+        // 匯出 Excel (使用 EPPlus 實現)
         public async Task<IActionResult> OnGetExportToExcel()
         {
-            var vulnerabilities = await _context.Vulnerability.ToListAsync();
+            // EPPlus 授權設置 (必須)
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            using (var workbook = new XLWorkbook())
+            // 數據過濾：過濾掉 Title 為 Null 或空字串的記錄
+            var vulnerabilities = await _context.Vulnerability
+                .Where(v => v.Title != null && v.Title != "")
+                .Take(10)
+                .ToListAsync();
+
+            // --- 數據清洗函式：移除所有非法 XML 字符與換行符 ---
+            string SanitizeText(string? text)
             {
-                // 工作表名稱
-                var worksheet = workbook.Worksheets.Add("變更 ／ 漏洞報表");
+                if (string.IsNullOrEmpty(text))
+                    return string.Empty;
+                // 移除所有非法 XML 字符（控制字符）
+                string safeText = Regex.Replace(text, @"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", string.Empty);
+                // 清理換行符
+                return safeText.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+            }
+            // ------------------------------------
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("變更單漏洞報表");
 
                 // 標題列
                 var currentRow = 1;
-                worksheet.Cell(currentRow, 1).Value = "ID";
-                worksheet.Cell(currentRow, 2).Value = "標題 / 系統名稱";
-                worksheet.Cell(currentRow, 3).Value = "狀態";
-                worksheet.Cell(currentRow, 4).Value = "嚴重程度";
-                worksheet.Cell(currentRow, 5).Value = "發現日期";
-                worksheet.Cell(currentRow, 6).Value = "指派對象";
-                worksheet.Cell(currentRow, 7).Value = "描述";
+
+                // 設置標題
+                worksheet.Cells[currentRow, 1].Value = "ID";
+                worksheet.Cells[currentRow, 2].Value = "標題 / 系統名稱";
+                worksheet.Cells[currentRow, 3].Value = "狀態";
+                worksheet.Cells[currentRow, 4].Value = "嚴重程度";
+                worksheet.Cells[currentRow, 5].Value = "發現日期";
+                worksheet.Cells[currentRow, 6].Value = "指派對象";
+                worksheet.Cells[currentRow, 7].Value = "描述";
 
                 // 標題格式
-                worksheet.Range(currentRow, 1, currentRow, 7).Style.Font.Bold = true;
-                worksheet.Range(currentRow, 1, currentRow, 7).Style.Fill.BackgroundColor = XLColor.LightGray;
+                using (var range = worksheet.Cells[currentRow, 1, currentRow, 7])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(Color.LightGray);
+                }
 
                 // 內容列
                 foreach (var v in vulnerabilities)
                 {
-                    currentRow++;
-                    worksheet.Cell(currentRow, 1).Value = v.Id;
-                    worksheet.Cell(currentRow, 2).Value = v.Title;
-                    worksheet.Cell(currentRow, 3).Value = v.Status;
-                    worksheet.Cell(currentRow, 4).Value = v.Severity;
-                    worksheet.Cell(currentRow, 5).Value = v.FoundDate.ToString("yyyy/MM/dd");
-                    worksheet.Cell(currentRow, 6).Value = v.AssignedTo;
-                    worksheet.Cell(currentRow, 7).Value = v.Description;
+                    try
+                    {
+                        currentRow++;
+
+                        // 寫入數據
+                        worksheet.Cells[currentRow, 1].Value = v.Id;
+                        worksheet.Cells[currentRow, 2].Value = SanitizeText(v.Title);
+                        worksheet.Cells[currentRow, 3].Value = SanitizeText(v.Status); // 強化清洗
+                        worksheet.Cells[currentRow, 4].Value = SanitizeText(v.Severity);
+
+                        // 修正點 1: 直接寫入 DateTime，並讓 Excel 處理格式
+                        worksheet.Cells[currentRow, 5].Value = v.FoundDate;
+                        worksheet.Cells[currentRow, 5].Style.Numberformat.Format = "yyyy/MM/dd"; // 設置格式
+
+                        worksheet.Cells[currentRow, 6].Value = SanitizeText(v.AssignedTo);
+                        worksheet.Cells[currentRow, 7].Value = SanitizeText(v.Description);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error exporting vulnerability ID {v.Id}: {ex.Message}");
+                        currentRow--;
+                        continue;
+                    }
                 }
 
-                worksheet.Columns().AdjustToContents();
+                // 自動調整欄寬
+                worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
-                using (var stream = new MemoryStream())
-                {
-                    workbook.SaveAs(stream);
-                    var content = stream.ToArray();
-                    var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                    var fileName = $"漏洞清單_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
 
-                    return File(content, contentType, fileName);
-                }
+                // 輸出檔案
+                var fileBytes = package.GetAsByteArray();
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                var fileName = $"漏洞清單_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                return File(fileBytes, contentType, fileName);
             }
         }
     }

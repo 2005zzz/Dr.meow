@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Dr.meow.Pages
 {
@@ -44,6 +47,20 @@ namespace Dr.meow.Pages
             {
                 return RedirectToPage("/UserHome");
             }
+        }
+        // =======================
+        // ⭐ Google 一鍵登入（你新增的）
+        // =======================
+        public IActionResult OnPostGoogleLogin()
+        {
+            // Google OAuth 登入完成後會回到這頁
+            var props = new AuthenticationProperties
+            {
+                RedirectUri = Url.Page("/GoogleCallback")  // 登入成功後的跳轉頁
+            };
+
+            // 觸發 Google OAuth 流程
+            return Challenge(props, GoogleDefaults.AuthenticationScheme);
         }
     }
 }

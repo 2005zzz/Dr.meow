@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
+ï»¿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims; // ç‚ºäº†ä½¿ç”¨ Challenge å‡½å¼
 
 namespace Dr.meow.Pages
 {
@@ -23,53 +24,68 @@ namespace Dr.meow.Pages
                 return Page();
             }
 
-            // --- ¼ÒÀÀµù¥UÅŞ¿è (¥¼¨Ó³o¸Ì±µ¸ê®Æ®w) ---
+            // --- æ¨¡æ“¬è¨»å†Šé‚è¼¯ (æœªä¾†é€™è£¡æ¥è³‡æ–™åº«) ---
 
-            // 1. ÀË¬d±b¸¹¬O§_­«½Æ (¼ÒÀÀ)
+            // 1. æª¢æŸ¥å¸³è™Ÿæ˜¯å¦é‡è¤‡ (æ¨¡æ“¬)
             if (Input.Account == "admin" || Input.Account == "user")
             {
-                ErrorMessage = "¦¹±b¸¹¤w³Q¨Ï¥Î¡A½Ğ§ó´«¤@²Õ¡C";
+                ErrorMessage = "æ­¤å¸³è™Ÿå·²è¢«ä½¿ç”¨ï¼Œè«‹æ›´æ›ä¸€çµ„ã€‚";
                 return Page();
             }
 
-            // 2. ¼ÒÀÀ¼g¤J¸ê®Æ®w¦¨¥\
+            // 2. æ¨¡æ“¬å¯«å…¥è³‡æ–™åº«æˆåŠŸ
             // ... Save to DB ...
 
-            // 3. Åã¥Ü¦¨¥\°T®§
-            SuccessMessage = "µù¥U¦¨¥\¡I½Ğ«e©¹±zªº¹q¤l«H½c¦¬¨úÅçÃÒ«H¡C";
+            // 3. é¡¯ç¤ºæˆåŠŸè¨Šæ¯
+            SuccessMessage = "è¨»å†ŠæˆåŠŸï¼è«‹å‰å¾€æ‚¨çš„é›»å­ä¿¡ç®±æ”¶å–é©—è­‰ä¿¡ã€‚";
 
-            // ²MªÅªí³æ¡AÁ×§K­«½Æ´£¥æ
+            // æ¸…ç©ºè¡¨å–®ï¼Œé¿å…é‡è¤‡æäº¤
             ModelState.Clear();
             Input = new InputModel();
 
             return Page();
         }
 
+        // ğŸ¯ æ–°å¢çš„è™•ç†å‡½å¼ï¼šè™•ç† Google è¨»å†Šçš„ POST è«‹æ±‚
+        public IActionResult OnPostGoogleRegistration(string returnUrl = null)
+        {
+            // å¤–éƒ¨ç™»å…¥æä¾›è€…çš„åç¨±ï¼Œé€™å¿…é ˆå’Œæ‚¨åœ¨ Program.cs ä¸­è¨­å®šçš„åç¨±ä¸€è‡´ (å³ "Google")
+            var provider = "Google";
+
+            // è¨­å®šå›å‚³ URLã€‚Google é©—è­‰æˆåŠŸå¾Œï¼Œæœƒè¢«å°å‘ GoogleCallback é é¢
+            var redirectUrl = Url.Page("/GoogleCallback", new { returnUrl });
+
+            // å•Ÿå‹• Challenge æµç¨‹ï¼Œå°‡ä½¿ç”¨è€…å°å‘ Google ç™»å…¥é é¢
+            var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties { RedirectUri = redirectUrl };
+
+            // ä½¿ç”¨ Challenge() å‡½å¼è§¸ç™¼ Google OAuth æµç¨‹
+            return Challenge(properties, provider);
+        }
         public class InputModel
         {
-            [Required(ErrorMessage = "©m¦W¬O¥²¶ñªº")]
-            [Display(Name = "©m¦W")]
+            [Required(ErrorMessage = "å§“åæ˜¯å¿…å¡«çš„")]
+            [Display(Name = "å§“å")]
             public string Name { get; set; }
 
-            [Required(ErrorMessage = "¹q¤l¶l¥ó¬O¥²¶ñªº")]
-            [EmailAddress(ErrorMessage = "½Ğ¿é¤J¦³®Äªº¹q¤l¶l¥ó®æ¦¡")]
-            [Display(Name = "¹q¤l¶l¥ó")]
+            [Required(ErrorMessage = "é›»å­éƒµä»¶æ˜¯å¿…å¡«çš„")]
+            [EmailAddress(ErrorMessage = "è«‹è¼¸å…¥æœ‰æ•ˆçš„é›»å­éƒµä»¶æ ¼å¼")]
+            [Display(Name = "é›»å­éƒµä»¶")]
             public string Email { get; set; }
 
-            [Required(ErrorMessage = "±b¸¹¬O¥²¶ñªº")]
-            [StringLength(20, MinimumLength = 4, ErrorMessage = "±b¸¹ªø«×»İ¬° 4-20 ­Ó¦r¤¸")]
-            [Display(Name = "±b¸¹")]
+            [Required(ErrorMessage = "å¸³è™Ÿæ˜¯å¿…å¡«çš„")]
+            [StringLength(20, MinimumLength = 4, ErrorMessage = "å¸³è™Ÿé•·åº¦éœ€ç‚º 4-20 å€‹å­—å…ƒ")]
+            [Display(Name = "å¸³è™Ÿ")]
             public string Account { get; set; }
 
-            [Required(ErrorMessage = "±K½X¬O¥²¶ñªº")]
+            [Required(ErrorMessage = "å¯†ç¢¼æ˜¯å¿…å¡«çš„")]
             [DataType(DataType.Password)]
-            [StringLength(100, MinimumLength = 6, ErrorMessage = "±K½Xªø«×¦Ü¤Ö»İ 6 ­Ó¦r¤¸")]
-            [Display(Name = "±K½X")]
+            [StringLength(100, MinimumLength = 6, ErrorMessage = "å¯†ç¢¼é•·åº¦è‡³å°‘éœ€ 6 å€‹å­—å…ƒ")]
+            [Display(Name = "å¯†ç¢¼")]
             public string Password { get; set; }
 
             [DataType(DataType.Password)]
-            [Display(Name = "½T»{±K½X")]
-            [Compare("Password", ErrorMessage = "¨â¦¸¿é¤Jªº±K½X¤£¤@­P")]
+            [Display(Name = "ç¢ºèªå¯†ç¢¼")]
+            [Compare("Password", ErrorMessage = "å…©æ¬¡è¼¸å…¥çš„å¯†ç¢¼ä¸ä¸€è‡´")]
             public string ConfirmPassword { get; set; }
         }
     }
