@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Dr.meow.Data;
 using Dr.meow.Models;
 using System.Diagnostics;
-// *** 郵件相關的 using 已被刪除 ***
 
 namespace Dr.meow.Pages.Vulnerabilities
 {
@@ -16,7 +15,6 @@ namespace Dr.meow.Pages.Vulnerabilities
     {
         private readonly DrMeowDbContext _context;
 
-        // 建構子
         public CreateModel(DrMeowDbContext context)
         {
             _context = context;
@@ -24,50 +22,82 @@ namespace Dr.meow.Pages.Vulnerabilities
 
         public IActionResult OnGet()
         {
+            // 初始化一個預設物件，例如將日期設為今天
+            Vulnerability = new Vulnerability
+            {
+                FoundDate = DateTime.Today,
+                ScheduledTime = "07:00" // 預設時間
+            };
             return Page();
         }
 
         [BindProperty]
         public Vulnerability Vulnerability { get; set; } = default!;
 
-        // === [ 1. 純 C# 郵件發送方法 - 已移除 ] ===
-        // 相關方法已移除，以符合您的要求。
-
-        // === [ 2. OnPostAsync - 核心邏輯 ] ===
         public async Task<IActionResult> OnPostAsync()
         {
+            // 1. 移除不必要的驗證錯誤 (如果有的話)
+            // 有時候 Id 或某些隱藏欄位會導致 ModelState 無效，這裡做個防呆
+            ModelState.Remove("Vulnerability.AssignedTo");
+            ModelState.Remove("Vulnerability.TicketNumber");
+
             if (!ModelState.IsValid)
             {
-                // 記錄驗證失敗的詳細錯誤
+                // Debug 用：印出所有驗證錯誤
                 foreach (var state in ModelState)
                 {
-                    if (state.Value?.Errors.Any() == true)
+                    foreach (var error in state.Value.Errors)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[Validation Failure] - 欄位 '{state.Key}' 錯誤: {state.Value.Errors.First().ErrorMessage}");
+                        Debug.WriteLine($"[欄位錯誤] {state.Key}: {error.ErrorMessage}");
                     }
                 }
                 return Page();
             }
 
-            // 1. 儲存變更申請單至資料庫
+            // 2. 自動補全邏輯
+
+            // A. 若單號為空，自動產生 (格式: CHG-yyyyMMdd-亂數)
+            if (string.IsNullOrEmpty(Vulnerability.TicketNumber))
+            {
+                var random = new Random();
+                Vulnerability.TicketNumber = $"CHG-{DateTime.Now:yyyyMMdd}-{random.Next(1000, 9999)}";
+            }
+
+            // B. 自動填入申請人 (若有登入系統)
+            if (string.IsNullOrEmpty(Vulnerability.AssignedTo) && User.Identity.IsAuthenticated)
+            {
+                Vulnerability.AssignedTo = User.Identity.Name; // 抓取目前登入者的帳號
+            }
+            else if (string.IsNullOrEmpty(Vulnerability.AssignedTo))
+            {
+                Vulnerability.AssignedTo = "Guest"; // 訪客填寫
+            }
+
+            // C. 確保狀態為 Pending
+            Vulnerability.Status = "Pending";
+            Vulnerability.CreatedAt = DateTime.Now;
+
+            // 3. 儲存至資料庫
             try
             {
                 _context.Vulnerability.Add(Vulnerability);
                 await _context.SaveChangesAsync();
-                System.Diagnostics.Debug.WriteLine("[DB Success] 資料庫儲存成功。ID: " + Vulnerability.Id);
-                TempData["StatusMessage"] = $"表單 '{Vulnerability.Title}' (ID: {Vulnerability.Id}) 已提交，等待審核。";
+
+                Debug.WriteLine($"[Success] 表單建立成功 ID: {Vulnerability.Id}");
+
+                // 設定成功訊息 (使用 TicketNumber 而非 Title)
+                TempData["StatusMessage"] = $"單號 <strong>{Vulnerability.TicketNumber}</strong> 已提交成功！<br/>系統自動風險評估為：{Vulnerability.Severity}";
             }
-            catch (Exception dbEx)
+            catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[DB Failure] 儲存資料庫時發生嚴重錯誤: {dbEx.Message}");
-                ModelState.AddModelError(string.Empty, "新增表單失敗，請檢查各項欄位是否有缺失。");
+                Debug.WriteLine($"[Error] 資料庫存檔失敗: {ex.Message}");
+                ModelState.AddModelError("", "存檔失敗，請聯繫管理員。");
                 return Page();
             }
 
-            // 2. 郵件發送步驟已移除。
-
-            // 3. 導向列表頁面
-            return RedirectToPage();
+            // 4. 導向到列表頁面 (假設您的卡片清單頁面是 Forms/FormsList)
+            // 如果您的列表頁是 Index，請改為 RedirectToPage("./Index");
+            return RedirectToPage("/Forms/FormsList");
         }
     }
 }

@@ -31,94 +31,116 @@ namespace Dr.meow.Pages.Vulnerabilities
         {
             if (_context.Vulnerability != null)
             {
-                Vulnerability = await _context.Vulnerability.ToListAsync();
+                // 列表頁：依 ID 倒序，最新的在最上面
+                Vulnerability = await _context.Vulnerability
+                    .OrderByDescending(v => v.Id)
+                    .ToListAsync();
             }
         }
 
-        // 匯出 Excel (使用 EPPlus 實現)
+        // === 匯出 Excel 功能 ===
         public async Task<IActionResult> OnGetExportToExcel()
         {
-            // EPPlus 授權設置 (必須)
+            // 1. EPPlus 授權 (必須設定)
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            // 數據過濾：過濾掉 Title 為 Null 或空字串的記錄
+            // 2. 撈取資料：取消 Take(10) 限制，匯出完整資料，並依日期排序
             var vulnerabilities = await _context.Vulnerability
-                .Where(v => v.Title != null && v.Title != "")
-                .Take(10)
+                .OrderByDescending(v => v.FoundDate)
                 .ToListAsync();
 
-            // --- 數據清洗函式：移除所有非法 XML 字符與換行符 ---
+            // --- 內部清洗函式 ---
             string SanitizeText(string? text)
             {
-                if (string.IsNullOrEmpty(text))
-                    return string.Empty;
-                // 移除所有非法 XML 字符（控制字符）
+                if (string.IsNullOrEmpty(text)) return string.Empty;
+                // 移除控制字元與換行，避免 Excel 格式跑版
                 string safeText = Regex.Replace(text, @"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", string.Empty);
-                // 清理換行符
                 return safeText.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
             }
-            // ------------------------------------
+            // --------------------
 
             using (var package = new ExcelPackage())
             {
-                var worksheet = package.Workbook.Worksheets.Add("變更單漏洞報表");
+                var worksheet = package.Workbook.Worksheets.Add("變更申請報表");
 
-                // 標題列
-                var currentRow = 1;
+                // --- 3. 設定標題列 (對應新的 12 欄位架構) ---
+                var headers = new string[]
+                {
+                    "ID", "單號", "系統類別", "工單類別",
+                    "變更類型", "流程狀態",
+                    "風險等級", "影響程度", "依賴性",
+                    "預計實施日期", "預計時間",
+                    "測試計畫", "回復計畫",
+                    "指派對象", "變更內容描述"
+                };
 
-                // 設置標題
-                worksheet.Cells[currentRow, 1].Value = "ID";
-                worksheet.Cells[currentRow, 2].Value = "標題 / 系統名稱";
-                worksheet.Cells[currentRow, 3].Value = "狀態";
-                worksheet.Cells[currentRow, 4].Value = "嚴重程度";
-                worksheet.Cells[currentRow, 5].Value = "發現日期";
-                worksheet.Cells[currentRow, 6].Value = "指派對象";
-                worksheet.Cells[currentRow, 7].Value = "描述";
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cells[1, i + 1].Value = headers[i];
+                }
 
-                // 標題格式
-                using (var range = worksheet.Cells[currentRow, 1, currentRow, 7])
+                // 標題樣式美化
+                using (var range = worksheet.Cells[1, 1, 1, headers.Length])
                 {
                     range.Style.Font.Bold = true;
                     range.Style.Fill.PatternType = ExcelFillStyle.Solid;
                     range.Style.Fill.BackgroundColor.SetColor(Color.LightGray);
+                    range.Style.Border.Bottom.Style = ExcelBorderStyle.Thick;
                 }
 
-                // 內容列
+                // --- 4. 填入內容 ---
+                var currentRow = 2;
                 foreach (var v in vulnerabilities)
                 {
                     try
                     {
+                        int col = 1;
+                        worksheet.Cells[currentRow, col++].Value = v.Id;
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.TicketNumber); // 單號
+
+                        // 分類
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.SystemCategory);
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.TicketCategory);
+
+                        // 狀態與類型
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.ChangeType); // 緊急/例行
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.Status);     // Pending/Approved
+
+                        // 風險評估
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.Severity);
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.ImpactLevel);
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.Dependency);
+
+                        // 時間 (日期格式化)
+                        worksheet.Cells[currentRow, col++].Value = v.FoundDate;
+                        worksheet.Cells[currentRow, col - 1].Style.Numberformat.Format = "yyyy/MM/dd";
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.ScheduledTime);
+
+                        // ✨ 重點：計畫檢核 (AI 自動填寫的結果)
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.TestPlan);
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.RecoveryPlan);
+
+                        // 人員與描述
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.AssignedTo);
+                        worksheet.Cells[currentRow, col++].Value = SanitizeText(v.Description);
+
                         currentRow++;
-
-                        // 寫入數據
-                        worksheet.Cells[currentRow, 1].Value = v.Id;
-                        worksheet.Cells[currentRow, 2].Value = SanitizeText(v.Title);
-                        worksheet.Cells[currentRow, 3].Value = SanitizeText(v.Status); // 強化清洗
-                        worksheet.Cells[currentRow, 4].Value = SanitizeText(v.Severity);
-
-                        // 修正點 1: 直接寫入 DateTime，並讓 Excel 處理格式
-                        worksheet.Cells[currentRow, 5].Value = v.FoundDate;
-                        worksheet.Cells[currentRow, 5].Style.Numberformat.Format = "yyyy/MM/dd"; // 設置格式
-
-                        worksheet.Cells[currentRow, 6].Value = SanitizeText(v.AssignedTo);
-                        worksheet.Cells[currentRow, 7].Value = SanitizeText(v.Description);
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Error exporting vulnerability ID {v.Id}: {ex.Message}");
-                        currentRow--;
-                        continue;
+                        Debug.WriteLine($"Export Error ID {v.Id}: {ex.Message}");
                     }
                 }
 
-                // 自動調整欄寬
-                worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+                // 自動調整欄寬 (最後一欄描述除外)
+                worksheet.Cells[1, 1, currentRow, 14].AutoFitColumns();
+                worksheet.Column(15).Width = 60; // 描述欄位給寬一點
+                worksheet.Column(15).Style.WrapText = true;
 
-
-                // 輸出檔案
+                // 產生檔案
                 var fileBytes = package.GetAsByteArray();
                 var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                var fileName = $"漏洞清單_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                var fileName = $"資安變更報表_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
 
                 return File(fileBytes, contentType, fileName);
             }

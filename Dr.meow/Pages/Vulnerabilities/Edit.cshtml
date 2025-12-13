@@ -2,56 +2,243 @@
 @model Dr.meow.Pages.Vulnerabilities.EditModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "編輯表單";
 }
 
-<h1>Edit</h1>
+<style>
+    /* 沿用統一的卡片風格 */
+    .vuln-edit-page .card {
+        border-radius: 22px;
+        background: rgba(255,255,255,0.96);
+        border: 1px solid rgba(255,255,255,0.9);
+        box-shadow: 0 18px 40px rgba(47,110,100,0.18);
+        overflow: hidden;
+    }
 
-<h4>Vulnerability</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Vulnerability.Id" />
-            <div class="form-group">
-                <label asp-for="Vulnerability.Title" class="control-label"></label>
-                <input asp-for="Vulnerability.Title" class="form-control" />
-                <span asp-validation-for="Vulnerability.Title" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Vulnerability.Status" class="control-label"></label>
-                <input asp-for="Vulnerability.Status" class="form-control" />
-                <span asp-validation-for="Vulnerability.Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Vulnerability.Severity" class="control-label"></label>
-                <input asp-for="Vulnerability.Severity" class="form-control" />
-                <span asp-validation-for="Vulnerability.Severity" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Vulnerability.FoundDate" class="control-label"></label>
-                <input asp-for="Vulnerability.FoundDate" class="form-control" />
-                <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Vulnerability.AssignedTo" class="control-label"></label>
-                <input asp-for="Vulnerability.AssignedTo" class="form-control" />
-                <span asp-validation-for="Vulnerability.AssignedTo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Vulnerability.Description" class="control-label"></label>
-                <input asp-for="Vulnerability.Description" class="form-control" />
-                <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+    .vuln-edit-page .edit-header {
+        background: linear-gradient(135deg,#8fdacb,#64bba8);
+        color: #ffffff;
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.6);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .vuln-edit-page .edit-header-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+    }
+
+    .vuln-edit-page .card-body {
+        padding: 24px;
+    }
+
+    .vuln-edit-page .section-title {
+        color: #2f6e64;
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid #64bba8;
+        padding-left: 10px;
+    }
+
+    .vuln-edit-page .form-label {
+        font-weight: 600;
+        color: #304241;
+    }
+
+    .vuln-edit-page .form-control {
+        border-radius: 10px;
+        border: 1px solid rgba(143,218,203,0.7);
+    }
+
+        .vuln-edit-page .form-control:focus {
+            border-color: #64bba8;
+            box-shadow: 0 0 0 3px rgba(100,187,168,0.28);
+        }
+
+    /* 按鈕樣式 */
+    .btn-save {
+        border-radius: 999px;
+        padding: 10px 30px;
+        font-weight: 600;
+        border: none;
+        background: linear-gradient(135deg, #8fdacb, #64bba8);
+        color: #ffffff;
+        box-shadow: 0 10px 24px rgba(47,110,100,0.3);
+        transition: 0.18s ease;
+    }
+
+        .btn-save:hover {
+            background: linear-gradient(135deg, #7bcbbd, #51a798);
+            transform: translateY(-1px);
+        }
+
+    .btn-cancel {
+        border-radius: 999px;
+        padding: 10px 24px;
+        font-weight: 500;
+        border: 1px solid #cfd4da;
+        background-color: #f7f7f8;
+        color: #4c5a64;
+        text-decoration: none;
+        margin-left: 10px;
+    }
+
+        .btn-cancel:hover {
+            background-color: #eceff3;
+            color: #4c5a64;
+        }
+</style>
+
+<div class="vuln-edit-page container mt-4 mb-4">
+    <div class="card">
+        <div class="edit-header">
+            <div class="edit-header-title">編輯變更申請單</div>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Vulnerability.Id" />
+                <input type="hidden" asp-for="Vulnerability.CreatedAt" />
+
+                <div class="section-title">1. 基本資訊</div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.TicketNumber" class="form-label"></label>
+                        <input asp-for="Vulnerability.TicketNumber" class="form-control" readonly style="background-color: #e9ecef;" />
+                        <span asp-validation-for="Vulnerability.TicketNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.FoundDate" class="form-label"></label>
+                        <input asp-for="Vulnerability.FoundDate" type="date" class="form-control" />
+                        <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.ScheduledTime" class="form-label">預計實施時間</label>
+                        <input asp-for="Vulnerability.ScheduledTime" type="time" class="form-control" />
+                        <span asp-validation-for="Vulnerability.ScheduledTime" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.AssignedTo" class="form-label"></label>
+                        <input asp-for="Vulnerability.AssignedTo" class="form-control" />
+                        <span asp-validation-for="Vulnerability.AssignedTo" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.Status" class="form-label">流程狀態 (Status)</label>
+                        <select asp-for="Vulnerability.Status" class="form-control">
+                            <option value="Pending">Pending (審核中)</option>
+                            <option value="Approved">Approved (已核准)</option>
+                            <option value="Rejected">Rejected (已退回)</option>
+                        </select>
+                        <span asp-validation-for="Vulnerability.Status" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="section-title">2. 變更內容</div>
+                <div class="mb-3">
+                    <label asp-for="Vulnerability.Description" class="form-label"></label>
+                    <textarea asp-for="Vulnerability.Description" class="form-control" rows="5"></textarea>
+                    <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>
+                </div>
+
+                <div class="section-title">3. 分類與風險</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.SystemCategory" class="form-label"></label>
+                        <select asp-for="Vulnerability.SystemCategory" class="form-control">
+                            <option value="HIS">HIS</option>
+                            <option value="Infra">Infra</option>
+                            <option value="EIP">EIP</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.TicketCategory" class="form-label"></label>
+                        <select asp-for="Vulnerability.TicketCategory" class="form-control">
+                            <option value="DevOps">DevOps</option>
+                            <option value="IGMS">IGMS</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.ChangeType" class="form-label"></label>
+                        <select asp-for="Vulnerability.ChangeType" class="form-control">
+                            <option value="標準/獨立">標準/獨立</option>
+                            <option value="緊急">緊急</option>
+                            <option value="例行">例行</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.Dependency" class="form-label"></label>
+                        <select asp-for="Vulnerability.Dependency" class="form-control">
+                            <option value="單一元件依賴">單一元件依賴</option>
+                            <option value="有限相依">有限相依</option>
+                            <option value="高度相依">高度相依</option>
+                            <option value="外部依賴">外部依賴</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.ImpactLevel" class="form-label"></label>
+                        <select asp-for="Vulnerability.ImpactLevel" class="form-control">
+                            <option value="低">低</option>
+                            <option value="中">中</option>
+                            <option value="高">高</option>
+                            <option value="重大">重大</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Vulnerability.Severity" class="form-label text-danger"></label>
+                    <select asp-for="Vulnerability.Severity" class="form-control">
+                        <option value="低風險">低風險</option>
+                        <option value="中風險">中風險</option>
+                        <option value="高風險">高風險</option>
+                        <option value="重大風險">重大風險</option>
+                    </select>
+                </div>
+
+                <div class="section-title">4. 計畫確認</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.TestPlan" class="form-label"></label>
+                        <select asp-for="Vulnerability.TestPlan" class="form-control">
+                            <option value="完整測試">完整測試</option>
+                            <option value="部分測試">部分測試</option>
+                            <option value="無測試">無測試</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.RecoveryPlan" class="form-label"></label>
+                        <select asp-for="Vulnerability.RecoveryPlan" class="form-control">
+                            <option value="快速回復">快速回復</option>
+                            <option value="有限回復">有限回復</option>
+                            <option value="無回復方案">無回復方案</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <input type="submit" value="保存修改 (Save)" class="btn-save" />
+                    <a asp-page="./Details" asp-route-id="@Model.Vulnerability.Id" class="btn-cancel">取消</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-page="./">Back to List</a>
-</div>
-
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

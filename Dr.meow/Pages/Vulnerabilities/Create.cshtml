@@ -6,7 +6,7 @@
 }
 
 <style>
-    /* 整頁限定在這個容器裡，避免影響其它頁面 */
+    /* 您的原始 CSS 樣式保持不變 */
     .vuln-create-page .card {
         border-radius: 22px;
         background: rgba(255,255,255,0.92);
@@ -32,16 +32,15 @@
         padding: 24px 26px 22px;
     }
 
-    /* 區塊標題 + 小圓點 */
     .vuln-create-page .section-title {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        margin-top: 10px;
-        margin-bottom: 4px;
+        margin-top: 20px;
+        margin-bottom: 10px;
         color: #2f6e64;
         font-weight: 700;
-        font-size: 1.02rem;
+        font-size: 1.05rem;
     }
 
     .vuln-create-page .section-dot {
@@ -59,11 +58,12 @@
         opacity: .8;
     }
 
-    /* 欄位樣式 */
     .vuln-create-page .form-label,
     .vuln-create-page .control-label {
         font-weight: 600;
         color: #304241;
+        margin-bottom: 5px;
+        display: block;
     }
 
     .vuln-create-page .form-control {
@@ -73,228 +73,305 @@
         font-size: 0.95rem;
     }
 
-    .vuln-create-page textarea.form-control {
-        border-radius: 14px;
+        .vuln-create-page .form-control:focus {
+            border-color: #64bba8;
+            box-shadow: 0 0 0 3px rgba(100,187,168,0.28);
+        }
+
+    /* 自定義 Radio 選項樣式 (垂直排列 + 詳細說明) */
+    .custom-radio-group .form-check {
+        margin-bottom: 10px;
+        padding-left: 1.8em;
     }
 
-    .vuln-create-page .form-control:focus {
-        border-color: #64bba8;
-        box-shadow: 0 0 0 3px rgba(100,187,168,0.28);
+    .custom-radio-group .form-check-label {
+        font-weight: 600;
+        color: #425b58;
+        display: block; /* 讓說明換行 */
+        cursor: pointer;
     }
 
-    /* radio / checkbox */
+    .custom-radio-group .detail-text {
+        display: block;
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 400;
+        margin-top: 2px;
+        margin-left: 0px;
+    }
+
     .vuln-create-page .form-check-input:checked {
         background-color: #64bba8;
         border-color: #64bba8;
     }
 
-    .vuln-create-page .form-check-label {
-        font-weight: 500;
-        color: #425b58;
+    /* Loading 動畫 */
+    .ai-analyzing {
+        display: none;
+        color: #64bba8;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        padding: 5px;
     }
 
-    /* 錯誤提示 */
-    .vuln-create-page .alert-danger {
-        border-radius: 14px;
+    .ai-reasoning-box {
+        display: none;
+        background-color: #f0fdfa;
+        border-left: 4px solid #64bba8;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        color: #2f6e64;
     }
 
-    /* 按鈕區 */
-    .vuln-create-page .btn-create {
+    .btn-create {
         border-radius: 999px;
-        padding: 8px 26px;
+        padding: 12px 30px;
         font-weight: 600;
         border: none;
         background: linear-gradient(135deg, #8fdacb, #64bba8);
         color: #ffffff;
         box-shadow: 0 10px 24px rgba(47,110,100,0.3);
         transition: 0.18s ease;
+        width: 100%;
+        margin-top: 20px;
     }
 
-        .vuln-create-page .btn-create:hover {
+        .btn-create:hover {
             background: linear-gradient(135deg, #7bcbbd, #51a798);
             transform: translateY(-1px);
-            box-shadow: 0 12px 26px rgba(47,110,100,0.35);
         }
-
-    .vuln-create-page .btn-back {
-        border-radius: 999px;
-        padding: 8px 22px;
-        font-weight: 500;
-        border: 1px solid #cfd4da;
-        background-color: #f7f7f8;
-        color: #4c5a64;
-        transition: 0.15s ease;
-    }
-
-        .vuln-create-page .btn-back:hover {
-            background-color: #eceff3;
-        }
-
-    @@media (max-width: 768px) {
-        .vuln-create-page .card-body {
-            padding: 18px 16px 20px;
-        }
-    }
 </style>
-
-<div class="vuln-create-page container mt-4">
-    <!-- ⭐ 【狀態訊息通知框 (Alert)】 ⭐ -->
-@if (TempData["StatusMessage"] is string statusMessage)
-{
-        <!-- 檢查訊息內容決定樣式：包含 "錯誤" 或 "❌" 使用 danger，否則使用 success -->
-    var alertClass = statusMessage.Contains("錯誤") || statusMessage.Contains("❌") ? "alert-danger" : "alert-success";
-        <div class="alert @alertClass alert-dismissible fade show mb-4 shadow-sm" role="alert">
-            <strong>新增成功✅</strong> @Html.Raw(statusMessage)
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-}
 
 <div class="vuln-create-page container mt-4">
     <div class="card shadow-lg">
         <div class="create-header">
-            <h2 class="mb-0">新增變更申請／漏洞報告</h2>
+            <h2 class="mb-0">新增變更申請單</h2>
         </div>
 
         <div class="card-body">
             <form method="post">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                <!-- 基本資訊 -->
                 <div class="section-title">
                     <span class="section-dot"></span>
-                    <span>基本資訊</span>
+                    <span>1. 基本資訊與變更內容</span>
                 </div>
                 <hr />
-                <div class="row mb-3">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                        <div class="form-group">
-                            <label asp-for="Vulnerability.Title" class="control-label">1. 系統/表單類別 (對應 Title)</label>
-                            <input asp-for="Vulnerability.Title" class="form-control"
-                                   placeholder="例如：EIP / DevOps / Dr.meow 系統" />
-                            <span asp-validation-for="Vulnerability.Title" class="text-danger"></span>
-                        </div>
-                    </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label asp-for="Vulnerability.AssignedTo" class="control-label">2. 單號/指派對象 (對應 AssignedTo)</label>
-                            <input asp-for="Vulnerability.AssignedTo" class="form-control"
-                                   placeholder="例如：CHG2023001 或 申請人" />
-                            <span asp-validation-for="Vulnerability.AssignedTo" class="text-danger"></span>
-                        </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.TicketNumber" class="control-label"></label>
+                        <input asp-for="Vulnerability.TicketNumber" class="form-control" placeholder="系統自動生成或手填" />
+                        <span asp-validation-for="Vulnerability.TicketNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.FoundDate" class="control-label">
+                            預計實施日期 <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Vulnerability.FoundDate" type="date" class="form-control" />
+                        <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.ScheduledTime" class="control-label">預計實施時間</label>
+                        <input asp-for="Vulnerability.ScheduledTime" type="time" class="form-control" />
+                        <span asp-validation-for="Vulnerability.ScheduledTime" class="text-danger"></span>
                     </div>
                 </div>
 
-                <!-- 變更/漏洞內容 -->
-                <div class="section-title mt-3">
+                <div class="mb-3">
+                    <label asp-for="Vulnerability.Description" class="control-label">
+                        變更／影響內容 (Description) <span class="text-danger">*</span>
+                    </label>
+                    <textarea id="descriptionInput" asp-for="Vulnerability.Description" class="form-control" rows="5"
+                              placeholder="請詳細說明變更目的、影響範圍及操作步驟... (輸入完畢並點擊外部後，AI 將自動分析)"></textarea>
+                    <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>
+
+                    <div id="aiLoading" class="ai-analyzing">
+                        <div class="d-flex align-items-center">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>AI 正在分析資安風險與計畫，請稍候...</span>
+                        </div>
+                    </div>
+
+                    <div id="aiReasoning" class="ai-reasoning-box">
+                        <strong>🤖 AI 分析觀點：</strong> <span id="reasoningText"></span>
+                    </div>
+                </div>
+
+                <div class="section-title">
                     <span class="section-dot"></span>
-                    <span>變更／漏洞內容</span>
+                    <span>2. 資安風險評估 (AI 自動判斷)</span>
                 </div>
                 <hr />
-                <div class="row mb-3">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label asp-for="Vulnerability.Description" class="control-label">
-                                3. 變更／影響內容 (Description)
-                            </label>
-                            <textarea asp-for="Vulnerability.Description" class="form-control" rows="4"
-                                      placeholder="請詳細說明變更內容或影響範圍與目的。"></textarea>
-                            <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>
-                        </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.SystemCategory" class="control-label">
+                            系統類別 <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="Vulnerability.SystemCategory" id="sysCat" class="form-control">
+                            <option value="">(AI 自動判斷)</option>
+                            <option value="HIS">HIS (醫療資訊系統)</option>
+                            <option value="Infra">Infra (基礎建設)</option>
+                            <option value="EIP">EIP (企業入口網)</option>
+                            <option value="其他">其他</option>
+                        </select>
+                        <span asp-validation-for="Vulnerability.SystemCategory" class="text-danger"></span>
+                        <div id="sysCatReasoning" class="ai-field-reasoning mt-1" style="display:none;"></div>
+                        <div id="sysCatWarning" class="alert alert-danger p-1 mt-1 d-none" role="alert"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.TicketCategory" class="control-label">
+                            工單類別 <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="Vulnerability.TicketCategory" id="ticketCat" class="form-control">
+                            <option value="">(AI 自動判斷)</option>
+                            <option value="DevOps">DevOps</option>
+                            <option value="IGMS">IGMS</option>
+                        </select>
+                        <span asp-validation-for="Vulnerability.TicketCategory" class="text-danger"></span>
+                        <div id="ticketCatReasoning" class="ai-field-reasoning mt-1" style="display:none;"></div>
+                        <div id="ticketCatWarning" class="alert alert-danger p-1 mt-1 d-none" role="alert"></div>
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <!-- 狀態 -->
-                    <div class="col-md-6 mb-3 mb-md-0">
-                        <div class="form-group">
-                            <label class="control-label mb-2">4. 變更類型／狀態 (Status)</label>
-                            <div>
-                                <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="標準/獨立"
-                                           id="statusStandard" class="form-check-input" />
-                                    <label class="form-check-label" for="statusStandard">標準／獨立</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="緊急"
-                                           id="statusEmergency" class="form-check-input" />
-                                    <label class="form-check-label" for="statusEmergency">緊急</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Status" value="例行"
-                                           id="statusRoutine" class="form-check-input" />
-                                    <label class="form-check-label" for="statusRoutine">例行</label>
-                                </div>
-                            </div>
-                            <span asp-validation-for="Vulnerability.Status" class="text-danger"></span>
-                        </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.ChangeType" class="control-label">
+                            變更類型 <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="Vulnerability.ChangeType" id="changeType" class="form-control">
+                            <option value="">(AI 自動判斷)</option>
+                            <option value="標準/獨立">標準/獨立</option>
+                            <option value="緊急">緊急</option>
+                            <option value="例行">例行</option>
+                            <option value="復原">復原</option>
+                        </select>
+                        <span asp-validation-for="Vulnerability.ChangeType" class="text-danger"></span>
+                        <div id="changeTypeReasoning" class="ai-field-reasoning mt-1" style="display:none;"></div>
+                        <div id="changeTypeWarning" class="alert alert-danger p-1 mt-1 d-none" role="alert"></div>
                     </div>
-
-                    <!-- 風險評估 -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="control-label mb-2">5. 影響與風險評估 (Severity)</label>
-                            <div>
-                                <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="低"
-                                           id="severityLow" class="form-check-input" />
-                                    <label class="form-check-label" for="severityLow">低風險</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="中"
-                                           id="severityMedium" class="form-check-input" />
-                                    <label class="form-check-label" for="severityMedium">中風險</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input type="radio" asp-for="Vulnerability.Severity" value="高"
-                                           id="severityHigh" class="form-check-input" />
-                                    <label class="form-check-label" for="severityHigh">高風險</label>
-                                </div>
-                            </div>
-                            <span asp-validation-for="Vulnerability.Severity" class="text-danger"></span>
-                        </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.Dependency" class="control-label">
+                            依賴性 <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="Vulnerability.Dependency" id="dependency" class="form-control">
+                            <option value="">(AI 自動判斷)</option>
+                            <option value="單一元件依賴">單一元件依賴</option>
+                            <option value="有限相依">有限相依</option>
+                            <option value="高度相依">高度相依</option>
+                            <option value="外部依賴">外部依賴</option>
+                        </select>
+                        <span asp-validation-for="Vulnerability.Dependency" class="text-danger"></span>
+                        <div id="dependencyReasoning" class="ai-field-reasoning mt-1" style="display:none;"></div>
+                        <div id="dependencyWarning" class="alert alert-danger p-1 mt-1 d-none" role="alert"></div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Vulnerability.ImpactLevel" class="control-label">
+                            影響程度 <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="Vulnerability.ImpactLevel" id="impact" class="form-control">
+                            <option value="">(AI 自動判斷)</option>
+                            <option value="低">低</option>
+                            <option value="中">中</option>
+                            <option value="高">高</option>
+                            <option value="重大">重大</option>
+                        </select>
+                        <span asp-validation-for="Vulnerability.ImpactLevel" class="text-danger"></span>
+                        <div id="impactReasoning" class="ai-field-reasoning mt-1" style="display:none;"></div>
+                        <div id="impactWarning" class="alert alert-danger p-1 mt-1 d-none" role="alert"></div>
                     </div>
                 </div>
 
-                <!-- 實施與復原計畫 -->
-                <div class="section-title mt-3">
+                <div class="mb-3">
+                    <label asp-for="Vulnerability.Severity" class="control-label text-danger fw-bold">
+                        風險評估 (Severity) <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="Vulnerability.Severity" id="severity" class="form-control border-danger">
+                        <option value="">(AI 自動風險評估)</option>
+                        <option value="低風險">低風險</option>
+                        <option value="中風險">中風險</option>
+                        <option value="高風險">高風險</option>
+                        <option value="重大風險">重大風險</option>
+                    </select>
+                    <span asp-validation-for="Vulnerability.Severity" class="text-danger"></span>
+                    <div id="severityReasoning" class="ai-field-reasoning mt-1" style="display:none;"></div>
+                    <div id="severityWarning" class="alert alert-danger p-1 mt-1 d-none" role="alert"></div>
+                </div>
+
+                <div class="section-title">
                     <span class="section-dot"></span>
-                    <span>實施與復原計畫</span>
+                    <span>3. 測試與復原計畫 (AI 輔助檢核)</span>
                 </div>
                 <hr />
-                <div class="row mb-3">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                        <div class="form-group">
-                            <label asp-for="Vulnerability.FoundDate" class="control-label">
-                                6. 預計實施日期 (FoundDate)
-                            </label>
-                            <input asp-for="Vulnerability.FoundDate" class="form-control" type="date" />
-                            <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
-                        </div>
-                    </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="control-label mb-2">7. 測試與復原確認 (僅供勾選)</label>
-                            <div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" checked id="testPlan" />
-                                    <label class="form-check-label" for="testPlan">測試計畫：已規劃</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" checked id="recoveryPlan" />
-                                    <label class="form-check-label" for="recoveryPlan">復原計畫：已規劃</label>
-                                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="control-label mb-2">測試計畫 (Test Plan) <span class="text-danger">*</span></label>
+                        <div class="custom-radio-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Vulnerability.TestPlan" value="完整測試" id="testFull">
+                                <label class="form-check-label" for="testFull">
+                                    完整測試
+                                    <span class="detail-text">含單元測試、整合測試、模擬實際業務流程。</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Vulnerability.TestPlan" value="部分測試" id="testPartial">
+                                <label class="form-check-label" for="testPartial">
+                                    部分測試
+                                    <span class="detail-text">僅驗證主要功能。</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Vulnerability.TestPlan" value="無測試" id="testNone">
+                                <label class="form-check-label" for="testNone">
+                                    無測試
+                                    <span class="detail-text">直接上線。</span>
+                                </label>
                             </div>
                         </div>
+                        <span asp-validation-for="Vulnerability.TestPlan" class="text-danger"></span>
+                        <div id="testPlanReasoning" class="ai-field-reasoning mt-1" style="display:none;"></div>
+                        <div id="testPlanWarning" class="alert alert-danger p-1 mt-1 d-none" role="alert"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="control-label mb-2">回復計畫 (Recovery Plan) <span class="text-danger">*</span></label>
+                        <div class="custom-radio-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Vulnerability.RecoveryPlan" value="快速回復" id="recFast">
+                                <label class="form-check-label" for="recFast">
+                                    快速回復
+                                    <span class="detail-text">有明確步驟，且回復時間短(15分鐘內可恢復)。</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Vulnerability.RecoveryPlan" value="有限回復" id="recLimited">
+                                <label class="form-check-label" for="recLimited">
+                                    有限回復
+                                    <span class="detail-text">可回復但需要長時間或大量人工處理。</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Vulnerability.RecoveryPlan" value="無回復方案" id="recNone">
+                                <label class="form-check-label" for="recNone">
+                                    無回復方案
+                                    <span class="detail-text">一旦失敗無法復原，只能硬撐或等待修復。</span>
+                                </label>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Vulnerability.RecoveryPlan" class="text-danger"></span>
+                        <div id="recoveryPlanReasoning" class="ai-field-reasoning mt-1" style="display:none;"></div>
+                        <div id="recoveryPlanWarning" class="alert alert-danger p-1 mt-1 d-none" role="alert"></div>
                     </div>
                 </div>
 
-                <!-- 按鈕 -->
-                <div class="form-group mt-4">
-                    <input type="submit" value="新增表單 (Create)" class="btn-create" />
-
-
+                <div class="form-group mt-4 mb-3">
+                    <input type="submit" value="提交申請 (Submit)" class="btn-create" />
                 </div>
             </form>
         </div>
@@ -303,6 +380,264 @@
 
 @section Scripts {
     @{
+        // 確保 jQuery 驗證腳本在最前面載入
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <style>
+        /* 新增：每個欄位下方顯示的 AI 推理提示 */
+        .ai-field-reasoning {
+            font-size: 0.85rem;
+            color: #425b58;
+            border-left: 3px solid #8fdacb;
+            padding-left: 8px;
+            margin-top: 5px !important;
+            display: none;
+        }
+        /* 用戶修改 AI 推薦值時彈出的警告框 */
+        .ai-manual-warning {
+            font-size: 0.85rem;
+            padding: 8px;
+            margin-top: 5px !important;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const API_URL = 'https://localhost:7068/api/rag/analyze-change'; // ⚠️ 請確認 Port 號是否為 7068
+            const descInput = document.getElementById('descriptionInput');
+            const loading = document.getElementById('aiLoading');
+            const reasoningBox = document.getElementById('aiReasoning');
+            const reasoningText = document.getElementById('reasoningText');
+
+            // 儲存 AI 推薦值的全局物件，用於比較
+            let aiRecommendations = {};
+
+            // --- 輔助函式：設定下拉選單的值 (並顯示推理) ---
+            // fieldData 傳入的是整個巢狀物件，例如 data.systemCategory
+            function setValAndReason(id, fieldData) {
+                const el = document.getElementById(id);
+                const reasonDiv = document.getElementById(`${id}Reasoning`);
+                const reasonKey = fieldData ? fieldData.reasoning : null;
+                const valueKey = fieldData ? fieldData.value : null;
+
+                if (el && valueKey) {
+                    const trimmedVal = String(valueKey).trim();
+
+                    // 1. 賦值
+                    el.value = trimmedVal;
+
+                    // 2. 儲存 AI 推薦值，用於後續監聽
+                    aiRecommendations[id] = trimmedVal;
+
+                    // 3. 顯示推理原因
+                    if (reasonDiv && reasonKey) {
+                        const description = fieldData.description || '無合規描述';
+                        const combinedText = `
+                            <strong>AI 推理:</strong> ${trimmedVal}<br>
+                            **合規描述:** ${description.trim()}<br>
+                            **理由:** ${String(reasonKey).trim()}
+                        `;
+                        reasonDiv.innerHTML = combinedText;
+                        reasonDiv.style.display = 'block';
+                    }
+
+                    // 4. 清除驗證錯誤提示
+                    const validationSpan = document.querySelector(`span[data-valmsg-for="Vulnerability.${id.charAt(0).toUpperCase() + id.slice(1)}"]`);
+                    if (validationSpan) {
+                         validationSpan.innerText = '';
+                    }
+                } else if (reasonDiv) {
+                     reasonDiv.style.display = 'none';
+                }
+            }
+
+            // --- 輔助函式：勾選 Radio (並顯示推理) ---
+            function checkRadioAndReason(name, fieldData) {
+                const parts = name.split('.');
+                const id = parts[1]; // e.g., 'TestPlan'
+                const htmlId = id.charAt(0).toLowerCase() + id.slice(1); // e.g., 'testPlan'
+                const reasonDiv = document.getElementById(`${htmlId}Reasoning`);
+                const reasonKey = fieldData ? fieldData.reasoning : null;
+                const valueKey = fieldData ? fieldData.value : null;
+
+                if (fieldData && valueKey) {
+                    const trimmedVal = String(valueKey).trim();
+
+                    // 1. 儲存 AI 推薦值
+                    aiRecommendations[htmlId] = trimmedVal;
+
+                    // 2. 勾選 Radio
+                    const radios = document.getElementsByName(name);
+                    for (let radio of radios) {
+                        if (trimmedVal.includes(radio.value) || radio.value.includes(trimmedVal)) {
+                            radio.checked = true;
+                        }
+                    }
+
+                    // 3. 顯示推理原因
+                    if (reasonDiv && reasonKey) {
+                        const description = fieldData.description || '無合規描述';
+                        // 🚨 診斷：新增一個額外檢查，確保推理原因中的來源編號被替換
+                        let finalReasoning = String(reasonKey).trim();
+
+                        // 如果 LLM 輸出的推理還包含 "文件編號"，請檢查後端 RetrieveIsmsContext 方法
+                        if (finalReasoning.includes('文件編號')) {
+                             finalReasoning += '<br><strong style="color:red;">⚠️ 警示: RAG 來源資訊缺失 (文件檔名和頁碼讀取失敗)。</strong>';
+                        }
+                        const combinedText = `
+                            <strong>AI 推薦:</strong> ${trimmedVal}<br>
+                            **合規描述:** ${description.trim()}<br>
+                            **理由:** ${String(reasonKey).trim()}
+                        `;
+                        reasonDiv.innerHTML = combinedText;
+                        reasonDiv.style.display = 'block';
+                    }
+                } else if (reasonDiv) {
+                     reasonDiv.style.display = 'none';
+                }
+            }
+
+            // --- 實作：用戶修改警示邏輯 (當用戶修改 AI 推薦值時彈出警告) ---
+            function setupWarningListeners() {
+                // 需要監聽的欄位 ID 清單
+                const fieldsToMonitor = ['sysCat', 'ticketCat', 'changeType', 'dependency', 'impact', 'severity', 'testPlan', 'recoveryPlan'];
+
+                fieldsToMonitor.forEach(id => {
+                    const el = document.getElementById(id);
+                    const warningDiv = document.getElementById(`${id}Warning`);
+
+                    if (!el && id !== 'testPlan' && id !== 'recoveryPlan') return;
+
+                    // 監聽 Select 變更
+                    if (el && el.tagName === 'SELECT') {
+                        el.addEventListener('change', () => checkCompliance(id, el.value, warningDiv));
+                    }
+
+                    // 監聽 Radio 變更 (需要找所有 radio button)
+                    if (id === 'testPlan' || id === 'recoveryPlan') {
+                        document.querySelectorAll(`input[name="Vulnerability.${id.charAt(0).toUpperCase() + id.slice(1)}"]`).forEach(radio => {
+                            radio.addEventListener('change', () => checkCompliance(id, radio.value, warningDiv));
+                        });
+                    }
+                });
+            }
+
+            function checkCompliance(fieldId, currentValue, warningDiv) {
+                const recommendedValue = aiRecommendations[fieldId];
+
+                // 1. 如果沒有 AI 推薦值，不檢查
+                if (!recommendedValue) {
+                    warningDiv.classList.add('d-none');
+                    return;
+                }
+
+                // 2. 如果當前值與 AI 推薦值相同，解除警告
+                if (currentValue.trim() === recommendedValue.trim()) {
+                    warningDiv.classList.add('d-none');
+                    return;
+                }
+
+                // 3. 如果用戶修改了 AI 推薦值，顯示警告
+                let fieldName = document.querySelector(`[id='${fieldId}']`)?.labels[0]?.innerText.replace('*', '').trim() || fieldId;
+
+                if (warningDiv) {
+                    // 顯示警告
+                    warningDiv.classList.remove('d-none');
+                    warningDiv.classList.add('alert-danger', 'ai-manual-warning');
+
+                    // 顯示建議
+                    let recommendedText = aiRecommendations[fieldId];
+                    if (fieldId === 'severity') {
+                        recommendedText = `<span class='fw-bold text-danger'>${recommendedValue}</span>`;
+                    }
+
+                    warningDiv.innerHTML = `
+                        <strong>⚠️ 違背 AI 建議:</strong> 您手動將【${fieldName}】從
+                        <span class='fw-bold'>${recommendedText}</span>
+                        修改為 <span class='fw-bold'>${currentValue}</span>。
+                        <br>
+                        請務必提供合規理由，否則審核可能被退回。
+                    `;
+                }
+            }
+
+
+            // 監聽 "blur" 事件：主要工作流程
+            descInput.addEventListener('blur', async function () {
+                const text = descInput.value.trim();
+
+                if (text.length < 5) return;
+
+                loading.style.display = 'block';
+                reasoningBox.style.display = 'none';
+
+                try {
+                    // 呼叫後端 API
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ content: text })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API 錯誤 (Status: ${response.status})`);
+                    }
+
+                    const jsonText = await response.text();
+                    console.log('AI Response Raw Text:', jsonText);
+
+                    const data = JSON.parse(jsonText);
+                    console.log('AI Response Parsed Data:', data);
+
+                    // 檢查總結欄位
+                    if (!data || !data.summaryReasoning) {
+                        throw new Error('JSON 結構不完整或核心欄位缺失。');
+                    }
+
+                    // --- 自動填寫邏輯 (讀取巢狀結構，並觸發顯示推理) ---
+                    // 🚨 修正：現在讀取的是巢狀物件 data.key
+                    setValAndReason('sysCat', data.systemCategory);
+                    setValAndReason('ticketCat', data.ticketCategory);
+                    setValAndReason('changeType', data.changeType);
+                    setValAndReason('dependency', data.dependency);
+                    setValAndReason('impact', data.impactLevel);
+                    setValAndReason('severity', data.severity);
+
+                    checkRadioAndReason('Vulnerability.TestPlan', data.testPlan);
+                    checkRadioAndReason('Vulnerability.RecoveryPlan', data.recoveryPlan);
+
+                    // 顯示總結推理
+                    const reason = data.summaryReasoning || "AI 成功分析，但未提供推理原因。";
+
+                    reasoningText.innerText = reason + " (欄位已自動填寫)";
+                    reasoningBox.style.display = 'block';
+                    reasoningBox.style.backgroundColor = '#f0fdfa';
+                    reasoningText.style.color = '#2f6e64';
+
+                    // 🚨 啟用監聽：AI 填完後才開始監聽用戶修改行為
+                    setupWarningListeners();
+
+
+                } catch (error) {
+                    console.error('AI Analysis failed:', error);
+
+                    reasoningBox.style.backgroundColor = '#ffe9ea';
+                    reasoningText.style.color = '#8a1f2a';
+                    reasoningText.innerText = `AI 分析失敗：${error.message}，請檢查網絡或手動填寫。`;
+                    reasoningBox.style.display = 'block';
+
+                } finally {
+                    loading.style.display = 'none';
+                }
+            });
+
+            // 🚨 首次載入時，設定所有的 warning 區塊為隱藏
+            setupWarningListeners();
+
+        });
+    </script>
 }

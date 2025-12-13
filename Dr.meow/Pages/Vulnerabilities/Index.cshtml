@@ -105,7 +105,6 @@
 <div class="container mt-4">
     <div class="vuln-card">
 
-        <!-- 標題區 -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="vuln-title">📄 系統變更 / 漏洞清單</div>
 
@@ -114,16 +113,16 @@
             </a>
         </div>
 
-        <!-- Data Table -->
         <table class="table align-middle text-center">
             <thead>
                 <tr>
-                    <th>類別</th>
-                    <th>狀態</th>
-                    <th>嚴重性</th>
-                    <th>填寫日期</th>
+                    <th>單號</th>
+                    <th>系統類別</th>
+                    <th>變更類型</th>
+                    <th>風險評估</th>
+                    <th>預計實施</th>
                     <th>指派對象</th>
-                    <th>描述</th>
+                    <th>摘要</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -132,16 +131,34 @@
                 {
                     foreach (var item in Model.Vulnerability)
                     {
+                        // 風險顏色判斷
+                        var riskClass = (item.Severity?.Contains("高") == true || item.Severity?.Contains("重大") == true) ? "risk-high" : "risk-low";
+
                         <tr>
-                            <td>@item.Title</td>
-                            <td>@item.Status</td>
-                            <td>@item.Severity</td>
-                            <td>@item.FoundDate.ToShortDateString()</td>
-                            <td>@item.AssignedTo</td>
-                            <td>@item.Description</td>
+                            <td class="fw-bold text-secondary">
+                                @(string.IsNullOrEmpty(item.TicketNumber) ? $"#{item.Id}" : item.TicketNumber)
+                            </td>
 
                             <td>
-                                <a asp-page="./Create" asp-route-id="@item.Id" class="btn-edit me-1">編輯</a>
+                                <span class="chip-sys">@(item.SystemCategory ?? "未分類")</span>
+                            </td>
+
+                            <td>@item.ChangeType</td>
+
+                            <td>
+                                <span class="chip-risk @riskClass">@item.Severity</span>
+                            </td>
+
+                            <td>@item.FoundDate.ToString("yyyy/MM/dd")</td>
+
+                            <td>@item.AssignedTo</td>
+
+                            <td title="@item.Description">
+                                @(item.Description?.Length > 15 ? item.Description.Substring(0, 15) + "..." : item.Description)
+                            </td>
+
+                            <td>
+                                <a asp-page="./Edit" asp-route-id="@item.Id" class="btn-edit me-1">編輯</a>
                                 <a asp-page="./Delete" asp-route-id="@item.Id" class="btn-delete">刪除</a>
                             </td>
                         </tr>
@@ -150,7 +167,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="7" class="empty-row py-4">目前尚無任何變更／漏洞資料</td>
+                        <td colspan="8" class="empty-row py-4">目前尚無任何變更／漏洞資料</td>
                     </tr>
                 }
             </tbody>

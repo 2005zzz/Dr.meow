@@ -6,6 +6,7 @@
 }
 
 <style>
+    /* 保留您原本的 CSS 樣式，完全不變 */
     .vuln-delete-page .card {
         border-radius: 22px;
         background: rgba(255,255,255,0.95);
@@ -60,11 +61,13 @@
     .vuln-delete-page dt {
         font-weight: 600;
         color: #425b58;
-        margin-top: 0.35rem;
+        margin-top: 0.5rem; /* 稍微增加間距 */
+        font-size: 0.95rem;
     }
 
     .vuln-delete-page dd {
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.5rem;
+        color: #333;
     }
 
     .vuln-delete-page .field-chip {
@@ -75,6 +78,7 @@
         background: #f2faf8;
         border: 1px solid rgba(143,218,203,0.7);
         color: #2f6e64;
+        margin-right: 5px; /* 讓多個標籤有間距 */
     }
 
     .vuln-delete-page .desc-box {
@@ -83,6 +87,7 @@
         background: #f8fbfb;
         border: 1px solid rgba(143,218,203,0.4);
         min-height: 48px;
+        white-space: pre-wrap; /* 保留換行 */
     }
 
     /* 按鈕區 */
@@ -97,11 +102,11 @@
         transition: 0.18s ease;
     }
 
-    .vuln-delete-page .btn-delete-main:hover {
-        background: linear-gradient(135deg,#ffb0a1,#ff4747);
-        transform: translateY(-1px);
-        box-shadow: 0 14px 28px rgba(200,70,60,0.4);
-    }
+        .vuln-delete-page .btn-delete-main:hover {
+            background: linear-gradient(135deg,#ffb0a1,#ff4747);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(200,70,60,0.4);
+        }
 
     .vuln-delete-page .btn-cancel {
         border-radius: 999px;
@@ -114,14 +119,13 @@
         transition: 0.15s ease;
     }
 
-    .vuln-delete-page .btn-cancel:hover {
-        background-color: #eceff3;
-    }
+        .vuln-delete-page .btn-cancel:hover {
+            background-color: #eceff3;
+        }
 </style>
 
 <div class="vuln-delete-page container mt-4 mb-4">
     <div class="card">
-        <!-- Header -->
         <div class="delete-header">
             <div class="delete-header-icon">
                 ⚠️
@@ -133,63 +137,71 @@
                 </div>
             </div>
         </div>
-        <!-- ⭐ 1. 通知顯示區塊 (放在最前面) -->
+
         @if (TempData["StatusMessage"] is string statusMessage)
         {
-            // 根據訊息內容判斷是成功還是錯誤，套用對應的樣式
             var alertClass = statusMessage.Contains("錯誤") || statusMessage.Contains("❌") ? "alert-danger" : "alert-success";
             <div class="alert @alertClass alert-dismissible fade show mb-4 shadow-sm" role="alert">
-                <strong>變更：</strong> @Html.Raw(statusMessage)
+                <strong>狀態：</strong> @Html.Raw(statusMessage)
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
-        <!-- Body -->
+
         <div class="card-body">
             <div class="alert alert-warning mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 您確定要刪除這筆申請單嗎？此動作 <strong>無法復原</strong>，相關資料將從系統中移除。
             </div>
 
             <dl class="row">
-                <dt class="col-sm-3">
-                    系統 / 表單類別 (Title)
-                </dt>
+                <dt class="col-sm-3">單號 (Ticket No)</dt>
                 <dd class="col-sm-9">
-                    <span class="field-chip">
-                        @Html.DisplayFor(model => model.Vulnerability.Title)
-                    </span>
+                    <strong class="text-dark">
+                        @(string.IsNullOrEmpty(Model.Vulnerability.TicketNumber) ? $"#{Model.Vulnerability.Id}" : Model.Vulnerability.TicketNumber)
+                    </strong>
                 </dd>
 
-                <dt class="col-sm-3">
-                    變更狀態 (Status)
-                </dt>
+                <dt class="col-sm-3">類別 (Category)</dt>
                 <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.Vulnerability.Status)
+                    @if (!string.IsNullOrEmpty(Model.Vulnerability.SystemCategory))
+                    {
+                        <span class="field-chip">@Model.Vulnerability.SystemCategory</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Vulnerability.TicketCategory))
+                    {
+                        <span class="field-chip">@Model.Vulnerability.TicketCategory</span>
+                    }
                 </dd>
 
-                <dt class="col-sm-3">
-                    風險等級 (Severity)
-                </dt>
+                <dt class="col-sm-3">變更類型 (Type)</dt>
                 <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.Vulnerability.Severity)
+                    @Html.DisplayFor(model => model.Vulnerability.ChangeType)
                 </dd>
 
-                <dt class="col-sm-3">
-                    發現 / 預計日期 (FoundDate)
-                </dt>
+                <dt class="col-sm-3">風險與影響</dt>
                 <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.Vulnerability.FoundDate)
+                    <div>風險評估：@Html.DisplayFor(model => model.Vulnerability.Severity)</div>
+                    <div>影響程度：@Html.DisplayFor(model => model.Vulnerability.ImpactLevel)</div>
+                    <div>依賴性：@Html.DisplayFor(model => model.Vulnerability.Dependency)</div>
                 </dd>
 
-                <dt class="col-sm-3">
-                    單號 / 指派對象 (AssignedTo)
-                </dt>
+                <dt class="col-sm-3">預計實施時間</dt>
+                <dd class="col-sm-9">
+                    @Model.Vulnerability.FoundDate.ToString("yyyy/MM/dd") @Model.Vulnerability.ScheduledTime
+                </dd>
+
+                <dt class="col-sm-3">確認計畫</dt>
+                <dd class="col-sm-9">
+                    <div>測試：@Html.DisplayFor(model => model.Vulnerability.TestPlan)</div>
+                    <div>回復：@Html.DisplayFor(model => model.Vulnerability.RecoveryPlan)</div>
+                </dd>
+
+                <dt class="col-sm-3">指派給 (AssignedTo)</dt>
                 <dd class="col-sm-9">
                     @Html.DisplayFor(model => model.Vulnerability.AssignedTo)
                 </dd>
 
-                <dt class="col-sm-3">
-                    變更 / 影響說明 (Description)
-                </dt>
+                <dt class="col-sm-3">變更內容 (Description)</dt>
                 <dd class="col-sm-9">
                     <div class="desc-box">
                         @Html.DisplayFor(model => model.Vulnerability.Description)
@@ -197,13 +209,16 @@
                 </dd>
             </dl>
 
-            <form method="post" class="mt-4">
+            <form method="post" class="mt-4 d-flex gap-2">
                 <input type="hidden" asp-for="Vulnerability.Id" />
 
                 <button type="submit" class="btn-delete-main">
                     確定刪除
                 </button>
 
+                <a asp-page="/Forms/FormsList" class="btn-cancel">
+                    取消
+                </a>
             </form>
         </div>
     </div>
