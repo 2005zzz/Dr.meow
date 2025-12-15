@@ -29,6 +29,7 @@ namespace Dr.meow.Pages.Vulnerabilities
 
         public async Task OnGetAsync()
         {
+
             if (_context.Vulnerability != null)
             {
                 // 列表頁：依 ID 倒序，最新的在最上面

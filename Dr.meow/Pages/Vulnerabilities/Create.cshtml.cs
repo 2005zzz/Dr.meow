@@ -22,12 +22,12 @@ namespace Dr.meow.Pages.Vulnerabilities
 
         public IActionResult OnGet()
         {
-            // 初始化一個預設物件，例如將日期設為今天
             Vulnerability = new Vulnerability
             {
                 FoundDate = DateTime.Today,
-                ScheduledTime = "07:00" // 預設時間
+                ScheduledTime = "07:00"
             };
+
             return Page();
         }
 
@@ -56,12 +56,9 @@ namespace Dr.meow.Pages.Vulnerabilities
 
             // 2. 自動補全邏輯
 
-            // A. 若單號為空，自動產生 (格式: CHG-yyyyMMdd-亂數)
-            if (string.IsNullOrEmpty(Vulnerability.TicketNumber))
-            {
-                var random = new Random();
-                Vulnerability.TicketNumber = $"CHG-{DateTime.Now:yyyyMMdd}-{random.Next(1000, 9999)}";
-            }
+            // A. 系統產生單號
+ 
+
 
             // B. 自動填入申請人 (若有登入系統)
             if (string.IsNullOrEmpty(Vulnerability.AssignedTo) && User.Identity.IsAuthenticated)
@@ -80,13 +77,26 @@ namespace Dr.meow.Pages.Vulnerabilities
             // 3. 儲存至資料庫
             try
             {
+                // 1️⃣ 先存，讓資料庫產生 Id
                 _context.Vulnerability.Add(Vulnerability);
                 await _context.SaveChangesAsync();
 
-                Debug.WriteLine($"[Success] 表單建立成功 ID: {Vulnerability.Id}");
+                // 2️⃣ 用「已產生的 Id」組單號（一定不會撞）
+                Vulnerability.TicketNumber =
+                    $"CHG-{DateTime.Now:yyyyMMdd}-{Vulnerability.Id:D5}";
 
-                // 設定成功訊息 (使用 TicketNumber 而非 Title)
-                TempData["StatusMessage"] = $"單號 <strong>{Vulnerability.TicketNumber}</strong> 已提交成功！<br/>系統自動風險評估為：{Vulnerability.Severity}";
+                // 3️⃣ 再存一次，把單號寫回資料庫
+                await _context.SaveChangesAsync();
+
+                // 4️⃣ 成功訊息
+                TempData["StatusMessage"] =
+                    $"提交成功！你的單號是 <strong>{Vulnerability.TicketNumber}</strong>";
+                // 清空表單
+                Vulnerability = new Vulnerability
+                {
+                    FoundDate = DateTime.Today,
+                    ScheduledTime = "07:00"
+                };
             }
             catch (Exception ex)
             {
@@ -94,10 +104,7 @@ namespace Dr.meow.Pages.Vulnerabilities
                 ModelState.AddModelError("", "存檔失敗，請聯繫管理員。");
                 return Page();
             }
-
-            // 4. 導向到列表頁面 (假設您的卡片清單頁面是 Forms/FormsList)
-            // 如果您的列表頁是 Index，請改為 RedirectToPage("./Index");
-            return RedirectToPage("/Forms/FormsList");
+            return Page();
         }
     }
 }

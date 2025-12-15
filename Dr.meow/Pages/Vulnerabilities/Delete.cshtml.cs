@@ -25,6 +25,28 @@ namespace Dr.meow.Pages.Vulnerabilities
         // ⭐ 新增屬性：用於前端判斷是否顯示「刪除成功」訊息
         [ViewData]
         public bool IsDeletedSuccess { get; set; } = false;
+        // 🎯 輔助方法：創建一個安全的空 Vulnerability 實例，避免前端 Razor 崩潰 (即「清空欄位」)
+        private Vulnerability CreateBlankVulnerability()
+        {
+            // 必須確保所有在前端 Delete.cshtml 中存取的屬性都設為非 null 的值
+            return new Vulnerability
+            {
+                Id = -1,
+                TicketNumber = "",
+                SystemCategory = "",
+                TicketCategory = "",
+                ChangeType = "",
+                Severity = "",
+                ImpactLevel = "",
+                Dependency = "",
+                ScheduledTime = "",
+                TestPlan = "",
+                RecoveryPlan = "",
+                AssignedTo = "",
+                Description = "",
+                FoundDate = DateTime.MinValue
+            };
+        }
 
 
         public async Task<IActionResult> OnGetAsync(int? id)
@@ -39,9 +61,10 @@ namespace Dr.meow.Pages.Vulnerabilities
                     // 設定為成功狀態，讓前端 Razor 顯示成功畫面
                     IsDeletedSuccess = true;
                     // 我們不需要再從資料庫抓取 VULNERABILITY，直接返回 Page
-                    return Page(); 
+                    Vulnerability = CreateBlankVulnerability();
+                    return Page();
                 }
-                
+
                 // 如果沒有 ID 且沒有成功訊息，則認為請求無效 (讓前端顯示無效提示)
                 return Page();
             }
@@ -52,7 +75,11 @@ namespace Dr.meow.Pages.Vulnerabilities
             if (vulnerability == null)
             {
                 // 如果找不到項目，將錯誤訊息存入 TempData (可選：如果想顯示特定錯誤)
-                TempData["StatusMessage"] = "錯誤❌ 找不到 ID 為 " + id + " 的變更申請單。";
+                var dateText = DateTime.Today.ToString("yyyy/MM/dd"); // fallback 用
+
+                TempData["StatusMessage"] =
+                    $"錯誤❌ 找不到 {dateText} ID 為 {id} 的變更申請單。";
+                Vulnerability = CreateBlankVulnerability();
                 return Page();
             }
             else
@@ -71,7 +98,7 @@ namespace Dr.meow.Pages.Vulnerabilities
             }
 
             var vulnerability = await _context.Vulnerability.FindAsync(id);
-            
+
             if (vulnerability != null)
             {
                 try
@@ -79,7 +106,7 @@ namespace Dr.meow.Pages.Vulnerabilities
                     Vulnerability = vulnerability;
                     _context.Vulnerability.Remove(Vulnerability);
                     await _context.SaveChangesAsync();
-                    
+
                     // ⭐ 刪除成功：設定成功通知並重定向
                     TempData["StatusMessage"] = "✅ 申請單已成功刪除！";
 

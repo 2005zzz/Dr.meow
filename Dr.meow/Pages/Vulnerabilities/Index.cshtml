@@ -118,12 +118,18 @@
                 <tr>
                     <th>單號</th>
                     <th>系統類別</th>
+                    <th>工單類別</th>
                     <th>變更類型</th>
-                    <th>風險評估</th>
-                    <th>預計實施</th>
-                    <th>指派對象</th>
-                    <th>摘要</th>
-                    <th>操作</th>
+                    <th>流程狀態</th>
+                    <th>風險等級</th>
+                    <th>影響程度</th>
+                    <th>依賴性</th>
+                    <th>預計實施日期</th>
+                    <th>預計時間</th>
+                    <th>測試計畫</th>
+                    <th>回復計畫</th>
+                    <th>申請人</th>
+                    <th>變更內容</th>
                 </tr>
             </thead>
             <tbody>
@@ -139,29 +145,29 @@
                                 @(string.IsNullOrEmpty(item.TicketNumber) ? $"#{item.Id}" : item.TicketNumber)
                             </td>
 
-                            <td>
-                                <span class="chip-sys">@(item.SystemCategory ?? "未分類")</span>
-                            </td>
-
+                            <td>@item.SystemCategory</td>
+                            <td>@item.TicketCategory</td>
                             <td>@item.ChangeType</td>
+                            <td>@item.Status</td>
 
-                            <td>
-                                <span class="chip-risk @riskClass">@item.Severity</span>
-                            </td>
+                            <td>@item.Severity</td>
+                            <td>@item.ImpactLevel</td>
+                            <td>@item.Dependency</td>
 
                             <td>@item.FoundDate.ToString("yyyy/MM/dd")</td>
+                            <td>@item.ScheduledTime</td>
+
+                            <td>@item.TestPlan</td>
+                            <td>@item.RecoveryPlan</td>
 
                             <td>@item.AssignedTo</td>
 
                             <td title="@item.Description">
-                                @(item.Description?.Length > 15 ? item.Description.Substring(0, 15) + "..." : item.Description)
-                            </td>
-
-                            <td>
-                                <a asp-page="./Edit" asp-route-id="@item.Id" class="btn-edit me-1">編輯</a>
-                                <a asp-page="./Delete" asp-route-id="@item.Id" class="btn-delete">刪除</a>
-                            </td>
-                        </tr>
+                                @(item.Description?.Length > 20
+                                                        ? item.Description.Substring(0, 20) + "..."
+                                                        : item.Description)
+                    </td>
+                </tr>
                     }
                 }
                 else

@@ -32,10 +32,12 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
 .AddCookie()
+.AddCookie("Identity.External")
 .AddGoogle(options =>
 {
     options.ClientId = builder.Configuration["GoogleOAuth:ClientId"];
     options.ClientSecret = builder.Configuration["GoogleOAuth:ClientSecret"];
+    options.SignInScheme = "Identity.External";
 
     // 登入成功後 Google 回傳資料的 scope
     options.Scope.Add("email");
@@ -49,10 +51,11 @@ builder.Services.AddAuthentication(options =>
 // DbContext
 builder.Services.AddDbContext<DrMeowDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DrMeowConnection")
-        ?? throw new InvalidOperationException("Connection string 'DrMeowConnection' not found.")
+        builder.Configuration.GetConnectionString("DrMeowDbContext")
+        ?? throw new InvalidOperationException("Connection string 'DrMeowDbContext' not found.")
     )
 );
+
 
 var app = builder.Build();
 

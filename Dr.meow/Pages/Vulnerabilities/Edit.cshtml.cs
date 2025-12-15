@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,6 +48,20 @@ namespace Dr.meow.Pages.Vulnerabilities
                 return Page();
             }
 
+            // ⭐【加在這】先抓資料庫原本那筆
+            var dbVulnerability = await _context.Vulnerability
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.Id == Vulnerability.Id);
+
+            if (dbVulnerability == null)
+            {
+                return NotFound();
+            }
+
+            // ⭐【關鍵】保留原本的指派對象
+            Vulnerability.AssignedTo = dbVulnerability.AssignedTo;
+
+            // ⭐ 再更新
             _context.Attach(Vulnerability).State = EntityState.Modified;
 
             try
@@ -66,8 +80,13 @@ namespace Dr.meow.Pages.Vulnerabilities
                 }
             }
 
-            return RedirectToPage("./Index");
+            // ⭐ 修改成功通知
+            TempData["StatusMessage"] = "✅ 申請單修改成功！";
+
+            // ⭐ 回到同一筆 Edit 頁顯示通知
+            return RedirectToPage(new { id = Vulnerability.Id });
         }
+
 
         private bool VulnerabilityExists(int id)
         {

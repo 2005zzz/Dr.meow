@@ -1,12 +1,12 @@
-@page
+ï»¿@page
 @model Dr.meow.Pages.Vulnerabilities.EditModel
 
 @{
-    ViewData["Title"] = "½s¿èªí³æ";
+    ViewData["Title"] = "ç·¨è¼¯è¡¨å–®";
 }
 
 <style>
-    /* ªu¥Î²Î¤@ªº¥d¤ù­·®æ */
+    /* æ²¿ç”¨çµ±ä¸€çš„å¡ç‰‡é¢¨æ ¼ */
     .vuln-edit-page .card {
         border-radius: 22px;
         background: rgba(255,255,255,0.96);
@@ -60,7 +60,7 @@
             box-shadow: 0 0 0 3px rgba(100,187,168,0.28);
         }
 
-    /* «ö¶s¼Ë¦¡ */
+    /* æŒ‰éˆ•æ¨£å¼ */
     .btn-save {
         border-radius: 999px;
         padding: 10px 30px;
@@ -97,8 +97,20 @@
 <div class="vuln-edit-page container mt-4 mb-4">
     <div class="card">
         <div class="edit-header">
-            <div class="edit-header-title">½s¿èÅÜ§ó¥Ó½Ğ³æ</div>
+            <div class="edit-header-title">ç·¨è¼¯è®Šæ›´ç”³è«‹å–®</div>
         </div>
+
+        @if (TempData["StatusMessage"] is string statusMessage)
+        {
+            var alertClass = statusMessage.Contains("éŒ¯èª¤") || statusMessage.Contains("âŒ")
+            ? "alert-danger"
+            : "alert-success";
+
+            <div class="alert @alertClass alert-dismissible fade show m-3 shadow-sm" role="alert">
+                <strong>è®Šæ›´ï¼š</strong> @Html.Raw(statusMessage)
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
 
         <div class="card-body">
             <form method="post">
@@ -106,7 +118,7 @@
                 <input type="hidden" asp-for="Vulnerability.Id" />
                 <input type="hidden" asp-for="Vulnerability.CreatedAt" />
 
-                <div class="section-title">1. °ò¥»¸ê°T</div>
+                <div class="section-title">1. åŸºæœ¬è³‡è¨Š</div>
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label asp-for="Vulnerability.TicketNumber" class="form-label"></label>
@@ -119,37 +131,20 @@
                         <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label asp-for="Vulnerability.ScheduledTime" class="form-label">¹w­p¹ê¬I®É¶¡</label>
+                        <label asp-for="Vulnerability.ScheduledTime" class="form-label">é è¨ˆå¯¦æ–½æ™‚é–“</label>
                         <input asp-for="Vulnerability.ScheduledTime" type="time" class="form-control" />
                         <span asp-validation-for="Vulnerability.ScheduledTime" class="text-danger"></span>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Vulnerability.AssignedTo" class="form-label"></label>
-                        <input asp-for="Vulnerability.AssignedTo" class="form-control" />
-                        <span asp-validation-for="Vulnerability.AssignedTo" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Vulnerability.Status" class="form-label">¬yµ{ª¬ºA (Status)</label>
-                        <select asp-for="Vulnerability.Status" class="form-control">
-                            <option value="Pending">Pending (¼f®Ö¤¤)</option>
-                            <option value="Approved">Approved (¤w®Ö­ã)</option>
-                            <option value="Rejected">Rejected (¤w°h¦^)</option>
-                        </select>
-                        <span asp-validation-for="Vulnerability.Status" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="section-title">2. ÅÜ§ó¤º®e</div>
+                <div class="section-title">2. è®Šæ›´å…§å®¹</div>
                 <div class="mb-3">
                     <label asp-for="Vulnerability.Description" class="form-label"></label>
                     <textarea asp-for="Vulnerability.Description" class="form-control" rows="5"></textarea>
                     <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>
                 </div>
 
-                <div class="section-title">3. ¤ÀÃş»P­·ÀI</div>
+                <div class="section-title">3. åˆ†é¡èˆ‡é¢¨éšª</div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="Vulnerability.SystemCategory" class="form-label"></label>
@@ -157,7 +152,7 @@
                             <option value="HIS">HIS</option>
                             <option value="Infra">Infra</option>
                             <option value="EIP">EIP</option>
-                            <option value="¨ä¥L">¨ä¥L</option>
+                            <option value="å…¶ä»–">å…¶ä»–</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
@@ -173,27 +168,27 @@
                     <div class="col-md-4 mb-3">
                         <label asp-for="Vulnerability.ChangeType" class="form-label"></label>
                         <select asp-for="Vulnerability.ChangeType" class="form-control">
-                            <option value="¼Ğ·Ç/¿W¥ß">¼Ğ·Ç/¿W¥ß</option>
-                            <option value="ºò«æ">ºò«æ</option>
-                            <option value="¨Ò¦æ">¨Ò¦æ</option>
+                            <option value="æ¨™æº–/ç¨ç«‹">æ¨™æº–/ç¨ç«‹</option>
+                            <option value="ç·Šæ€¥">ç·Šæ€¥</option>
+                            <option value="ä¾‹è¡Œ">ä¾‹è¡Œ</option>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label asp-for="Vulnerability.Dependency" class="form-label"></label>
                         <select asp-for="Vulnerability.Dependency" class="form-control">
-                            <option value="³æ¤@¤¸¥ó¨Ì¿à">³æ¤@¤¸¥ó¨Ì¿à</option>
-                            <option value="¦³­­¬Û¨Ì">¦³­­¬Û¨Ì</option>
-                            <option value="°ª«×¬Û¨Ì">°ª«×¬Û¨Ì</option>
-                            <option value="¥~³¡¨Ì¿à">¥~³¡¨Ì¿à</option>
+                            <option value="å–®ä¸€å…ƒä»¶ä¾è³´">å–®ä¸€å…ƒä»¶ä¾è³´</option>
+                            <option value="æœ‰é™ç›¸ä¾">æœ‰é™ç›¸ä¾</option>
+                            <option value="é«˜åº¦ç›¸ä¾">é«˜åº¦ç›¸ä¾</option>
+                            <option value="å¤–éƒ¨ä¾è³´">å¤–éƒ¨ä¾è³´</option>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label asp-for="Vulnerability.ImpactLevel" class="form-label"></label>
                         <select asp-for="Vulnerability.ImpactLevel" class="form-control">
-                            <option value="§C">§C</option>
-                            <option value="¤¤">¤¤</option>
-                            <option value="°ª">°ª</option>
-                            <option value="­«¤j">­«¤j</option>
+                            <option value="ä½">ä½</option>
+                            <option value="ä¸­">ä¸­</option>
+                            <option value="é«˜">é«˜</option>
+                            <option value="é‡å¤§">é‡å¤§</option>
                         </select>
                     </div>
                 </div>
@@ -201,36 +196,36 @@
                 <div class="mb-3">
                     <label asp-for="Vulnerability.Severity" class="form-label text-danger"></label>
                     <select asp-for="Vulnerability.Severity" class="form-control">
-                        <option value="§C­·ÀI">§C­·ÀI</option>
-                        <option value="¤¤­·ÀI">¤¤­·ÀI</option>
-                        <option value="°ª­·ÀI">°ª­·ÀI</option>
-                        <option value="­«¤j­·ÀI">­«¤j­·ÀI</option>
+                        <option value="ä½é¢¨éšª">ä½é¢¨éšª</option>
+                        <option value="ä¸­é¢¨éšª">ä¸­é¢¨éšª</option>
+                        <option value="é«˜é¢¨éšª">é«˜é¢¨éšª</option>
+                        <option value="é‡å¤§é¢¨éšª">é‡å¤§é¢¨éšª</option>
                     </select>
                 </div>
 
-                <div class="section-title">4. ­pµe½T»{</div>
+                <div class="section-title">4. è¨ˆç•«ç¢ºèª</div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="Vulnerability.TestPlan" class="form-label"></label>
                         <select asp-for="Vulnerability.TestPlan" class="form-control">
-                            <option value="§¹¾ã´ú¸Õ">§¹¾ã´ú¸Õ</option>
-                            <option value="³¡¤À´ú¸Õ">³¡¤À´ú¸Õ</option>
-                            <option value="µL´ú¸Õ">µL´ú¸Õ</option>
+                            <option value="å®Œæ•´æ¸¬è©¦">å®Œæ•´æ¸¬è©¦</option>
+                            <option value="éƒ¨åˆ†æ¸¬è©¦">éƒ¨åˆ†æ¸¬è©¦</option>
+                            <option value="ç„¡æ¸¬è©¦">ç„¡æ¸¬è©¦</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label asp-for="Vulnerability.RecoveryPlan" class="form-label"></label>
                         <select asp-for="Vulnerability.RecoveryPlan" class="form-control">
-                            <option value="§Ö³t¦^´_">§Ö³t¦^´_</option>
-                            <option value="¦³­­¦^´_">¦³­­¦^´_</option>
-                            <option value="µL¦^´_¤è®×">µL¦^´_¤è®×</option>
+                            <option value="å¿«é€Ÿå›å¾©">å¿«é€Ÿå›å¾©</option>
+                            <option value="æœ‰é™å›å¾©">æœ‰é™å›å¾©</option>
+                            <option value="ç„¡å›å¾©æ–¹æ¡ˆ">ç„¡å›å¾©æ–¹æ¡ˆ</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="mt-4">
-                    <input type="submit" value="«O¦s­×§ï (Save)" class="btn-save" />
-                    <a asp-page="./Details" asp-route-id="@Model.Vulnerability.Id" class="btn-cancel">¨ú®ø</a>
+                    <input type="submit" value="ä¿å­˜ä¿®æ”¹ (Save)" class="btn-save" />
+                    <a asp-page="./Details" asp-route-id="@Model.Vulnerability.Id" class="btn-cancel">å–æ¶ˆ</a>
                 </div>
             </form>
         </div>

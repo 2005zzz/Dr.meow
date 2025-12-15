@@ -146,6 +146,13 @@
 </style>
 
 <div class="vuln-create-page container mt-4">
+    @if (TempData["StatusMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            @Html.Raw(TempData["StatusMessage"])
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
     <div class="card shadow-lg">
         <div class="create-header">
             <h2 class="mb-0">新增變更申請單</h2>
@@ -163,9 +170,12 @@
 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label asp-for="Vulnerability.TicketNumber" class="control-label"></label>
-                        <input asp-for="Vulnerability.TicketNumber" class="form-control" placeholder="系統自動生成或手填" />
-                        <span asp-validation-for="Vulnerability.TicketNumber" class="text-danger"></span>
+                        <label class="control-label">
+                            單號（系統自動產生）
+                        </label>
+                        <input class="form-control"
+                               value="表單送出後自動產生"
+                               readonly />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label asp-for="Vulnerability.FoundDate" class="control-label">
@@ -405,7 +415,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            const API_URL = 'https://localhost:7068/api/rag/analyze-change'; // ⚠️ 請確認 Port 號是否為 7068
+            const API_URL = 'https://rag-backend-1-3ymz.onrender.com/api/rag/analyze-change'; // ⚠️ 請確認 Port 號是否為 7068
             const descInput = document.getElementById('descriptionInput');
             const loading = document.getElementById('aiLoading');
             const reasoningBox = document.getElementById('aiReasoning');
