@@ -44,7 +44,7 @@
             display: block;
         }
 
-
+    /* 🌿 主題色登入按鈕 */
     .btn-login-mint {
         border-radius: 999px;
         width: 100%;
@@ -64,7 +64,7 @@
             box-shadow: 0 8px 16px rgba(47,110,100,0.28);
         }
 
-
+    /* 卡片外觀 */
     .login-card {
         max-width: 450px;
         width: 100%;
@@ -98,7 +98,7 @@
             margin-bottom: 0.75rem !important;
         }
 
-
+    /* 🌿 白色寬版 - 立即註冊按鈕 */
     .btn-register-secondary {
         width: 100%;
         border-radius: 999px;
@@ -128,7 +128,6 @@
             transform: translateY(0);
             box-shadow: 0 3px 10px rgba(47,110,100,.10);
         }
-
 </style>
 
 <div class="card login-card">
@@ -143,6 +142,7 @@
     <!-- 卡片 Body -->
     <div class="card-body">
 
+        <!-- 後端塞 ErrorMessage 時顯示 -->
         @if (!string.IsNullOrEmpty(Model.ErrorMessage))
         {
             <div class="alert alert-danger py-2 mb-3">
@@ -150,24 +150,27 @@
             </div>
         }
 
+        <!-- 驗證錯誤統整（ModelState） -->
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
         <form method="post">
             <div class="mb-3">
                 <label asp-for="Account" class="form-label">帳號</label>
                 <input asp-for="Account" class="form-control" placeholder="例如：user 或 admin" />
-                <span asp-validation-for="Account" class="text-danger"></span>
+                <span asp-validation-for="Account" class="text-danger small"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Password" class="form-label">密碼</label>
                 <input asp-for="Password" class="form-control" type="password" placeholder="預設：1234" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+                <span asp-validation-for="Password" class="text-danger small"></span>
             </div>
 
             <div class="mb-3">
                 <label class="form-label d-block">登入身分</label>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input"
-                           type="radio" asp-for="Role" value="user" id="roleUser" checked />
+                           type="radio" asp-for="Role" value="user" id="roleUser" />
                     <label class="form-check-label" for="roleUser">使用者</label>
                 </div>
 
@@ -177,31 +180,24 @@
                     <label class="form-check-label" for="roleAdmin">管理者</label>
                 </div>
 
-                <span asp-validation-for="Role" class="text-danger"></span>
+                <span asp-validation-for="Role" class="text-danger small"></span>
             </div>
 
             <!-- 🌿 主題色登入按鈕 -->
             <button type="submit" class="btn-login-mint mb-3">
                 登入
             </button>
-        </form>
 
-            <form method="post" asp-page-handler="GoogleLogin">
-                <button type="submit" class="btn btn-google w-100 mt-1">
-                    <span class="btn-google-icon">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-                    </span>
-                    <span>使用 Google 帳戶快速登入</span>
-                </button>
-            </form>
-
-
-
-    
+            <!-- Google 登入：目前只是樣式，後端還沒串 -->
+            <button type="submit" asp-page-handler="GoogleLogin" class="btn btn-google w-100 mt-1">
+                <span class="btn-google-icon">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                </span>
+                <span>使用 Google 帳戶快速登入</span>
+            </button>
 
             <div class="text-center mt-3">
                 <div class="text-muted mb-1">還沒有帳號嗎？</div>
-
 
                 <a asp-page="/Register" class="btn-register-secondary">
                     立即註冊
@@ -213,11 +209,7 @@
                     忘記密碼？
                 </a>
             </div>
-    </div>
-
-    <!-- 卡片 Footer -->
-    <div class="card-footer text-muted small text-center">
-        測試帳號：user / admin　｜　密碼：1234
+        </form>
     </div>
 </div>
 

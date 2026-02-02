@@ -7,6 +7,10 @@
 		<UserSecretsId>30e528cc-c0d1-4d60-9a89-74c9b11dc332</UserSecretsId>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <Content Include="C:\Users\10932\Downloads\程式碼\consult.css" Link="consult.css" />
+	</ItemGroup>
+
 	<!--
 	*** 重點：只保留 PackageReference。
 	*** 現代 .NET Sdk 會自動包含所有 .cs 和 .cshtml 檔案，

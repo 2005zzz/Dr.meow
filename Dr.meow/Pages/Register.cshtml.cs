@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Dr.meow.Data;
+using Dr.meow.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims; // 為了使用 Challenge 函式
 
@@ -17,34 +20,66 @@ namespace Dr.meow.Pages
         {
         }
 
-        public IActionResult OnPost()
+        private readonly DrMeowDbContext _context;
+
+        public RegisterModel(DrMeowDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IActionResult> OnPost()
         {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            // --- 模擬註冊邏輯 (未來這裡接資料庫) ---
+            // 1️⃣ 檢查帳號是否重複（用 Account）
+            bool accountExists = await _context.Users
+                .AnyAsync(u => u.Email == Input.Email);
 
-            // 1. 檢查帳號是否重複 (模擬)
-            if (Input.Account == "admin" || Input.Account == "user")
+            if (accountExists)
             {
-                ErrorMessage = "此帳號已被使用，請更換一組。";
+                ErrorMessage = "此電子郵件已被註冊。";
                 return Page();
             }
 
-            // 2. 模擬寫入資料庫成功
-            // ... Save to DB ...
+            // 2️⃣ 建立 User
+            var user = new User
+            {
+                Account = Input.Account,
+                Email = Input.Email,
+                PasswordHash = Input.Password, // 先明文，之後再補 Hash
+                AccountType = "User",
+                IsActive = true
+            };
 
-            // 3. 顯示成功訊息
-            SuccessMessage = "註冊成功！請前往您的電子信箱收取驗證信。";
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync(); // 先存，拿 UserId
 
-            // 清空表單，避免重複提交
+            // 3️⃣ 找對應的 Role（只能是 team1 / team2）
+            var role = await _context.Roles
+                .FirstAsync(r => r.RoleName == Input.Role);
+
+            // 4️⃣ 建立 UserRole
+            var userRole = new UserRole
+            {
+                UserId = user.UserId,
+                RoleId = role.RoleId
+            };
+
+            _context.UserRoles.Add(userRole);
+            await _context.SaveChangesAsync();
+
+            // 5️⃣ 成功訊息
+            SuccessMessage = "註冊成功！請前往登入。";
+
             ModelState.Clear();
             Input = new InputModel();
 
             return Page();
         }
+
 
         // 🎯 新增的處理函式：處理 Google 註冊的 POST 請求
         public IActionResult OnPostGoogleRegistration(string returnUrl = null)
@@ -87,6 +122,10 @@ namespace Dr.meow.Pages
             [Display(Name = "確認密碼")]
             [Compare("Password", ErrorMessage = "兩次輸入的密碼不一致")]
             public string ConfirmPassword { get; set; }
+
+            [Required(ErrorMessage = "請選擇單位")]
+            [Display(Name = "角色")]
+            public string Role { get; set; } // team1 / team2
         }
     }
 }

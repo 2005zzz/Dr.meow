@@ -13,10 +13,7 @@ namespace Dr.meow.Pages
         {
             // 1. 嘗試讀取外部登入 (Google) 驗證結果
             // "External" 是外部驗證方案使用的暫時 Cookie 名稱
-            var authenticateResult = await HttpContext.AuthenticateAsync(
-                Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme
-                ?? "External"
-            );
+            var authenticateResult = await HttpContext.AuthenticateAsync("Google");
 
             if (!authenticateResult.Succeeded)
             {
@@ -58,9 +55,6 @@ namespace Dr.meow.Pages
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 claimsPrincipal
             );
-
-            // 5. 移除外部登入使用的臨時 Cookie
-            await HttpContext.SignOutAsync(Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme ?? "External");
 
             // 6. 寫入 Session (雖然已經有 Claim，但為了與舊程式碼保持一致性)
             HttpContext.Session.SetString("Account", email ?? "");

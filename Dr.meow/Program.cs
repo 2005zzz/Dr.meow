@@ -5,7 +5,7 @@ using Dr.meow.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
-
+using Microsoft.AspNetCore.Http;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,22 +31,33 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
-.AddCookie()
-.AddCookie("Identity.External")
+.AddCookie(options =>
+{
+    options.LoginPath = "/Login"; // 未登入時導向的頁面
+    options.AccessDeniedPath = "/Error";
+
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+})
 .AddGoogle(options =>
 {
     options.ClientId = builder.Configuration["GoogleOAuth:ClientId"];
     options.ClientSecret = builder.Configuration["GoogleOAuth:ClientSecret"];
-    options.SignInScheme = "Identity.External";
 
-    // 登入成功後 Google 回傳資料的 scope
+    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
+    // 🛠️ 核心修正：強制 Google 每次都跳出帳號選擇視窗，實現「切換帳號」需求
+    options.Events.OnRedirectToAuthorizationEndpoint = context =>
+    {
+        context.Response.Redirect(context.RedirectUri + "&prompt=select_account");
+        return Task.CompletedTask;
+    };
+
     options.Scope.Add("email");
     options.Scope.Add("profile");
-
-    // 回呼網址（Google 授權後會跳回這裡）
     options.CallbackPath = "/signin-google";
 });
-
 
 // DbContext
 builder.Services.AddDbContext<DrMeowDbContext>(options =>

@@ -4,11 +4,19 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Dr.meow.Data;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Dr.meow.Pages
 {
     public class LoginModel : PageModel
     {
+        private readonly DrMeowDbContext _context;
+        public LoginModel(DrMeowDbContext context)
+        {
+            _context = context;
+        }
         [BindProperty]
         public string Account { get; set; } = "";
 
@@ -19,34 +27,64 @@ namespace Dr.meow.Pages
         public string Role { get; set; } = "user";
 
         public string? ErrorMessage { get; set; }
-
         public void OnGet()
         {
-            // 登入頁先清 Session（避免殘留上一位使用者）
-            HttpContext.Session.Clear();
+            // 只清掉你自己用的登入資訊，別把 OAuth 流程用到的狀態也清掉
+            HttpContext.Session.Remove("Account");
+            HttpContext.Session.Remove("Role");
+            HttpContext.Session.Remove("UserId");
+            HttpContext.Session.Remove("IsAdmin");
         }
 
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPostAsync()
         {
-            if (string.IsNullOrWhiteSpace(Account) || Password != "1234")
+            if (string.IsNullOrWhiteSpace(Account) || string.IsNullOrWhiteSpace(Password))
             {
-                ErrorMessage = "帳號或密碼錯誤。";
+                ErrorMessage = "請輸入帳號與密碼。";
+                Role = "user"; // 強制回 user
                 return Page();
+            }
+            var user = await _context.Users
+    　　　　　　.Include(u => u.UserRoles)
+    　　　　　　.ThenInclude(ur => ur.Role)
+    　　　　　　.FirstOrDefaultAsync(u => u.Account == Account && u.IsActive);
+
+            if (user == null)
+            {
+                ErrorMessage = "帳號不存在或已停用。";
+                Role = "user";
+                return Page();
+            }
+            if (user.PasswordHash != Password)
+            {
+                ErrorMessage = "密碼錯誤。";
+                Role = "user";
+                return Page();
+            }
+            var roleNames = user.UserRoles.Select(ur => ur.Role.RoleName).ToList();
+
+            bool isAdmin = user.AccountType == "Admin";
+
+            // 使用者勾選管理者入口，但他不是管理者 → 不准進
+            if (Role == "admin" && !isAdmin)
+            {
+                ErrorMessage = "此帳號不是管理者，已切換為使用者登入。";
+
+                ModelState.Remove("Role");// ⭐把使用者剛剛POST上來的 Role(admin)從 ModelState 清掉
+                Role = "user";
+                return Page(); // 你說「無法登入」→ 這裡直接擋下來
             }
 
             // 寫入 Session
-            HttpContext.Session.SetString("Account", Account);
-            HttpContext.Session.SetString("Role", Role);
+            HttpContext.Session.SetString("Account", user.Account ?? "");
+            HttpContext.Session.SetString("UserId", user.UserId.ToString());
+            HttpContext.Session.SetString("IsAdmin", isAdmin ? "1" : "0");
 
-            // 依身分導到不同首頁
-            if (Role == "admin")
-            {
+            // 管理者可以選 admin 或 user 入口
+            if (Role == "admin" && isAdmin)
                 return RedirectToPage("/AdminHome");
-            }
-            else
-            {
-                return RedirectToPage("/UserHome");
-            }
+
+            return RedirectToPage("/UserHome");
         }
         // =======================
         // ⭐ Google 一鍵登入（你新增的）
