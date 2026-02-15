@@ -1,0 +1,2746 @@
+[33mcommit f0c0ac6b04ba0ed3c6c2a32ef53750efd2e58fbe[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: a4d8c9f e0bfba1
+Author: 王禹捷 <10932041@mail.hcsh.tp.edu.tw>
+Date:   Wed Dec 3 18:06:18 2025 +0800
+
+    Merge branch 'teammate-feature' into main
+
+[1mdiff --cc Dr.meow/Dr.meow.csproj[m
+[1mindex 88e1b81,910b1d6..f55f668[m
+[1m--- a/Dr.meow/Dr.meow.csproj[m
+[1m+++ b/Dr.meow/Dr.meow.csproj[m
+[36m@@@ -6,11 -6,47 +6,55 @@@[m
+  		<ImplicitUsings>enable</ImplicitUsings>[m
+  	</PropertyGroup>[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +	<!--[m
+[32m +	*** 重點：只保留 PackageReference。[m
+[32m +	*** 現代 .NET Sdk 會自動包含所有 .cs 和 .cshtml 檔案，[m
+[32m +	*** 所以我們移除了所有手動的 <Compile Include...> 和 <Compile Remove...> 語句。[m
+[32m +	-->[m
+[32m++=======[m
+[32m+ 	<ItemGroup>[m
+[32m+ 	  <Compile Remove="NewFolder4\**" />[m
+[32m+ 	  <Compile Remove="NewFolder5\**" />[m
+[32m+ 	  <Compile Remove="NewFolder6\**" />[m
+[32m+ 	  <Compile Remove="NewFolder\**" />[m
+[32m+ 	  <Compile Remove="Pages\NewFolder1\**" />[m
+[32m+ 	  <Compile Remove="Pages\NewFolder2\**" />[m
+[32m+ 	  <Compile Remove="Pages\NewFolder\**" />[m
+[32m+ 	  <Content Remove="NewFolder4\**" />[m
+[32m+ 	  <Content Remove="NewFolder5\**" />[m
+[32m+ 	  <Content Remove="NewFolder6\**" />[m
+[32m+ 	  <Content Remove="NewFolder\**" />[m
+[32m+ 	  <Content Remove="Pages\NewFolder1\**" />[m
+[32m+ 	  <Content Remove="Pages\NewFolder2\**" />[m
+[32m+ 	  <Content Remove="Pages\NewFolder\**" />[m
+[32m+ 	  <EmbeddedResource Remove="NewFolder4\**" />[m
+[32m+ 	  <EmbeddedResource Remove="NewFolder5\**" />[m
+[32m+ 	  <EmbeddedResource Remove="NewFolder6\**" />[m
+[32m+ 	  <EmbeddedResource Remove="NewFolder\**" />[m
+[32m+ 	  <EmbeddedResource Remove="Pages\NewFolder1\**" />[m
+[32m+ 	  <EmbeddedResource Remove="Pages\NewFolder2\**" />[m
+[32m+ 	  <EmbeddedResource Remove="Pages\NewFolder\**" />[m
+[32m+ 	  <None Remove="NewFolder4\**" />[m
+[32m+ 	  <None Remove="NewFolder5\**" />[m
+[32m+ 	  <None Remove="NewFolder6\**" />[m
+[32m+ 	  <None Remove="NewFolder\**" />[m
+[32m+ 	  <None Remove="Pages\NewFolder1\**" />[m
+[32m+ 	  <None Remove="Pages\NewFolder2\**" />[m
+[32m+ 	  <None Remove="Pages\NewFolder\**" />[m
+[32m+ 	</ItemGroup>[m
+[32m+ [m
+[32m+ 	<ItemGroup>[m
+[32m+ 	  <Compile Remove="Pages\Index.cshtml.cshtml.cs" />[m
+[32m+ 	  <Compile Remove="Pages\OldIndex.cshtml.cs" />[m
+[32m+ 	</ItemGroup>[m
+[32m+ [m
+[32m+ 	<ItemGroup>[m
+[32m+ 	  <Content Remove="Pages\Index.cshtml.cshtml" />[m
+[32m+ 	  <Content Remove="Pages\OldIndex.cshtml" />[m
+[32m+ 	</ItemGroup>[m
+[32m+ [m
+[32m++>>>>>>> origin/feature/consult-home[m
+  	<ItemGroup>[m
+  		<PackageReference Include="ClosedXML" Version="0.105.0" />[m
+  		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />[m
+[1mdiff --cc Dr.meow/Models/SearchDtos.cs[m
+[1mindex e11f5cb,1fb6e7b..565dd18[m
+[1m--- a/Dr.meow/Models/SearchDtos.cs[m
+[1m+++ b/Dr.meow/Models/SearchDtos.cs[m
+[36m@@@ -1,43 -1,16 +1,60 @@@[m
+[32m++<<<<<<< HEAD[m
+[32m +﻿using System.Collections.Generic; // 記得引用這個，才能用 List[m
+[32m +[m
+[32m +namespace WebApp.Models // (請確認這跟你的專案 namespace 一致)[m
+[32m +{[m
+[32m +    public class RagQueryRequest[m
+[32m +    {[m
+[32m +        // ⚠️ 修正 1: 改為 "Query" 以對應後端 WebAPI 的定義[m
+[32m +        public string Query { get; set; } = "";[m
+[32m +    }[m
+[32m +[m
+[32m +    public class RagQueryResponse[m
+[32m +    {[m
+[32m +        public string Answer { get; set; } = "";[m
+[32m +[m
+[32m +        // ⚠️ 修正 2: 新增 Sources 列表，用來接後端傳回來的引用文件[m
+[32m +        public List<RagSourceDoc> Sources { get; set; } = new List<RagSourceDoc>();[m
+[32m +    }[m
+[32m +[m
+[32m +    // ⚠️ 修正 3: 新增這個類別，用來定義單一引用來源的結構[m
+[32m +    public class RagSourceDoc[m
+[32m +    {[m
+[32m +        public string FileName { get; set; } = "";[m
+[32m +        public string Page { get; set; } = "";[m
+[32m +        public string Content { get; set; } = "";[m
+[32m +        public double Score { get; set; }[m
+[32m +    }[m
+[32m +[m
+[32m +    // (如果你還有 SearchItem 或 SearchResponse 等 UI 用的類別，可以保留在下方)[m
+[32m +    public class SearchResponse[m
+[32m +    {[m
+[32m +        public string Answer { get; set; } = "";[m
+[32m +        public List<SearchItem> Items { get; set; } = new List<SearchItem>();[m
+[32m++=======[m
+[32m+ ﻿using System;[m
+[32m+ [m
+[32m+ namespace Dr.meow.Models[m
+[32m+ {[m
+[32m+     /// <summary>[m
+[32m+     /// 前端要用的單一搜尋結果項目[m
+[32m+     /// </summary>[m
+[32m+     public class SearchItem[m
+[32m+     {[m
+[32m+         public string? Title { get; set; }[m
+[32m+         public string? Url { get; set; }[m
+[32m+         public string? Source { get; set; }[m
+[32m+         public string? Snippet { get; set; }[m
+[32m+         public DateTime? ModifiedAt { get; set; }[m
+[32m++>>>>>>> origin/feature/consult-home[m
+[32m +    }[m
+[32m +[m
+[32m +    public class SearchItem[m
+[32m +    {[m
+[32m +        public string Title { get; set; } = "";[m
+[32m +        public string Snippet { get; set; } = "";[m
+[32m +        public string Url { get; set; } = "";[m
+[32m +        public string Source { get; set; } = "";[m
+[32m +        public DateTime? ModifiedAt { get; set; }[m
+      }[m
+[31m -}[m
+[32m +}[m
+[1mdiff --cc Dr.meow/Pages/AdminHome.cshtml[m
+[1mindex d25bb3d,f9a01b9..7f136ad[m
+[1m--- a/Dr.meow/Pages/AdminHome.cshtml[m
+[1m+++ b/Dr.meow/Pages/AdminHome.cshtml[m
+[36m@@@ -5,11 -5,70 +5,77 @@@[m
+      ViewData["Title"] = "管理者後台";[m
+  }[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m++=======[m
+[32m+ <style>[m
+[32m+     /* 左側選單卡片外觀（可跟 UserHome 一致） */[m
+[32m+     .admin-sidebar-card {[m
+[32m+         border-radius: 22px;[m
+[32m+         border: none;[m
+[32m+         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);[m
+[32m+     }[m
+[32m+ [m
+[32m+     .app-sidebar {[m
+[32m+         border-radius: 22px;[m
+[32m+         overflow: hidden;[m
+[32m+     }[m
+[32m+ [m
+[32m+         /* 每一個選單項目共用樣式 */[m
+[32m+         .app-sidebar .list-group-item {[m
+[32m+             border: none;[m
+[32m+             background-color: #ffffff;[m
+[32m+             padding: 0.8rem 1.1rem;[m
+[32m+             transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.15s ease;[m
+[32m+         }[m
+[32m+ [m
+[32m+             /* 標題列不需要浮起效果 */[m
+[32m+             .app-sidebar .list-group-item.text-uppercase {[m
+[32m+                 background-color: transparent;[m
+[32m+                 font-size: 0.78rem;[m
+[32m+                 letter-spacing: 0.08em;[m
+[32m+                 color: #999;[m
+[32m+                 padding: 0.75rem 1.1rem;[m
+[32m+             }[m
+[32m+ [m
+[32m+         /* 滑鼠滑過一般選項：微浮起＋淡綠底＋柔陰影 */[m
+[32m+         .app-sidebar .list-group-item-action:hover {[m
+[32m+             transform: translateY(-2px);[m
+[32m+             background-color: #e9f9f5;[m
+[32m+             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);[m
+[32m+             cursor: pointer;[m
+[32m+         }[m
+[32m+ [m
+[32m+         /* active 狀態：固定高亮色 */[m
+[32m+         .app-sidebar .list-group-item.app-admin.active {[m
+[32m+             background-color: #d6f6ee;[m
+[32m+             color: #1f6e61;[m
+[32m+             font-weight: 600;[m
+[32m+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);[m
+[32m+         }[m
+[32m+ [m
+[32m+         /* 登出維持紅色，但仍有 hover 浮起效果 */[m
+[32m+         .app-sidebar .list-group-item.text-danger {[m
+[32m+             color: #e45b5b;[m
+[32m+             font-weight: 500;[m
+[32m+         }[m
+[32m+ [m
+[32m+             .app-sidebar .list-group-item.text-danger:hover {[m
+[32m+                 background-color: #ffecec;[m
+[32m+                 box-shadow: 0 6px 14px rgba(228, 91, 91, 0.16);[m
+[32m+                 transform: translateY(-2px);[m
+[32m+             }[m
+[32m+ </style>[m
+[32m+ [m
+[32m++>>>>>>> origin/feature/consult-home[m
+  <div class="row g-3">[m
+  [m
+      <!-- 左側選單 -->[m
+      <aside class="col-12 col-lg-3">[m
+[32m++<<<<<<< HEAD[m
+[32m +        <div class="card shadow-sm">[m
+[32m++=======[m
+[32m+         <div class="card shadow-sm admin-sidebar-card">[m
+[32m++>>>>>>> origin/feature/consult-home[m
+              <div class="list-group list-group-flush app-sidebar">[m
+  [m
+                  <div class="list-group-item text-secondary small text-uppercase">[m
+[36m@@@ -20,7 -79,7 +86,11 @@@[m
+                  </div>[m
+  [m
+                  <!-- ⭐ 改為 AJAX 模式切換 -->[m
+[32m++<<<<<<< HEAD[m
+[32m +                <a class="list-group-item list-group-item-action app-admin"[m
+[32m++=======[m
+[32m+                 <a class="list-group-item list-group-item-action app-admin active"[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                     data-mode="management">[m
+                      表單列表 / 管理[m
+                  </a>[m
+[36m@@@ -67,10 -126,15 +137,22 @@@[m
+      <script>[m
+          const adminContent = document.getElementById("adminContent");[m
+          const noteBox = document.getElementById("noteBox");[m
+[32m++<<<<<<< HEAD[m
+[32m +[m
+[32m +        // ⭐ 點擊左側管理功能[m
+[32m +        document.querySelectorAll(".app-admin").forEach(btn => {[m
+[32m +            btn.addEventListener("click", () => {[m
+[32m++=======[m
+[32m+         const adminMenus = document.querySelectorAll(".app-admin");[m
+[32m+ [m
+[32m+         // ⭐ 點擊左側管理功能[m
+[32m+         adminMenus.forEach(btn => {[m
+[32m+             btn.addEventListener("click", () => {[m
+[32m+                 // 切換 active 樣式[m
+[32m+                 adminMenus.forEach(x => x.classList.remove("active"));[m
+[32m+                 btn.classList.add("active");[m
+[32m+ [m
+[32m++>>>>>>> origin/feature/consult-home[m
+                  const mode = btn.dataset.mode;[m
+  [m
+                  if (mode === "management") {[m
+[1mdiff --cc Dr.meow/Pages/Api/Search.cshtml.cs[m
+[1mindex 03d0977,aa014d0..a3d47ea[m
+[1m--- a/Dr.meow/Pages/Api/Search.cshtml.cs[m
+[1m+++ b/Dr.meow/Pages/Api/Search.cshtml.cs[m
+[36m@@@ -15,32 -18,15 +20,44 @@@[m [mnamespace Dr.meow.Pages.Ap[m
+              _searchService = searchService;[m
+          }[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +        // ⚠️ 修正 2：定義一個內部類別，用來對應前端傳來的 JSON { "query": "..." }[m
+[32m +        public class SearchRequestBody[m
+[32m++=======[m
+[32m+         public async Task<IActionResult> OnGetAsync(string keyword, CancellationToken ct)[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          {[m
+[31m -            if (string.IsNullOrWhiteSpace(keyword))[m
+[32m +            public string Query { get; set; } = "";[m
+[32m +        }[m
+[32m +[m
+[32m +        // ⚠️ 修正 3：改成 OnPostAsync (對應前端 method: 'POST')[m
+[32m +        // ⚠️ 修正 4：使用 [FromBody] 來接收 JSON 物件[m
+[32m +        public async Task<IActionResult> OnPostAsync([FromBody] SearchRequestBody request, CancellationToken ct)[m
+[32m +        {[m
+[32m +            // 檢查接收到的資料[m
+[32m +            if (request == null || string.IsNullOrWhiteSpace(request.Query))[m
+              {[m
+[32m++<<<<<<< HEAD[m
+[32m +                return new JsonResult(new { error = "Query cannot be empty" });[m
+[32m +            }[m
+[32m +[m
+[32m +            // 呼叫 SearchService (傳入 request.Query)[m
+[32m +            var result = await _searchService.SearchAsync(request.Query, ct);[m
+[32m +[m
+[32m +            if (result == null)[m
+[32m +            {[m
+[32m +                return new JsonResult(new { error = "後端沒有回傳資料" });[m
+[32m +            }[m
+[32m +[m
+[32m +            // 回傳 JSON[m
+[32m +            return new JsonResult(result);[m
+[32m++=======[m
+[32m+                 return new JsonResult(Array.Empty<SearchItem>());[m
+[32m+             }[m
+[32m+ [m
+[32m+             var items = await _searchService.SearchAsync(keyword, ct);[m
+[32m+             return new JsonResult(items);[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          }[m
+      }[m
+[31m -}[m
+[32m +}[m
+[1mdiff --cc Dr.meow/Pages/Forms/FormsList.cshtml[m
+[1mindex a7839d5,4ee7dfc..c8fef80[m
+[1m--- a/Dr.meow/Pages/Forms/FormsList.cshtml[m
+[1m+++ b/Dr.meow/Pages/Forms/FormsList.cshtml[m
+[36m@@@ -1,276 -1,162 +1,438 @@@[m
+  ﻿@page[m
+  @model Dr.meow.Pages.Forms.FormsListModel[m
+  @{[m
+[32m++<<<<<<< HEAD[m
+[32m +    ViewData["Title"] = "卡片式變更/漏洞清單";[m
+[32m +    Layout = null;  // 關閉 _Layout.cshtml，避免多一層版頭版尾[m
+[32m +}[m
+[32m +[m
+[32m +<style>[m
+[32m +[m
+[32m +    /* 卡片整體風格 */[m
+[32m +        .custom-card {[m
+[32m +                border: 1px solid #e0e0e0;[m
+[32m +                border-radius: 8px;[m
+[32m +                box-shadow: 0 2px 5px rgba(0,0,0,0.05);[m
+[32m +                background: #fff;[m
+[32m +                padding: 20px;[m
+[32m +                margin-bottom: 15px;[m
+[32m +                transition: transform 0.2s;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +                .custom-card:hover {[m
+[32m +                        transform: translateY(-3px);[m
+[32m +                        box-shadow: 0 5px 15px rgba(0,0,0,0.1);[m
+[32m +[m
+[32m +        }[m
+[32m +[m
+[32m +        .card-header-custom {[m
+[32m +                display: flex;[m
+[32m +                justify-content: space-between;[m
+[32m +                align-items: center;[m
+[32m +                margin-bottom: 12px;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .ticket-id {[m
+[32m +                font-weight: 700;[m
+[32m +                color: #333;[m
+[32m +                font-size: 1.1rem;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .assigned-to { /* 新增的指派對象樣式 */[m
+[32m +                font-size: 0.9rem;[m
+[32m +                color: #666;[m
+[32m +                margin-top: 5px;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .badge-group {[m
+[32m +                display: flex;[m
+[32m +                gap: 8px;[m
+[32m +                align-items: center;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .badge-system {[m
+[32m +                color: #0d6efd;[m
+[32m +                border: 1px solid #0d6efd;[m
+[32m +                padding: 2px 8px;[m
+[32m +                border-radius: 4px;[m
+[32m +                font-size: 0.85rem;[m
+[32m +                font-weight: 600;[m
+[32m +                background-color: #eaf3ff;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .badge-status {[m
+[32m +                padding: 3px 10px;[m
+[32m +                border-radius: 4px;[m
+[32m +                font-size: 0.85rem;[m
+[32m +                font-weight: 500;[m
+[32m +                display: inline-block;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +[m
+[32m +    /* 狀態顏色根據您提供的中文狀態進行調整 */[m
+[32m +        .status-pending { /* 適用於 '審核中' 或預設 */[m
+[32m +                background-color: #fff3cd;[m
+[32m +                color: #856404;[m
+[32m +                border: 1px solid #ffeeba;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .status-approved { /* 適用於 '標準/獨立', '例行' */[m
+[32m +                background-color: #d1e7dd;[m
+[32m +                color: #0f5132;[m
+[32m +                border: 1px solid #badbcc;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .status-rejected { /* 適用於 '緊急' 或 '高風險' */[m
+[32m +                background-color: #f8d7da;[m
+[32m +                color: #842029;[m
+[32m +                border: 1px solid #f5c2c7;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .summary-text {[m
+[32m +                color: #555;[m
+[32m +                font-size: 1rem;[m
+[32m +                margin-bottom: 15px;[m
+[32m +                line-height: 1.5;[m
+[32m +                border-left: 3px solid #0d6efd; /* 增加左側條狀裝飾 */[m
+[32m +                padding-left: 10px;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .meta-info {[m
+[32m +                font-size: 0.9rem;[m
+[32m +                color: #666;[m
+[32m +                background-color: #f9f9f9;[m
+[32m +                padding: 10px;[m
+[32m +                border-radius: 6px;[m
+[32m +                display: flex;[m
+[32m +                flex-wrap: wrap;[m
+[32m +                gap: 15px;[m
+[32m +                align-items: center;[m
+[32m +                margin-top: 15px;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .meta-item {[m
+[32m +                display: flex;[m
+[32m +                align-items: center;[m
+[32m +                gap: 5px;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .meta-label {[m
+[32m +                font-weight: 600;[m
+[32m +                color: #333;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .badge-risk {[m
+[32m +                padding: 2px 8px;[m
+[32m +                border-radius: 4px;[m
+[32m +                font-size: 0.85rem;[m
+[32m +                font-weight: 600;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .risk-low {[m
+[32m +                background-color: #d1e7dd;[m
+[32m +                color: #0f5132;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .risk-medium {[m
+[32m +                background-color: #fff3cd;[m
+[32m +                color: #856404;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +        .risk-high {[m
+[32m +                background-color: #f8d7da;[m
+[32m +                color: #842029;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +[m
+[32m +        .view-btn {[m
+[32m +                display: block;[m
+[32m +                text-align: right;[m
+[32m +                margin-top: 10px;[m
+[32m +                color: #0d6efd;[m
+[32m +                text-decoration: none;[m
+[32m +                font-weight: 500;[m
+[32m +[m
+[32m +    }[m
+[32m +[m
+[32m +            .view-btn:hover {[m
+[32m +                    text-decoration: underline;[m
+[32m +[m
+[32m +    }[m
+[32m +</style>[m
+[32m +[m
+[32m +<div class="container-fluid pt-3">[m
+[32m +    @if (Model.VulnerabilityList != null && Model.VulnerabilityList.Any())[m
+[32m +    {[m
+[32m +        // 迴圈遍歷後端傳來的數據清單[m
+[32m +        @foreach (var item in Model.VulnerabilityList)[m
+[32m +        {[m
+[32m +            // ----------------------------------------------------[m
+[32m +            // 1. 根據 Status 屬性設定主狀態的 CSS 類別[m
+[32m +            // ----------------------------------------------------[m
+[32m +            string statusClass = "status-pending";[m
+[32m +            if (item.Status == "標準/獨立" || item.Status == "例行")[m
+[32m +            {[m
+[32m +                statusClass = "status-approved";[m
+[32m +            }[m
+[32m +            else if (item.Status == "緊急") // 將 '緊急' 視為需要關注的狀態 (Rejected 顏色)[m
+[32m +            {[m
+[32m +                statusClass = "status-rejected";[m
+[32m +            }[m
+[32m +[m
+[32m +            // ----------------------------------------------------[m
+[32m +            // 2. 根據 Severity 屬性設定風險等級的 CSS 類別[m
+[32m +            // ----------------------------------------------------[m
+[32m +            string riskClass = "risk-low";[m
+[32m +            if (item.Severity == "中")[m
+[32m +            {[m
+[32m +                riskClass = "risk-medium";[m
+[32m +            }[m
+[32m +            else if (item.Severity == "高")[m
+[32m +            {[m
+[32m +                riskClass = "risk-high";[m
+[32m +            }[m
+[32m +[m
+[32m +            <div class="custom-card">[m
+[32m +                <div class="card-header-custom">[m
+[32m +                    <!-- 紀錄 ID 作為單號 -->[m
+[32m +                    <div class="d-flex flex-column">[m
+[32m +                        <span class="ticket-id"># @item.Id</span>[m
+[32m +                        <!-- 指派對象 -->[m
+[32m +                        <span class="assigned-to">指派給：@item.AssignedTo</span>[m
+[32m +                    </div>[m
+[32m +[m
+[32m +                    <div class="badge-group">[m
+[32m +                        <!-- 系統/表單類別 -->[m
+[32m +                        <span class="badge-system">@item.Title</span>[m
+[32m +                    </div>[m
+[32m +                </div>[m
+[32m +[m
+[32m +                <div class="summary-text">[m
+[32m +                    <!-- 變更/影響內容 (詳細描述) -->[m
+[32m +                    <strong>變更摘要：</strong> @item.Description[m
+[32m +                </div>[m
+[32m +[m
+[32m +                <div class="meta-info">[m
+[32m +                    <div class="meta-item">[m
+[32m +                        <div class="meta-item">[m
+[32m +                            <span class="meta-label">🏷️ 變更類型：</span>[m
+[32m +                            <!-- 變更類型/狀態 -->[m
+[32m +                            <span class="badge-status @statusClass">@item.Status</span>[m
+[32m +                        </div>[m
+[32m +                        <span class="meta-label">📅 預計實施：</span>[m
+[32m +                        <!-- 預計實施日期 -->[m
+[32m +                        <span>@item.FoundDate.ToString("yyyy/MM/dd")</span>[m
+[32m +                    </div>[m
+[32m +                    <div class="meta-item">[m
+[32m +                        <span class="meta-label">🛡️ 風險評估：</span>[m
+[32m +                        <!-- 影響與風險評估 -->[m
+[32m +                        <span class="badge-risk @riskClass">@item.Severity</span>[m
+[32m +                    </div>[m
+[32m +                </div>[m
+[32m +[m
+[32m +                <!-- 動作按鈕區塊：將單一連結替換為完整的 card-footer 結構 -->[m
+[32m +                <div class="card-footer text-end pt-3">[m
+[32m +                    @* 【編輯連結】: 指向 /Vulnerabilities/Create，進入編輯模式 *@[m
+[32m +                    <a asp-page="/Vulnerabilities/Create" asp-route-id="@item.Id" class="btn btn-sm btn-info me-2">[m
+[32m +                        <i class="fas fa-edit"></i> 編輯[m
+[32m +                    </a>[m
+[32m +[m
+[32m +                    @* 【刪除連結】: 指向 /Vulnerabilities/Delete，如果 Delete 頁面存在 *@[m
+[32m +                    <a asp-page="/Vulnerabilities/Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">[m
+[32m +                        <i class="fas fa-trash-alt"></i> 刪除[m
+[32m +                    </a>[m
+[32m +[m
+[32m +                    @* 【查看完整內容】: 連結到編輯頁面，用於快速查看和編輯 (此連結是多餘的，但如果需要保留，請用這個) *@[m
+[32m +                    <a asp-page="/Vulnerabilities/Create" asp-route-id="@item.Id" class="btn btn-link">[m
+[32m +                        查看完整內容 &gt;[m
+[32m +                    </a>[m
+[32m +                </div>[m
+[32m +            </div>[m
+[32m +        }[m
+[32m +    }[m
+[32m +    else[m
+[32m +    {[m
+[32m +        <div class="alert alert-info mt-4">[m
+[32m +            目前沒有任何變更或漏洞紀錄。[m
+[32m +        </div>[m
+[32m +    }[m
+[31m- </div>[m
+[32m++</div>[m
+[32m++=======[m
+[32m+     Layout = null;   // 關閉 _Layout.cshtml，避免多一層版頭版尾[m
+[32m+ }[m
+[32m+ [m
+[32m+ <style>[m
+[32m+     /* 卡片整體風格 */[m
+[32m+     .custom-card {[m
+[32m+         border: 1px solid #e0e0e0;[m
+[32m+         border-radius: 8px;[m
+[32m+         box-shadow: 0 2px 5px rgba(0,0,0,0.05);[m
+[32m+         background: #fff;[m
+[32m+         padding: 20px;[m
+[32m+         margin-bottom: 15px;[m
+[32m+         transition: transform 0.2s;[m
+[32m+     }[m
+[32m+ [m
+[32m+         .custom-card:hover {[m
+[32m+             transform: translateY(-3px);[m
+[32m+             box-shadow: 0 5px 15px rgba(0,0,0,0.1);[m
+[32m+         }[m
+[32m+ [m
+[32m+     .card-header-custom {[m
+[32m+         display: flex;[m
+[32m+         justify-content: space-between;[m
+[32m+         align-items: center;[m
+[32m+         margin-bottom: 12px;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .ticket-id {[m
+[32m+         font-weight: 700;[m
+[32m+         color: #333;[m
+[32m+         font-size: 1.1rem;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .badge-group {[m
+[32m+         display: flex;[m
+[32m+         gap: 8px;[m
+[32m+         align-items: center;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .badge-system {[m
+[32m+         color: #0d6efd;[m
+[32m+         border: 1px solid #0d6efd;[m
+[32m+         padding: 2px 8px;[m
+[32m+         border-radius: 4px;[m
+[32m+         font-size: 0.85rem;[m
+[32m+         font-weight: 600;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .badge-status {[m
+[32m+         padding: 3px 10px;[m
+[32m+         border-radius: 20px;[m
+[32m+         font-size: 0.85rem;[m
+[32m+         font-weight: 500;[m
+[32m+         display: inline-block;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .status-pending {[m
+[32m+         background-color: #fff3cd;[m
+[32m+         color: #856404;[m
+[32m+         border: 1px solid #ffeeba;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .status-approved {[m
+[32m+         background-color: #d1e7dd;[m
+[32m+         color: #0f5132;[m
+[32m+         border: 1px solid #badbcc;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .status-rejected {[m
+[32m+         background-color: #f8d7da;[m
+[32m+         color: #842029;[m
+[32m+         border: 1px solid #f5c2c7;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .summary-text {[m
+[32m+         color: #555;[m
+[32m+         font-size: 1rem;[m
+[32m+         margin-bottom: 15px;[m
+[32m+         line-height: 1.5;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .meta-info {[m
+[32m+         font-size: 0.9rem;[m
+[32m+         color: #666;[m
+[32m+         background-color: #f9f9f9;[m
+[32m+         padding: 10px;[m
+[32m+         border-radius: 6px;[m
+[32m+         display: flex;[m
+[32m+         flex-wrap: wrap;[m
+[32m+         gap: 15px;[m
+[32m+         align-items: center;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .badge-risk {[m
+[32m+         background-color: #eee;[m
+[32m+         color: #444;[m
+[32m+         padding: 2px 8px;[m
+[32m+         border-radius: 4px;[m
+[32m+         font-size: 0.85rem;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .view-btn {[m
+[32m+         display: block;[m
+[32m+         text-align: right;[m
+[32m+         margin-top: 10px;[m
+[32m+         color: #0d6efd;[m
+[32m+         text-decoration: none;[m
+[32m+         font-weight: 500;[m
+[32m+     }[m
+[32m+ [m
+[32m+         .view-btn:hover {[m
+[32m+             text-decoration: underline;[m
+[32m+         }[m
+[32m+ </style>[m
+[32m+ [m
+[32m+ <div class="custom-card">[m
+[32m+     <div class="card-header-custom">[m
+[32m+         <span class="ticket-id"># DevOps-20231027-001</span>[m
+[32m+ [m
+[32m+         <div class="badge-group">[m
+[32m+             <span class="badge-status status-pending">審核中</span>[m
+[32m+             <span class="badge-system">EIP</span>[m
+[32m+         </div>[m
+[32m+     </div>[m
+[32m+ [m
+[32m+     <div class="summary-text">[m
+[32m+         <strong>變更摘要：</strong> 更新資料庫連線模組，修正連線逾時問題，預計提升系統穩定性...[m
+[32m+     </div>[m
+[32m+ [m
+[32m+     <div class="meta-info">[m
+[32m+         <div>📂 <strong>類別：</strong>DevOps</div>[m
+[32m+         <div>📅 <strong>實施：</strong>2023/10/30 (07:00)</div>[m
+[32m+         <div>🛡️ <strong>風險：</strong><span class="badge-risk">低風險</span></div>[m
+[32m+     </div>[m
+[32m+ [m
+[32m+     <a href="#" class="view-btn">查看完整內容 ></a>[m
+[32m+ </div>[m
+[32m+ [m
+[32m+ <div class="custom-card">[m
+[32m+     <div class="card-header-custom">[m
+[32m+         <span class="ticket-id"># DevOps-20231028-005</span>[m
+[32m+         <div class="badge-group">[m
+[32m+             <span class="badge-status status-approved">已核准</span>[m
+[32m+             <span class="badge-system">HIS</span>[m
+[32m+         </div>[m
+[32m+     </div>[m
+[32m+ [m
+[32m+     <div class="summary-text">[m
+[32m+         <strong>變更摘要：</strong> HIS 系統例行性維護與備份作業...[m
+[32m+     </div>[m
+[32m+ [m
+[32m+     <div class="meta-info">[m
+[32m+         <div>📂 <strong>類別：</strong>Routine</div>[m
+[32m+         <div>📅 <strong>實施：</strong>2023/11/01 (00:00)</div>[m
+[32m+         <div>🛡️ <strong>風險：</strong><span class="badge-risk">低風險</span></div>[m
+[32m+     </div>[m
+[32m+ [m
+[32m+     <a href="#" class="view-btn">查看完整內容 ></a>[m
+[32m+ </div>[m
+[32m++>>>>>>> origin/feature/consult-home[m
+[1mdiff --cc Dr.meow/Pages/Forms/FormsList.cshtml.cs[m
+[1mindex aa7cc83,f2fd4fb..850ffd3[m
+[1m--- a/Dr.meow/Pages/Forms/FormsList.cshtml.cs[m
+[1m+++ b/Dr.meow/Pages/Forms/FormsList.cshtml.cs[m
+[36m@@@ -1,35 -1,12 +1,50 @@@[m
+[32m++<<<<<<< HEAD[m
+[32m +﻿using Microsoft.AspNetCore.Mvc.RazorPages;[m
+[32m +using Microsoft.EntityFrameworkCore;[m
+[32m +using Dr.meow.Data;[m
+[32m +using Dr.meow.Models;[m
+[32m +using System.Collections.Generic;[m
+[32m +using System.Threading.Tasks;[m
+[32m +[m
+[32m +namespace Dr.meow.Pages.Forms[m
+[32m +{[m
+[32m +    // 請確保此處的命名空間與您的專案結構一致[m
+[32m +    public class FormsListModel : PageModel[m
+[32m +    {[m
+[32m +        // 宣告資料庫上下文[m
+[32m +        private readonly DrMeowDbContext _context;[m
+[32m +[m
+[32m +        // 這是儲存從資料庫讀取出來的漏洞/變更清單的屬性[m
+[32m +        public IList<Vulnerability> VulnerabilityList { get; set; } = default!;[m
+[32m +[m
+[32m +        // 構造函式：透過依賴注入取得資料庫上下文[m
+[32m +        public FormsListModel(DrMeowDbContext context)[m
+[32m +        {[m
+[32m +            _context = context;[m
+[32m +        }[m
+[32m +[m
+[32m +        // 處理 HTTP GET 請求[m
+[32m +        public async Task OnGetAsync()[m
+[32m +        {[m
+[32m +            // 從資料庫中讀取所有的 Vulnerability 紀錄[m
+[32m +            // 如果您的資料表名稱有變動，請在這裡修正[m
+[32m +            VulnerabilityList = await _context.Vulnerability[m
+[32m +                                                .OrderByDescending(v => v.Id) // 依照 Id 降冪排序，顯示最新的紀錄[m
+[32m +                                                .ToListAsync();[m
+[32m +        }[m
+[32m +    }[m
+[31m- }[m
+[32m++}[m
+[32m++=======[m
+[32m+ using Microsoft.AspNetCore.Mvc;[m
+[32m+ using Microsoft.AspNetCore.Mvc.RazorPages;[m
+[32m+ [m
+[32m+ namespace Dr.meow.Pages.Forms[m
+[32m+ {[m
+[32m+     public class FormsListModel : PageModel[m
+[32m+     {[m
+[32m+         public void OnGet()[m
+[32m+         {[m
+[32m+         }[m
+[32m+     }[m
+[32m+ }[m
+[32m++>>>>>>> origin/feature/consult-home[m
+[1mdiff --cc Dr.meow/Pages/Login.cshtml[m
+[1mindex 3534152,99dc6dd..d44348c[m
+[1m--- a/Dr.meow/Pages/Login.cshtml[m
+[1m+++ b/Dr.meow/Pages/Login.cshtml[m
+[36m@@@ -2,6 -2,7 +2,10 @@@[m
+  @model Dr.meow.Pages.LoginModel[m
+  [m
+  @{[m
+[32m++<<<<<<< HEAD[m
+[32m++=======[m
+[32m+     Layout = "_LoginLayout";   // 使用上面那個跟主 Layout 同風格的版面[m
+[32m++>>>>>>> origin/feature/consult-home[m
+      ViewData["Title"] = "登入";[m
+  }[m
+  [m
+[36m@@@ -42,69 -43,135 +46,201 @@@[m
+              height: 18px;[m
+              display: block;[m
+          }[m
+[32m++<<<<<<< HEAD[m
+[32m +</style>[m
+[32m +[m
+[32m +<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">[m
+[32m +    <div class="card shadow-lg" style="max-width: 420px; width: 100%;">[m
+[32m +        <div class="card-header text-center" style="background: linear-gradient(135deg,#8fc4b4,#6ea89a); color:black;">[m
+[32m +            <h4 class="mb-0">Dr.Meow 登入</h4>[m
+[32m +        </div>[m
+[32m +        <div class="card-body">[m
+[32m +            @if (!string.IsNullOrEmpty(Model.ErrorMessage))[m
+[32m +            {[m
+[32m +                <div class="alert alert-danger py-2">[m
+[32m +                    @Model.ErrorMessage[m
+[32m +                </div>[m
+[32m +            }[m
+[32m +[m
+[32m +            <form method="post">[m
+[32m +                <div class="mb-3">[m
+[32m +                    <label asp-for="Account" class="form-label">帳號</label>[m
+[32m +                    <input asp-for="Account" class="form-control" placeholder="例如：user 或 admin" />[m
+[32m +                    <span asp-validation-for="Account" class="text-danger"></span>[m
+[32m +                </div>[m
+[32m +[m
+[32m +                <div class="mb-3">[m
+[32m +                    <label asp-for="Password" class="form-label">密碼</label>[m
+[32m +                    <input asp-for="Password" class="form-control" type="password" placeholder="預設：1234" />[m
+[32m +                    <span asp-validation-for="Password" class="text-danger"></span>[m
+[32m +                </div>[m
+[32m +[m
+[32m +                <div class="mb-3">[m
+[32m +                    <label class="form-label d-block">登入身分</label>[m
+[32m +                    <div class="form-check form-check-inline">[m
+[32m +                        <input class="form-check-input" type="radio" asp-for="Role" value="user" id="roleUser" checked />[m
+[32m +                        <label class="form-check-label" for="roleUser">使用者</label>[m
+[32m +                    </div>[m
+[32m +                    <div class="form-check form-check-inline">[m
+[32m +                        <input class="form-check-input" type="radio" asp-for="Role" value="admin" id="roleAdmin" />[m
+[32m +                        <label class="form-check-label" for="roleAdmin">管理者</label>[m
+[32m +                    </div>[m
+[32m +                    <span asp-validation-for="Role" class="text-danger"></span>[m
+[32m +                </div>[m
+[32m +[m
+[32m +                <button type="submit" class="btn btn-primary w-100 mb-2">[m
+[32m +                    登入[m
+[32m +                </button>[m
+[32m +[m
+[32m +            [m
+[32m +                <button type="button" class="btn btn-google w-100 mt-1">[m
+[32m +                    <span class="btn-google-icon">[m
+[32m +                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />[m
+[32m +                    </span>[m
+[32m +                    <span>使用 Google 帳戶快速登入</span>[m
+[32m +                </button>[m
+[32m +[m
+[32m +                <div class="text-end mt-2">[m
+[32m +                    <a href="javascript:void(0)" class="small text-muted">[m
+[32m +                        忘記密碼？[m
+[32m +                    </a>[m
+[32m +                </div>[m
+[32m +            </form>[m
+[32m +        </div>[m
+[32m +        <div class="card-footer text-muted small text-center">[m
+[32m +            測試帳號：user / admin　｜　密碼：1234[m
+[32m +        </div>[m
+[32m++=======[m
+[32m+ [m
+[32m+     /* 🌿 主題色登入按鈕（Mint Breeze） */[m
+[32m+     .btn-login-mint {[m
+[32m+         border-radius: 999px;[m
+[32m+         width: 100%;[m
+[32m+         padding: 10px;[m
+[32m+         font-size: 1.05rem;[m
+[32m+         font-weight: 600;[m
+[32m+         border: none;[m
+[32m+         background: linear-gradient(135deg, #8fdacb, #64bba8);[m
+[32m+         color: white;[m
+[32m+         box-shadow: 0 6px 14px rgba(47,110,100,0.25);[m
+[32m+         transition: 0.18s ease;[m
+[32m+     }[m
+[32m+ [m
+[32m+         .btn-login-mint:hover {[m
+[32m+             background: linear-gradient(135deg, #7bcbbd, #51a798);[m
+[32m+             transform: translateY(-1px);[m
+[32m+             box-shadow: 0 8px 16px rgba(47,110,100,0.28);[m
+[32m+         }[m
+[32m+ [m
+[32m+     /* 讓整個登入卡片更漂亮：變寬、變圓、縮短一點 */[m
+[32m+     .login-card {[m
+[32m+         max-width: 450px; /* 🔥 直接加到 560，比較有存在感 */[m
+[32m+         width: 100%;[m
+[32m+         border-radius: 24px;[m
+[32m+         overflow: hidden;[m
+[32m+         background: rgba(255,255,255,0.95);[m
+[32m+         backdrop-filter: blur(10px);[m
+[32m+         -webkit-backdrop-filter: blur(10px);[m
+[32m+         border: 1px solid rgba(255,255,255,0.9);[m
+[32m+         box-shadow: 0 18px 40px rgba(0,0,0,0.12);[m
+[32m+     }[m
+[32m+ [m
+[32m+         .login-card .card-header {[m
+[32m+             border-bottom: none;[m
+[32m+             border-top-left-radius: 24px;[m
+[32m+             border-top-right-radius: 24px;[m
+[32m+         }[m
+[32m+ [m
+[32m+         .login-card .card-body {[m
+[32m+             padding: 22px 36px 18px;[m
+[32m+         }[m
+[32m+ [m
+[32m+         .login-card .card-footer {[m
+[32m+             border-top: none;[m
+[32m+             border-bottom-left-radius: 24px;[m
+[32m+             border-bottom-right-radius: 24px;[m
+[32m+             padding: 10px 20px;[m
+[32m+         }[m
+[32m+ [m
+[32m+         .login-card .mb-3 {[m
+[32m+             margin-bottom: 0.75rem !important;[m
+[32m+         }[m
+[32m+ </style>[m
+[32m+ [m
+[32m+ <div class="card login-card">[m
+[32m+     <!-- 卡片 Header -->[m
+[32m+     <div class="card-header text-center"[m
+[32m+          style="background: linear-gradient(135deg,#7bcbbd,#3AB6A7);[m
+[32m+                 color:white;[m
+[32m+                 padding: 18px;">[m
+[32m+         <h4 class="mb-0">登入系統</h4>[m
+[32m+     </div>[m
+[32m+ [m
+[32m+     <!-- 卡片 Body -->[m
+[32m+     <div class="card-body">[m
+[32m+ [m
+[32m+         @if (!string.IsNullOrEmpty(Model.ErrorMessage))[m
+[32m+         {[m
+[32m+             <div class="alert alert-danger py-2 mb-3">[m
+[32m+                 @Model.ErrorMessage[m
+[32m+             </div>[m
+[32m+         }[m
+[32m+ [m
+[32m+         <form method="post">[m
+[32m+             <div class="mb-3">[m
+[32m+                 <label asp-for="Account" class="form-label">帳號</label>[m
+[32m+                 <input asp-for="Account" class="form-control" placeholder="例如：user 或 admin" />[m
+[32m+                 <span asp-validation-for="Account" class="text-danger"></span>[m
+[32m+             </div>[m
+[32m+ [m
+[32m+             <div class="mb-3">[m
+[32m+                 <label asp-for="Password" class="form-label">密碼</label>[m
+[32m+                 <input asp-for="Password" class="form-control" type="password" placeholder="預設：1234" />[m
+[32m+                 <span asp-validation-for="Password" class="text-danger"></span>[m
+[32m+             </div>[m
+[32m+ [m
+[32m+             <div class="mb-3">[m
+[32m+                 <label class="form-label d-block">登入身分</label>[m
+[32m+                 <div class="form-check form-check-inline">[m
+[32m+                     <input class="form-check-input"[m
+[32m+                            type="radio" asp-for="Role" value="user" id="roleUser" checked />[m
+[32m+                     <label class="form-check-label" for="roleUser">使用者</label>[m
+[32m+                 </div>[m
+[32m+ [m
+[32m+                 <div class="form-check form-check-inline">[m
+[32m+                     <input class="form-check-input"[m
+[32m+                            type="radio" asp-for="Role" value="admin" id="roleAdmin" />[m
+[32m+                     <label class="form-check-label" for="roleAdmin">管理者</label>[m
+[32m+                 </div>[m
+[32m+ [m
+[32m+                 <span asp-validation-for="Role" class="text-danger"></span>[m
+[32m+             </div>[m
+[32m+ [m
+[32m+             <!-- 🌿 主題色登入按鈕 -->[m
+[32m+             <button type="submit" class="btn-login-mint mb-3">[m
+[32m+                 登入[m
+[32m+             </button>[m
+[32m+ [m
+[32m+             <!-- Google 登入，導到註冊 -->[m
+[32m+             <a asp-page="/Register" class="btn btn-google w-100 mt-1">[m
+[32m+                 <span class="btn-google-icon">[m
+[32m+                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />[m
+[32m+                 </span>[m
+[32m+                 <span>使用 Google 帳戶快速登入</span>[m
+[32m+             </a>[m
+[32m+ [m
+[32m+             <div class="text-end mt-2">[m
+[32m+                 <a href="javascript:void(0)" class="small text-muted">[m
+[32m+                     忘記密碼？[m
+[32m+                 </a>[m
+[32m+             </div>[m
+[32m+         </form>[m
+[32m+     </div>[m
+[32m+ [m
+[32m+     <!-- 卡片 Footer -->[m
+[32m+     <div class="card-footer text-muted small text-center">[m
+[32m+         測試帳號：user / admin　｜　密碼：1234[m
+[32m++>>>>>>> origin/feature/consult-home[m
+      </div>[m
+  </div>[m
+  [m
+[1mdiff --cc Dr.meow/Pages/OldIndex.cshtml.cs[m
+[1mindex 0000000,a3bec2b..bf706c1[m
+mode 000000,100644..100644[m
+[1m--- a/Dr.meow/Pages/OldIndex.cshtml.cs[m
+[1m+++ b/Dr.meow/Pages/OldIndex.cshtml.cs[m
+[36m@@@ -1,0 -1,11 +1,12 @@@[m
+[32m++using Microsoft.AspNetCore.Mvc;[m
+[32m+ using Microsoft.AspNetCore.Mvc.RazorPages;[m
+[32m+ [m
+[31m -namespace Dr.meow.Pages[m
+[32m++namespace Dr.meow.Pages.Forms[m
+[32m+ {[m
+[31m -    public class IndexModel : PageModel[m
+[32m++    public class ManagementModel : PageModel[m
+[32m+     {[m
+[32m+         public void OnGet()[m
+[32m+         {[m
+[32m+         }[m
+[32m+     }[m
+[32m+ }[m
+[1mdiff --cc Dr.meow/Pages/Shared/_Layout.cshtml[m
+[1mindex 249eb87,8a456e7..e11e52c[m
+[1m--- a/Dr.meow/Pages/Shared/_Layout.cshtml[m
+[1m+++ b/Dr.meow/Pages/Shared/_Layout.cshtml[m
+[36m@@@ -5,113 -9,233 +9,278 @@@[m
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />[m
+      <title>@ViewData["Title"] - Dr.meow</title>[m
+  [m
+[31m-     <!-- ✅ Bootstrap CDN -->[m
+[31m-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">[m
+[32m+     <!-- Bootstrap -->[m
+[32m+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />[m
+[32m+     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +[m
+[32m +    <!-- ✅ 站內 CSS -->[m
+[32m++=======[m
+[32m+     <!-- Site CSS -->[m
+[32m++>>>>>>> origin/feature/consult-home[m
+      <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />[m
+  [m
+      <style>[m
+[31m-         :root {[m
+[31m-             --meow-green: #3AB6A7;[m
+[31m-             --meow-green-light: #E8F8F6;[m
+[32m+         /************************************[m
+[32m+                  🔔 通知鈴鐺（你的原本樣式）[m
+[32m+                 ************************************/[m
+[32m+         .btn-icon-notification {[m
+[32m+             background-color: rgba(255, 255, 255, 0.18);[m
+[32m+             border: 1px solid rgba(255, 255, 255, 0.25);[m
+[32m+             color: #ffffff;[m
+[32m+             width: 46px;[m
+[32m+             height: 46px;[m
+[32m+             border-radius: 14px;[m
+[32m+             display: flex;[m
+[32m+             align-items: center;[m
+[32m+             justify-content: center;[m
+[32m+             position: relative;[m
+[32m+             cursor: pointer;[m
+[32m+             text-decoration: none;[m
+[32m+             transition: all 0.18s ease;[m
+          }[m
+  [m
+[31m-         body {[m
+[31m-             background: var(--meow-green-light) !important;[m
+[31m-             font-family: "Segoe UI", sans-serif;[m
+[32m+             .btn-icon-notification:hover {[m
+[32m+                 background-color: rgba(255, 255, 255, 0.32);[m
+[32m+                 transform: translateY(-2px);[m
+[32m+                 box-shadow: 0 4px 12px rgba(0,0,0,0.16);[m
+[32m+             }[m
+[32m+ [m
+[32m+             .btn-icon-notification i {[m
+[32m+                 font-size: 1.25rem;[m
+[32m+             }[m
+[32m+ [m
+[32m+         .notification-badge {[m
+[32m+             position: absolute;[m
+[32m+             top: 6px;[m
+[32m+             right: 7px;[m
+[32m+             width: 9px;[m
+[32m+             height: 9px;[m
+[32m+             background-color: #ff4d4f;[m
+[32m+             border-radius: 50%;[m
+[32m+             border: 1px solid rgba(255,255,255,0.9);[m
+[32m+             animation: pulse-red 2s infinite;[m
+          }[m
+[32m+         @@keyframes pulse-red {[m
+[32m+             0%[m
+  [m
+[31m-         .navbar {[m
+[31m-             background-color: var(--meow-green) !important;[m
+[32m+         {[m
+[32m+             box-shadow: 0 0 0 0 rgba(255,77,79,0.7);[m
+          }[m
+  [m
+[31m-         .footer {[m
+[31m-             background-color: var(--meow-green) !important;[m
+[31m-             color: white !important;[m
+[31m-             padding: 10px 0;[m
+[32m+         70% {[m
+[32m+             box-shadow: 0 0 0 7px rgba(255,77,79,0);[m
+          }[m
+  [m
+[31m-         .navbar-brand img {[m
+[31m-             height: 60px;[m
+[31m-             border-radius: 10px;[m
+[31m-             transition: 0.25s;[m
+[32m+         100% {[m
+[32m+             box-shadow: 0 0 0 0 rgba(255,77,79,0);[m
+          }[m
+  [m
+[31m-             .navbar-brand img:hover {[m
+[31m-                 transform: scale(1.1);[m
+[31m-             }[m
+[32m+         }[m
+  [m
+[31m-         /* 卡片美化 */[m
+[31m-         .card {[m
+[31m-             border: none;[m
+[31m-             border-radius: 12px;[m
+[32m+         /* 🔔 通知下拉 — 讓排版正常、不擠在一起 */[m
+[32m+         .notifications-menu {[m
+[32m+             width: 320px;[m
+[32m+             border-radius: 14px;[m
+[32m+             padding: 0;[m
+          }[m
+  [m
+[31m-         .card-header {[m
+[31m-             background: white !important;[m
+[32m+         /* Header */[m
+[32m+         .notifications-header {[m
+[32m+             padding: 10px 16px;[m
+              font-weight: 600;[m
+[32m+             font-size: 0.95rem;[m
+[32m+             color: #444;[m
+[32m+             background: #f8f9fa;[m
+[32m+             border-bottom: 1px solid #e5e5e5;[m
+          }[m
+  [m
+[31m-         /* 按鈕主題統一 */[m
+[31m-         .btn-primary {[m
+[31m-             background-color: var(--meow-green) !important;[m
+[31m-             border-color: var(--meow-green) !important;[m
+[32m+         /* 每一則通知的外框 */[m
+[32m+         .notification-row {[m
+[32m+             padding: 12px 16px;[m
+[32m+             line-height: 1.4;[m
+          }[m
+  [m
+[31m-             .btn-primary:hover {[m
+[31m-                 filter: brightness(1.12);[m
+[32m+             /* 讓 icon 與文字對齊不會擠在一起 */[m
+[32m+             .notification-row .icon-box {[m
+[32m+                 width: 26px;[m
+[32m+                 font-size: 1.2rem;[m
+[32m+                 display: flex;[m
+[32m+                 align-items: flex-start;[m
+[32m+                 justify-content: center;[m
+[32m+                 margin-top: 2px;[m
+              }[m
+[31m-     </style>[m
+  [m
+[32m+         /* 讓兩行文字排版正常 */[m
+[32m+         .notification-item-text {[m
+[32m+             font-size: 0.95rem;[m
+[32m+             color: #333;[m
+[32m+         }[m
+[32m+ [m
+[32m+         .notification-time {[m
+[32m+             font-size: 0.8rem;[m
+[32m+             color: #7a7a7a;[m
+[32m+             margin-top: 2px;[m
+[32m+         }[m
+[32m+ [m
+[32m+         /* 底部 */[m
+[32m+         .notifications-footer {[m
+[32m+             padding: 10px 16px;[m
+[32m+             text-align: center;[m
+[32m+             background: #fafafa;[m
+[32m+         }[m
+[32m+ [m
+[32m+             .notifications-footer a {[m
+[32m+                 font-size: 0.9rem;[m
+[32m+             }[m
+[32m+ [m
+[32m+ [m
+[32m+         /************************************[m
+[32m+                  🎨 Logo Hover：低調質感版[m
+[32m+                 ************************************/[m
+[32m+         .drmeow-logo {[m
+[32m+             border-radius: 10px;[m
+[32m+             transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;[m
+[32m+         }[m
+[32m+ [m
+[32m+             .drmeow-logo:hover {[m
+[32m+                 transform: translateY(-1px) scale(1.03); /* 微微浮起＋放大 */[m
+[32m+                 filter: brightness(1.06); /* 稍微變亮一點 */[m
+[32m+                 box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);[m
+[32m+                 cursor: pointer;[m
+[32m+             }[m
+[32m+     </style>[m
+  </head>[m
+[32m+ [m
+  <body class="d-flex flex-column min-vh-100">[m
+[32m +    @{[m
+[32m +        // 目前 Razor Page 名稱，例如 "/Login"、"/AdminHome"、"/UserHome"[m
+[32m +        var currentPage = (ViewContext.RouteData.Values["page"] as string) ?? "";[m
+[32m +        var showBell = !string.Equals(currentPage, "/Login", StringComparison.OrdinalIgnoreCase);[m
+[32m +    }[m
+  [m
+[31m-     <!-- ✅ 頂部綠色導覽列 -->[m
+[32m+     <!-- ◎頂部 Navbar -->[m
+      <header>[m
+          <nav class="navbar border-bottom box-shadow mb-3" style="background-color:#3AB6A7;">[m
+              <div class="container d-flex align-items-center justify-content-between">[m
+[32m++<<<<<<< HEAD[m
+[32m +                <!-- 左側 LOGO -->[m
+[32m +                <a class="navbar-brand d-flex align-items-center gap-3 text-white" asp-page="/Index">[m
+[32m +                    <img src="~/images/drmeow-logo.png" alt="Dr.Meow Logo"[m
+[32m +                         style="height:60px;width:auto;border-radius:10px;">[m
+[32m +                    <span class="fw-bold" style="font-size:1.4rem;">Dr.meow</span>[m
+[32m +                </a>[m
+[32m +[m
+[32m +                <!-- 右上角鈴鐺通知按鈕：只有不是 Login 頁才顯示 -->[m
+[32m +                @if (showBell)[m
+[32m +                {[m
+[32m +                    <div class="dropdown">[m
+[32m +                        <button class="btn btn-light position-relative" id="notifyBell" data-bs-toggle="dropdown">[m
+[32m +                            <span class="fs-5">🔔查看通知</span>[m
+[32m +                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">[m
+[32m +                                3[m
+[32m +                            </span>[m
+[32m +                        </button>[m
+[32m +[m
+[32m +                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="width: 260px;">[m
+[32m +                            <li class="dropdown-header fw-bold">通知中心</li>[m
+[32m +                            <li><hr class="dropdown-divider" /></li>[m
+[32m +                            <li><a class="dropdown-item small" href="#">📄 您有 1 筆待審核表單</a></li>[m
+[32m +                            <li><a class="dropdown-item small" href="#">🛠️ DevOps-20231027-001 已提交</a></li>[m
+[32m +                            <li><a class="dropdown-item small" href="#">❌ 有表單被退回需要處理</a></li>[m
+[32m +                            <li><hr class="dropdown-divider" /></li>[m
+[32m +                            <li><a class="dropdown-item text-center small text-primary" href="#">查看全部通知 &gt;</a></li>[m
+[32m +                        </ul>[m
+[32m++=======[m
+[32m+ [m
+[32m+                 <!-- 左：Logo + 名稱 -->[m
+[32m+                 <a class="navbar-brand d-flex align-items-center gap-3 text-white" asp-page="/Index">[m
+[32m+                     <img src="~/images/drmeow-logo.png"[m
+[32m+                          class="drmeow-logo"[m
+[32m+                          alt="Dr.Meow Logo"[m
+[32m+                          style="height:60px;width:auto;">[m
+[32m+                     <span class="fw-bold" style="font-size:1.4rem;">Dr.meow</span>[m
+[32m+                 </a>[m
+[32m+ [m
+[32m+                 <!-- 右：通知鈴鐺（Login 頁不要顯示） -->[m
+[32m+                 @if (!string.Equals(currentPage, "/Login", System.StringComparison.OrdinalIgnoreCase))[m
+[32m+                 {[m
+[32m+                     <div class="d-flex align-items-center">[m
+[32m+                         <div class="nav-item dropdown">[m
+[32m+                             <a class="btn-icon-notification"[m
+[32m+                                href="#"[m
+[32m+                                id="notifDropdown"[m
+[32m+                                role="button"[m
+[32m+                                data-bs-toggle="dropdown"[m
+[32m+                                aria-expanded="false">[m
+[32m+                                 <i class="bi bi-bell-fill"></i>[m
+[32m+                                 <span class="notification-badge"></span>[m
+[32m+                             </a>[m
+[32m+ [m
+[32m+                             <!-- 下拉通知清單 -->[m
+[32m+                             <ul class="dropdown-menu dropdown-menu-end notifications-menu"[m
+[32m+                                 aria-labelledby="notifDropdown">[m
+[32m+ [m
+[32m+                                 <li class="notifications-header">[m
+[32m+                                     最近通知[m
+[32m+                                 </li>[m
+[32m+ [m
+[32m+                                 <li>[m
+[32m+                                     <div class="notification-row">[m
+[32m+                                         <div class="d-flex align-items-start gap-2">[m
+[32m+                                             <span style="font-size:1.1rem;">✅</span>[m
+[32m+                                             <div>[m
+[32m+                                                 <div class="notification-item-text">[m
+[32m+                                                     您的變更單 DevOps-20231027-001 已通過審核[m
+[32m+                                                 </div>[m
+[32m+                                                 <div class="notification-time">[m
+[32m+                                                     3 分鐘前[m
+[32m+                                                 </div>[m
+[32m+                                             </div>[m
+[32m+                                         </div>[m
+[32m+                                     </div>[m
+[32m+                                 </li>[m
+[32m+ [m
+[32m+                                 <li><hr class="dropdown-divider m-0" /></li>[m
+[32m+ [m
+[32m+                                 <li>[m
+[32m+                                     <div class="notification-row">[m
+[32m+                                         <div class="d-flex align-items-start gap-2">[m
+[32m+                                             <span style="font-size:1.1rem;">⚠️</span>[m
+[32m+                                             <div>[m
+[32m+                                                 <div class="notification-item-text">[m
+[32m+                                                     有新的漏洞通報，請儘速查看相關建議與修補措施說明[m
+[32m+                                                 </div>[m
+[32m+                                                 <div class="notification-time">[m
+[32m+                                                     1 小時前[m
+[32m+                                                 </div>[m
+[32m+                                             </div>[m
+[32m+                                         </div>[m
+[32m+                                     </div>[m
+[32m+                                 </li>[m
+[32m+ [m
+[32m+                                 <li><hr class="dropdown-divider m-0" /></li>[m
+[32m+ [m
+[32m+                                 <li class="notifications-footer">[m
+[32m+                                     <a href="#">查看全部通知</a>[m
+[32m+                                 </li>[m
+[32m+                             </ul>[m
+[32m+                         </div>[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                      </div>[m
+                  }[m
+              </div>[m
+          </nav>[m
+      </header>[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +    <!-- ✅ 主要內容區：會自動撐開 -->[m
+[32m +    <main class="flex-grow-1 text-dark">[m
+[32m++=======[m
+[32m+     <!-- ◎內容 -->[m
+[32m+     <main class="flex-grow-1">[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          <div class="container pb-4">[m
+              @RenderBody()[m
+          </div>[m
+[1mdiff --cc Dr.meow/Pages/UserHome.cshtml[m
+[1mindex 85e1f3d,7f0e1a0..7c303cf[m
+[1m--- a/Dr.meow/Pages/UserHome.cshtml[m
+[1m+++ b/Dr.meow/Pages/UserHome.cshtml[m
+[36m@@@ -5,10 -5,70 +5,77 @@@[m
+      ViewData["Title"] = "使用者顧問中心";[m
+  }[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +<div class="row g-3">[m
+[32m +    <!-- 左側選單 -->[m
+[32m +    <aside class="col-12 col-lg-3">[m
+[32m +        <div class="card shadow-sm">[m
+[32m++=======[m
+[32m+ <style>[m
+[32m+     /* 左側選單卡片本身稍微圓一點 */[m
+[32m+     .app-sidebar.card {[m
+[32m+         border-radius: 22px;[m
+[32m+         border: none;[m
+[32m+         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);[m
+[32m+     }[m
+[32m+ [m
+[32m+     /* 列表容器 */[m
+[32m+     .app-sidebar {[m
+[32m+         border-radius: 22px;[m
+[32m+         overflow: hidden;[m
+[32m+     }[m
+[32m+ [m
+[32m+         /* 每一個選單項目的共同樣式 */[m
+[32m+         .app-sidebar .list-group-item {[m
+[32m+             border: none;[m
+[32m+             background-color: #ffffff;[m
+[32m+             padding: 0.8rem 1.1rem;[m
+[32m+             transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.15s ease;[m
+[32m+         }[m
+[32m+ [m
+[32m+             /* 第一行標題不要浮起 */[m
+[32m+             .app-sidebar .list-group-item.text-uppercase {[m
+[32m+                 background-color: transparent;[m
+[32m+                 font-size: 0.78rem;[m
+[32m+                 letter-spacing: 0.08em;[m
+[32m+                 color: #999;[m
+[32m+                 padding: 0.75rem 1.1rem;[m
+[32m+             }[m
+[32m+ [m
+[32m+         /* 滑過一般選項：微浮起＋柔陰影＋淡綠底 */[m
+[32m+         .app-sidebar .list-group-item-action:hover {[m
+[32m+             transform: translateY(-2px);[m
+[32m+             background-color: #e9f9f5;[m
+[32m+             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);[m
+[32m+             cursor: pointer;[m
+[32m+         }[m
+[32m+ [m
+[32m+         /* active 狀態：保持選取背景＋不會太凸 */[m
+[32m+         .app-sidebar .list-group-item.app-menu.active {[m
+[32m+             background-color: #d6f6ee;[m
+[32m+             color: #1f6e61;[m
+[32m+             font-weight: 600;[m
+[32m+             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);[m
+[32m+         }[m
+[32m+ [m
+[32m+         /* 登出顏色維持紅色，但也有 hover 浮起 */[m
+[32m+         .app-sidebar .list-group-item.text-danger {[m
+[32m+             color: #e45b5b;[m
+[32m+             font-weight: 500;[m
+[32m+         }[m
+[32m+ [m
+[32m+             .app-sidebar .list-group-item.text-danger:hover {[m
+[32m+                 background-color: #ffecec;[m
+[32m+                 box-shadow: 0 6px 14px rgba(228, 91, 91, 0.16);[m
+[32m+                 transform: translateY(-2px);[m
+[32m+             }[m
+[32m+ </style>[m
+[32m+ [m
+[32m+ <div class="row g-3">[m
+[32m+     <!-- 左側選單 -->[m
+[32m+     <aside class="col-12 col-lg-3">[m
+[32m+         <div class="card shadow-sm app-sidebar">[m
+[32m++>>>>>>> origin/feature/consult-home[m
+              <div class="list-group list-group-flush app-sidebar">[m
+                  <div class="list-group-item text-secondary small text-uppercase">[m
+                      功能[m
+[36m@@@ -54,6 -114,7 +121,10 @@@[m
+                  <div id="noteBox" class="alert alert-info py-2">[m
+                      您目前以「使用者」登入，可向 RAG 顧問提問，並填寫變更／漏洞表單。[m
+                  </div>[m
+[32m++<<<<<<< HEAD[m
+[32m++=======[m
+[32m+ [m
+[32m++>>>>>>> origin/feature/consult-home[m
+                  <!-- RAG 顧問區塊：預設顯示 -->[m
+                  <div id="ragArea">[m
+                      <div id="messages" class="chat-stream mb-3"></div>[m
+[36m@@@ -72,10 -133,10 +143,17 @@@[m
+                          </div>[m
+                      </form>[m
+                  </div>[m
+[32m++<<<<<<< HEAD[m
+[32m +                <!-- 查看表單區塊：一開始隱藏，點「查看表單」才顯示 -->[m
+[32m +                <div id="formsArea" class="d-none">[m
+[32m +                    <div id="formsContainer">[m
+[32m +                        <!-- 第一次切換時由 JS 透過 Ajax 載入 FormsList 的 HTML -->[m
+[32m++=======[m
+[32m+ [m
+[32m+                 <!-- 查看表單區塊：一開始隱藏，點「查看表單」才顯示 -->[m
+[32m+                 <div id="formsArea" class="d-none">[m
+[32m+                     <div id="formsContainer">[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                          載入中…[m
+                      </div>[m
+                  </div>[m
+[36m@@@ -83,30 -144,12 +161,39 @@@[m
+          </div>[m
+      </section>[m
+  </div>[m
+[32m++<<<<<<< HEAD[m
+[32m +<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasSource" aria-labelledby="offcanvasSourceLabel">[m
+[32m +    <div class="offcanvas-header bg-light">[m
+[32m +        <h5 class="offcanvas-title" id="offcanvasSourceLabel">📄 原始文件內容</h5>[m
+[32m +        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>[m
+[32m +    </div>[m
+[32m +    <div class="offcanvas-body">[m
+[32m +        <h6 id="sourceTitle" class="text-primary fw-bold mb-3 border-bottom pb-2"></h6>[m
+[32m +        <div id="sourceContent" class="p-3 bg-light border rounded font-monospace small" style="white-space: pre-wrap;">[m
+[32m +        </div>[m
+[32m +        <div class="mt-3 text-end">[m
+[32m +            <small class="text-muted">來源：RAG 知識庫</small>[m
+[32m +        </div>[m
+[32m +    </div>[m
+[32m +</div>[m
+  [m
+  @section Scripts {[m
+      <script>[m
+[32m +        // ✅ TODO：把這個改成你實際的 FormsList Partial View 路徑[m
+[32m +        // 例如 Razor Page: /Vulnerabilities/FormsList?handler=Partial[m
+          const FORMS_URL = '/Forms/FormsList';[m
+[32m +        // === 設定：真正打到 Razor Page 的 API ===[m
+          const API_URL = '/Api/Search';[m
+  [m
+[32m +    /* 抓 DOM */[m
+[32m++=======[m
+[32m++[m
+[32m++@section Scripts {[m
+[32m++    <script>[m
+[32m++        const FORMS_URL = '/Forms/FormsList';[m
+[32m++        const API_URL = '/Api/Search';[m
+[32m++[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          const menuItems = document.querySelectorAll('.app-menu');[m
+          const topics    = document.querySelectorAll('.app-topic');[m
+          const noteBox   = document.getElementById('noteBox');[m
+[36m@@@ -124,12 -167,7 +211,16 @@@[m
+          const btnVoice  = document.getElementById('btnVoice');[m
+  [m
+          let formsLoaded = false;[m
+[32m++<<<<<<< HEAD[m
+[32m +        let currentSources = [];[m
+  [m
+[32m +        // 側邊欄實體[m
+[32m +        const sourceOffcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasSource'));[m
+[32m +[m
+[32m +        /* 左側點選高亮 + 模式切換 */[m
+[32m++=======[m
+[32m++[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          menuItems.forEach(it => {[m
+              it.addEventListener('click', () => {[m
+                  menuItems.forEach(x => x.classList.remove('active'));[m
+[36m@@@ -139,18 -177,15 +230,27 @@@[m
+                  if (!mode) return;[m
+  [m
+                  if (mode === 'consult') {[m
+[32m++<<<<<<< HEAD[m
+[32m +                    // 顧問模式：顯示 RAG，隱藏表單[m
+[32m++=======[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                      ragArea.classList.remove('d-none');[m
+                      formsArea.classList.add('d-none');[m
+                      noteBox.textContent = '您目前在「RAG 顧問」模式，可向系統提問相關問題。';[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +                    // 顧問區切換時順便清一下畫面[m
+[32m++=======[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                      msgs.innerHTML = '';[m
+                      results.innerHTML = '';[m
+                      summary.classList.add('d-none');[m
+                  }[m
+                  else if (mode === 'forms') {[m
+[32m++<<<<<<< HEAD[m
+[32m +                    // 查看表單模式：顯示表單列表，隱藏 RAG[m
+[32m++=======[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                      ragArea.classList.add('d-none');[m
+                      formsArea.classList.remove('d-none');[m
+                      noteBox.textContent = '您目前在「查看表單」模式，可瀏覽已填寫的變更／漏洞表單。';[m
+[36m@@@ -162,7 -197,6 +262,10 @@@[m
+              });[m
+          });[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +        /* 第一次進入「查看表單」時，Ajax 抓 FormsList HTML 塞進來 */[m
+[32m++=======[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          async function loadFormsList() {[m
+              formsContainer.textContent = '載入中…';[m
+              try {[m
+[36m@@@ -181,7 -215,6 +284,10 @@@[m
+              }[m
+          }[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +        /* 主題快捷鍵 */[m
+[32m++=======[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          topics.forEach(tp => {[m
+              tp.addEventListener('click', () => {[m
+                  input.value = `請提供「${tp.dataset.prompt}」的作業重點與處置流程`;[m
+[36m@@@ -189,236 -222,147 +295,373 @@@[m
+              });[m
+          });[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +        /* 送出：顯示泡泡 + 呼叫 /Api/Search 拿真實資料 */[m
+[32m++=======[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          form.addEventListener('submit', async (e) => {[m
+              e.preventDefault();[m
+              const q = input.value.trim();[m
+              if (!q) return;[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +            // 顯示使用者提問[m
+[32m +            pushUser(q);[m
+[32m +            input.value = '';[m
+[32m +[m
+[32m +            // 顯示「查詢中」泡泡 (並取得 ID 方便移除)[m
+[32m +            const loadingId = pushBot('查詢中，請稍候…', true);[m
+[32m +[m
+[32m +            try {[m
+[32m +                        const resp = await fetch(API_URL, {[m
+[32m +            method: 'POST',[m
+[32m +            headers: {[m
+[32m +                'Content-Type': 'application/json',[m
+[32m +                // 如果有開 CSRF 防護，這裡可能要加 RequestVerificationToken，但在 API 模式下通常不需要[m
+[32m +            },[m
+[32m +            body: JSON.stringify({ query: q }) // 屬性名稱要對應後端的 RagQueryRequest[m
+[32m +        });[m
+[32m +                if (!resp.ok) {[m
+[32m +                    const text = await resp.text();[m
+[32m +                    replaceBotMessage(loadingId, `後端發生錯誤（${resp.status}）：${text}`);[m
+[32m +                    return;[m
+[32m +                }[m
+[32m +[m
+[32m +                const data = await resp.json(); // { answer: "...", items: [...] }[m
+[32m +                console.log("收到後端資料:", data);[m
+[32m +[m
+[32m +                // 儲存來源資料供點擊使用[m
+[32m +                currentSources = data.items || data.sources || data.Sources || [];[m
+[32m +[m
+[32m +                // 處理回答文字：將 [來源: xxx] 轉為超連結[m
+[32m +                // 若 answer 為空，給預設值[m
+[32m +                const rawAnswer = data.answer || data.Answer || '（沒有取得 AI 回覆）';[m
+[32m +                const formattedAnswer = formatText(rawAnswer);[m
+[32m +[m
+[32m +                // 更新機器人訊息[m
+[32m +                replaceBotMessage(loadingId, formattedAnswer);[m
+[32m +[m
+[32m +                // 上方 summary 區 (可選，這裡先隱藏以免重複)[m
+[32m +                // summary.classList.remove('d-none');[m
+[32m +                // summary.innerHTML = processedAnswer;[m
+[32m +[m
+[32m +                // 下方文件卡片 (總覽用)[m
+[32m +                results.innerHTML = '';[m
+[32m +                (data.items || []).forEach(addResultCard);[m
+[32m +[m
+[32m +                scrollBottom();[m
+[32m +[m
+[32m +            } catch (err) {[m
+[32m +                console.error(err);[m
+[32m +                replaceBotMessage(loadingId, '查詢失敗，請檢查後端連線或稍後再試。');[m
+[32m +            }[m
+[32m +        });[m
+[32m +[m
+[32m +        /* 清空 */[m
+[32m +        // btnClear.addEventListener('click', () => {[m
+[32m +        //     msgs.innerHTML = '';[m
+[32m +        //     results.innerHTML = '';[m
+[32m +        //     summary.classList.add('d-none');[m
+[32m +        // });[m
+[32m +        /* 清空按鈕：只清輸入框 */[m
+[32m++=======[m
+[32m+             pushUser(q);[m
+[32m+             input.value = '';[m
+[32m+ [m
+[32m+             pushBot('查詢中，請稍候…');[m
+[32m+ [m
+[32m+             try {[m
+[32m+                 const resp = await fetch(`${API_URL}?keyword=${encodeURIComponent(q)}`);[m
+[32m+                 if (!resp.ok) {[m
+[32m+                     const text = await resp.text();[m
+[32m+                     replaceLastBot(`後端發生錯誤（${resp.status}）：${text}`);[m
+[32m+                     summary.classList.add('d-none');[m
+[32m+                     results.innerHTML = '';[m
+[32m+                     return;[m
+[32m+                 }[m
+[32m+ [m
+[32m+                 const data = await resp.json();[m
+[32m+ [m
+[32m+                 if (!Array.isArray(data)) {[m
+[32m+                     replaceLastBot('外部搜尋服務回傳的格式不正確。');[m
+[32m+                     summary.classList.add('d-none');[m
+[32m+                     results.innerHTML = '';[m
+[32m+                     return;[m
+[32m+                 }[m
+[32m+ [m
+[32m+                 replaceLastBot('查詢完成！以下為相關文件。');[m
+[32m+ [m
+[32m+                 summary.classList.remove('d-none');[m
+[32m+                 summary.textContent = data.length > 0[m
+[32m+                     ? `共找到 ${data.length} 筆相關文件。`[m
+[32m+                     : '沒有找到相關文件。';[m
+[32m+ [m
+[32m+                 results.innerHTML = '';[m
+[32m+                 data.forEach(addResultCard);[m
+[32m+ [m
+[32m+                 scrollBottom();[m
+[32m+             } catch (err) {[m
+[32m+                 console.error(err);[m
+[32m+                 replaceLastBot('查詢失敗，請稍後再試。');[m
+[32m+                 summary.classList.add('d-none');[m
+[32m+                 results.innerHTML = '';[m
+[32m+             }[m
+[32m+         });[m
+[32m+ [m
+[32m++>>>>>>> origin/feature/consult-home[m
+          btnClear.addEventListener('click', (e) => {[m
+              e.preventDefault();[m
+              input.value = '';[m
+          });[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +        /* === 🔥 核心格式化工具 (Markdown + 引用連結) === */[m
+[32m +        function formatText(text) {[m
+[32m +            if (!text) return '';[m
+[32m +[m
+[32m +            // 1. 先做基本的 HTML 跳脫 (防止 XSS，但保留我們後面要加的標籤)[m
+[32m +            // 我們先不跳脫，而是用取代的方式處理特殊字元，或者手動處理[m
+[32m +            // 這裡簡單實作：先 escape，再還原 Markdown 語法[m
+[32m +            let safeText = escapeHtml(text);[m
+[32m +[m
+[32m +            // 2. 處理 **粗體** -> <strong>粗體</strong>[m
+[32m +            // Regex: \*\*(.*?)\*\*[m
+[32m +            safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-dark">$1</strong>');[m
+[32m +[m
+[32m +            // 3. 處理條列點 (例如 "- 項目") -> 加上換行或縮排 (選用)[m
+[32m +            // 這裡簡單將換行符號 \n 轉為 <br>[m
+[32m +            safeText = safeText.replace(/\n/g, '<br>');[m
+[32m +[m
+[32m +            // 4. 處理 [來源: xxx] -> 藍色超連結[m
+[32m +            // 支援 [來源: xxx] 或[m
+[32m +            safeText = safeText.replace(/\[(來源|cite):\s*(.*?)\]/gi, (match, label, fileName) => {[m
+[32m +                // 必須解碼 fileName (因為 escapeHtml 轉義了空格等)[m
+[32m +                // 但這裡 fileName 應該是單純文字，我們直接用[m
+[32m +                return `<a href="javascript:void(0)" class="citation-link text-decoration-none fw-bold" onclick="showSource('${fileName.trim()}')">📄 ${match}</a>`;[m
+[32m +            });[m
+[32m +[m
+[32m +            return safeText;[m
+[32m +        }[m
+[32m +[m
+[32m +        /* === 核心功能：顯示側邊欄 === */[m
+[32m +           /* === 核心功能：智慧側邊欄 (表格美化 + PDF 切換) === */[m
+[32m +        window.showSource = function(fileName) {[m
+[32m +            // 找出對應的資料[m
+[32m +            const target = currentSources.find(s => s.title && s.title.includes(fileName));[m
+[32m +            if (target) {[m
+[32m +                document.getElementById('sourceTitle').textContent = target.title;[m
+[32m +                document.getElementById('sourceContent').textContent = target.snippet || "(無內容)";[m
+[32m +                sourceOffcanvas.show();[m
+[32m +            } else {[m
+[32m +                alert(`抱歉，在本次檢索結果中找不到對應的文件片段：${fileName}`);[m
+[32m +            }[m
+[32m +[m
+[32m +            // 設定標題[m
+[32m +            document.getElementById('sourceTitle').textContent = target.title;[m
+[32m +            const container = document.getElementById('sourceContentContainer'); // 確保 HTML 裡的 ID 是這個[m
+[32m +[m
+[32m +            // 渲染側邊欄：預設顯示文字[m
+[32m +            container.innerHTML = `[m
+[32m +                ${pdfButtonHtml}[m
+[32m +                <div id="textContentMode" class="card bg-light border-0">[m
+[32m +                    <div class="card-body p-3">[m
+[32m +                        <h6 class="text-secondary small fw-bold mb-2">[m
+[32m +                            <i class="bi bi-text-paragraph"></i> 文字摘要內容：[m
+[32m +                        </h6>[m
+[32m +                        <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.9rem; color: #333; font-family: var(--bs-font-monospace);">${escapeHtml(target.snippet)}</pre>[m
+[32m +                    </div>[m
+[32m +                </div>[m
+[32m +                <div id="pdfContentMode" class="d-none">[m
+[32m +                </div>`;[m
+[32m +            sourceOffcanvas.show();[m
+[32m +        };[m
+[32m +[m
+[32m +        /* === 泡泡工具 (維持你想要的樣式) === */[m
+[32m +        function pushUser(t) {[m
+[32m +            msgs.insertAdjacentHTML('beforeend', `[m
+[32m +            <div class="msg-row msg-user-row">[m
+[32m +                <div class="msg msg-user">${escapeHtml(t)}</div>[m
+[32m +            </div>`);[m
+[32m +            scrollBottom();[m
+[32m +        }[m
+[32m +[m
+[32m +        // 修正後的 pushBot (必須回傳 ID)[m
+[32m +        function pushBot(htmlContent, isLoading = false) {[m
+[32m +            const id = 'msg-' + Date.now();[m
+[32m +            // 如果是 loading，加上轉圈圈[m
+[32m +            const content = isLoading ?[m
+[32m +                `<span class="text-secondary"><span class="spinner-border spinner-border-sm me-2"></span>${htmlContent}</span>` :[m
+[32m +                htmlContent;[m
+[32m +[m
+[32m +            msgs.insertAdjacentHTML('beforeend', `[m
+[32m +            <div class="msg-row msg-bot-row" id="${id}">[m
+[32m +                <div class="msg msg-bot">${content}</div>[m
+[32m +            </div>`);[m
+[32m +[m
+[32m +            scrollBottom();[m
+[32m +[m
+[32m +            return id; // ✅ 關鍵！一定要回傳 ID[m
+[32m +        }[m
+[32m +[m
+[32m +        // 更新指定的泡泡內容[m
+[32m +        function replaceBotMessage(id, htmlContent) {[m
+[32m +            const el = document.getElementById(id);[m
+[32m +            if (el) {[m
+[32m +                // const bubble = el.querySelector('.msg-bot');[m
+[32m +                // if (bubble) {[m
+[32m +                //     bubble.innerHTML = htmlContent;[m
+[32m +                // }[m
+[32m +                el.innerHTML = `[m
+[32m +            <div class="msg msg-bot">${htmlContent}</div>[m
+[32m +        `;[m
+[32m +        scrollBottom();[m
+[32m +            }[m
+[32m +        }[m
+[32m +[m
+[32m +        function scrollBottom() {[m
+[32m +            msgs.scrollTop = msgs.scrollHeight;[m
+[32m +        }[m
+[32m +[m
+[32m +        // 用於 HTML 內容轉義 (防 XSS)[m
+[32m +        function escapeHtml(s) {[m
+[32m +            return (s || '').replace(/[&<>"']/g, m => ({[m
+[32m +                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'[m
+[32m +            }[m]));[m
+[32m +        }[m
+[32m +[m
+[32m +        // 用於 JS 字串轉義 (防引號破壞 onclick)[m
+[32m +        function escapeJs(s) {[m
+[32m +            return (s || '').replace(/'/g, "\\'");[m
+[32m +        }[m
+[32m +[m
+[32m +        /* 文件卡片 */[m
+[32m +        function addResultCard(x) {[m
+[32m +            // 卡片標題也做成可以點擊開側邊欄[m
+[32m +            results.insertAdjacentHTML('beforeend', `[m
+[32m +            <div class="col">[m
+[32m +                <div class="card result-card h-100 shadow-sm border-0">[m
+[32m +                <div class="card-body">[m
+[32m +                    <div class="d-flex justify-content-between align-items-center mb-2">[m
+[32m +                    <h6 class="card-title mb-0 text-truncate">[m
+[32m +                        <a href="javascript:void(0)" class="text-decoration-none" onclick="showSource('${escapeJs(x.title)}')">[m
+[32m +                        📄 ${escapeHtml(x.title || '（無標題）')}[m
+[32m +                        </a>[m
+[32m +                    </h6>[m
+[32m +                    <span class="badge bg-light text-dark border">Score: ${x.source || 'RAG'}</span>[m
+[32m +                    </div>[m
+[32m +                    <div class="text-muted small mb-2 text-truncate">[m
+[32m +                    ${escapeHtml(x.snippet || '')}[m
+[32m +                    </div>[m
+[32m +                    <div class="d-flex gap-2 mt-auto">[m
+[32m +                    <button class="btn btn-outline-primary btn-sm w-100" onclick="showSource('${escapeJs(x.title)}')">[m
+[32m +                        查看內文[m
+[32m +                    </button>[m
+[32m +                    </div>[m
+[32m +                </div>[m
+[32m +                </div>[m
+[32m +            </div>`);[m
+[32m +        }[m
+[32m +[m
+[32m +        /* 語音：Web Speech API (維持原樣) */[m
+[32m +        (function () {[m
+[32m +            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;[m
+[32m +            if (!SR) return;[m
+[32m++=======[m
+[32m+         function pushUser(t) {[m
+[32m+             msgs.insertAdjacentHTML('beforeend', `[m
+[32m+             <div class="msg-row">[m
+[32m+               <div class="msg msg-user">${escapeHtml(t)}</div>[m
+[32m+             </div>`);[m
+[32m+         }[m
+[32m+         function pushBot(t) {[m
+[32m+             msgs.insertAdjacentHTML('beforeend', `[m
+[32m+             <div class="msg-row">[m
+[32m+               <div class="msg msg-bot" data-bot="1">${escapeHtml(t)}</div>[m
+[32m+             </div>`);[m
+[32m+         }[m
+[32m+         function replaceLastBot(t) {[m
+[32m+             const els = [...document.querySelectorAll('[data-bot="1"]')];[m
+[32m+             const last = els.pop();[m
+[32m+             if (last) last.innerHTML = escapeHtml(t);[m
+[32m+         }[m
+[32m+         function scrollBottom() {[m
+[32m+             msgs.scrollTop = msgs.scrollHeight;[m
+[32m+         }[m
+[32m+         function escapeHtml(s) {[m
+[32m+             return (s || '').replace(/[&<>"']/g, m => ({[m
+[32m+                 '&': '&amp;',[m
+[32m+                 '<': '&lt;',[m
+[32m+                 '>': '&gt;',[m
+[32m+                 '"': '&quot;',[m
+[32m+                 "'": '&#39;'[m
+[32m+             }[m]));[m
+[32m+         }[m
+[32m+ [m
+[32m+         function addResultCard(x) {[m
+[32m+             results.insertAdjacentHTML('beforeend', `[m
+[32m+             <div class="col">[m
+[32m+               <div class="card result-card h-100">[m
+[32m+                 <div class="card-body">[m
+[32m+                   <div class="d-flex justify-content-between align-items-center">[m
+[32m+                     <div class="result-title">[m
+[32m+                       <a href="${x.url || '#'}" target="_blank">[m
+[32m+                         ${escapeHtml(x.title || '（無標題）')}[m
+[32m+                       </a>[m
+[32m+                     </div>[m
+[32m+                     <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">[m
+[32m+                       ${escapeHtml(x.source || '')}[m
+[32m+                     </span>[m
+[32m+                   </div>[m
+[32m+                   <div class="text-secondary small mb-2">[m
+[32m+                     ${x.modifiedAt ? new Date(x.modifiedAt).toLocaleDateString() : ''}[m
+[32m+                   </div>[m
+[32m+                   <div class="mb-3">${escapeHtml(x.snippet || '')}</div>[m
+[32m+                   <div class="d-flex gap-2">[m
+[32m+                     <a class="btn btn-outline-primary btn-sm" target="_blank" href="${x.url || '#'}">開啟文件</a>[m
+[32m+                     <a class="btn btn-success btn-sm" href="/Incidents/New">新增為事件</a>[m
+[32m+                   </div>[m
+[32m+                 </div>[m
+[32m+               </div>[m
+[32m+             </div>`);[m
+[32m+         }[m
+[32m+ [m
+[32m+         (function () {[m
+[32m+             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;[m
+[32m+             if (!SR) return;[m
+[32m+ [m
+[32m++>>>>>>> origin/feature/consult-home[m
+              const recog = new SR();[m
+              recog.lang = 'zh-TW';[m
+              recog.continuous = false;[m
+              recog.interimResults = true;[m
+  [m
+              let listening = false;[m
+[32m++<<<<<<< HEAD[m
+[32m +            btnVoice.addEventListener('click', () => { listening ? stop() : start(); });[m
+[32m +            function start() { try { recog.start(); listening = true; btnVoice.textContent = '🎙️ 辨識中…'; } catch (e) { } }[m
+[32m +            function stop() { try { recog.stop(); listening = false; btnVoice.textContent = '🔍 語音'; } catch (e) { } }[m
+[32m++=======[m
+[32m+ [m
+[32m+             btnVoice.addEventListener('click', () => {[m
+[32m+                 listening ? stop() : start();[m
+[32m+             });[m
+[32m+ [m
+[32m+             function start() {[m
+[32m+                 try {[m
+[32m+                     recog.start();[m
+[32m+                     listening = true;[m
+[32m+                     btnVoice.textContent = '🎙️ 辨識中…';[m
+[32m+                 } catch (e) { }[m
+[32m+             }[m
+[32m+ [m
+[32m+             function stop() {[m
+[32m+                 try {[m
+[32m+                     recog.stop();[m
+[32m+                     listening = false;[m
+[32m+                     btnVoice.textContent = '🔍 語音';[m
+[32m+                 } catch (e) { }[m
+[32m+             }[m
+[32m++>>>>>>> origin/feature/consult-home[m
+  [m
+              recog.onresult = (e) => {[m
+                  let final = '', interim = '';[m
+[36m@@@ -429,8 -373,11 +672,19 @@@[m
+                  }[m
+                  input.value = (final || interim).trim();[m
+              };[m
+[32m++<<<<<<< HEAD[m
+[32m +            recog.onend = () => { listening = false; btnVoice.textContent = '🔍 語音'; };[m
+[32m +        })();[m
+[32m +[m
+[32m +    </script>[m
+[31m- }[m
+[32m++}[m
+[32m++=======[m
+[32m+ [m
+[32m+             recog.onend = () => {[m
+[32m+                 listening = false;[m
+[32m+                 btnVoice.textContent = '🔍 語音';[m
+[32m+             };[m
+[32m+         })();[m
+[32m+     </script>[m
+[32m+ }[m
+[32m++>>>>>>> origin/feature/consult-home[m
+[1mdiff --cc Dr.meow/Pages/UserHome.cshtml.cs[m
+[1mindex cebb515,118b016..2409181[m
+[1m--- a/Dr.meow/Pages/UserHome.cshtml.cs[m
+[1m+++ b/Dr.meow/Pages/UserHome.cshtml.cs[m
+[36m@@@ -5,11 -5,11 +5,19 @@@[m [mnamespace Dr.meow.Page[m
+  {[m
+      public class UserHomeModel : PageModel[m
+      {[m
+[32m++<<<<<<< HEAD[m
+[32m +        public string Account { get; set; } = "�ϥΪ�";[m
+[32m +[m
+[32m +        public void OnGet()[m
+[32m +        {[m
+[32m +            Account = HttpContext.Session.GetString("Account") ?? "�ϥΪ�";[m
+[32m++=======[m
+[32m+         public string Account { get; set; } = "使用者";[m
+[32m+ [m
+[32m+         public void OnGet()[m
+[32m+         {[m
+[32m+             Account = HttpContext.Session.GetString("Account") ?? "使用者";[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          }[m
+      }[m
+  }[m
+[1mdiff --cc Dr.meow/Pages/Vulnerabilities/Create.cshtml[m
+[1mindex 015ed53,ec6e513..844d301[m
+[1m--- a/Dr.meow/Pages/Vulnerabilities/Create.cshtml[m
+[1m+++ b/Dr.meow/Pages/Vulnerabilities/Create.cshtml[m
+[36m@@@ -5,82 -5,240 +5,304 @@@[m
+      ViewData["Title"] = "新增變更申請單";[m
+  }[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +<div class="container mt-4">[m
+[32m +    <div class="card shadow-lg">[m
+[32m +        <div class="card-header bg-primary text-black">[m
+[32m +            <h4 class="mb-0">新增變更單申請</h4>[m
+[32m +        </div>[m
+[32m +        <div class="card-body">[m
+[32m++=======[m
+[32m+ <style>[m
+[32m+     /* 整頁限定在這個容器裡，避免影響其它頁面 */[m
+[32m+     .vuln-create-page .card {[m
+[32m+         border-radius: 22px;[m
+[32m+         background: rgba(255,255,255,0.92);[m
+[32m+         border: 1px solid rgba(255,255,255,0.9);[m
+[32m+         box-shadow: 0 18px 40px rgba(47,110,100,0.18);[m
+[32m+         overflow: hidden;[m
+[32m+     }[m
+[32m++>>>>>>> origin/feature/consult-home[m
+[32m+ [m
+[32m+     .vuln-create-page .create-header {[m
+[32m+         background: linear-gradient(135deg, #8fdacb, #64bba8);[m
+[32m+         color: #ffffff;[m
+[32m+         padding: 18px 26px;[m
+[32m+         border-bottom: 1px solid rgba(255,255,255,0.6);[m
+[32m+     }[m
+[32m+ [m
+[32m+         .vuln-create-page .create-header h2 {[m
+[32m+             font-size: 1.5rem;[m
+[32m+             font-weight: 700;[m
+[32m+             letter-spacing: .03em;[m
+[32m+         }[m
+[32m+ [m
+[32m+     .vuln-create-page .card-body {[m
+[32m+         padding: 24px 26px 22px;[m
+[32m+     }[m
+[32m+ [m
+[32m+     /* 區塊標題 + 小圓點 */[m
+[32m+     .vuln-create-page .section-title {[m
+[32m+         display: inline-flex;[m
+[32m+         align-items: center;[m
+[32m+         gap: 8px;[m
+[32m+         margin-top: 10px;[m
+[32m+         margin-bottom: 4px;[m
+[32m+         color: #2f6e64;[m
+[32m+         font-weight: 700;[m
+[32m+         font-size: 1.02rem;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .vuln-create-page .section-dot {[m
+[32m+         width: 10px;[m
+[32m+         height: 10px;[m
+[32m+         border-radius: 50%;[m
+[32m+         background: linear-gradient(135deg, #8fdacb, #64bba8);[m
+[32m+         box-shadow: 0 0 0 4px rgba(143,218,203,0.25);[m
+[32m+     }[m
+[32m+ [m
+[32m+     .vuln-create-page hr {[m
+[32m+         margin-top: 4px;[m
+[32m+         margin-bottom: 16px;[m
+[32m+         border-color: rgba(143,218,203,0.55);[m
+[32m+         opacity: .8;[m
+[32m+     }[m
+[32m+ [m
+[32m+     /* 欄位樣式 */[m
+[32m+     .vuln-create-page .form-label,[m
+[32m+     .vuln-create-page .control-label {[m
+[32m+         font-weight: 600;[m
+[32m+         color: #304241;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .vuln-create-page .form-control {[m
+[32m+         border-radius: 12px;[m
+[32m+         border: 1px solid rgba(143,218,203,0.7);[m
+[32m+         box-shadow: 0 0 0 1px rgba(143,218,203,0.18);[m
+[32m+         font-size: 0.95rem;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .vuln-create-page textarea.form-control {[m
+[32m+         border-radius: 14px;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .vuln-create-page .form-control:focus {[m
+[32m+         border-color: #64bba8;[m
+[32m+         box-shadow: 0 0 0 3px rgba(100,187,168,0.28);[m
+[32m+     }[m
+[32m+ [m
+[32m+     /* radio / checkbox */[m
+[32m+     .vuln-create-page .form-check-input:checked {[m
+[32m+         background-color: #64bba8;[m
+[32m+         border-color: #64bba8;[m
+[32m+     }[m
+[32m+ [m
+[32m+     .vuln-create-page .form-check-label {[m
+[32m+         font-weight: 500;[m
+[32m+         color: #425b58;[m
+[32m+     }[m
+[32m+ [m
+[32m+     /* 錯誤提示 */[m
+[32m+     .vuln-create-page .alert-danger {[m
+[32m+         border-radius: 14px;[m
+[32m+     }[m
+[32m+ [m
+[32m+     /* 按鈕區 */[m
+[32m+     .vuln-create-page .btn-create {[m
+[32m+         border-radius: 999px;[m
+[32m+         padding: 8px 26px;[m
+[32m+         font-weight: 600;[m
+[32m+         border: none;[m
+[32m+         background: linear-gradient(135deg, #8fdacb, #64bba8);[m
+[32m+         color: #ffffff;[m
+[32m+         box-shadow: 0 10px 24px rgba(47,110,100,0.3);[m
+[32m+         transition: 0.18s ease;[m
+[32m+     }[m
+[32m+ [m
+[32m+         .vuln-create-page .btn-create:hover {[m
+[32m+             background: linear-gradient(135deg, #7bcbbd, #51a798);[m
+[32m+             transform: translateY(-1px);[m
+[32m+             box-shadow: 0 12px 26px rgba(47,110,100,0.35);[m
+[32m+         }[m
+[32m+ [m
+[32m+     .vuln-create-page .btn-back {[m
+[32m+         border-radius: 999px;[m
+[32m+         padding: 8px 22px;[m
+[32m+         font-weight: 500;[m
+[32m+         border: 1px solid #cfd4da;[m
+[32m+         background-color: #f7f7f8;[m
+[32m+         color: #4c5a64;[m
+[32m+         transition: 0.15s ease;[m
+[32m+     }[m
+[32m+ [m
+[32m+         .vuln-create-page .btn-back:hover {[m
+[32m+             background-color: #eceff3;[m
+[32m+         }[m
+[32m+ [m
+[32m+     @@media (max-width: 768px) {[m
+[32m+         .vuln-create-page .card-body[m
+[32m+ [m
+[32m+     {[m
+[32m+         padding: 18px 16px 20px;[m
+[32m+     }[m
+[32m+ [m
+[32m+     }[m
+[32m+ </style>[m
+[32m+ [m
+[32m+ <div class="vuln-create-page container mt-4">[m
+[32m+     <div class="card shadow-lg">[m
+[32m+         <div class="create-header">[m
+[32m+             <h2 class="mb-0">新增變更申請／漏洞報告</h2>[m
+[32m+         </div>[m
+  [m
+[32m+         <div class="card-body">[m
+              <form method="post">[m
+                  <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +                <h5 class="mt-3 text-primary">基本資料</h5>[m
+[32m +                <hr class="mt-0" />[m
+[32m++=======[m
+[32m+                 <!-- 基本資訊 -->[m
+[32m+                 <div class="section-title">[m
+[32m+                     <span class="section-dot"></span>[m
+[32m+                     <span>基本資訊</span>[m
+[32m+                 </div>[m
+[32m+                 <hr />[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                  <div class="row mb-3">[m
+[31m-                     <div class="col-md-6">[m
+[32m+                     <div class="col-md-6 mb-3 mb-md-0">[m
+                          <div class="form-group">[m
+[32m++<<<<<<< HEAD[m
+[32m +                            <label asp-for="Vulnerability.Title" class="control-label fw-bold">1. 系統/表單類別 (對應Title)</label>[m
+[32m +                            <input asp-for="Vulnerability.Title" class="form-control" placeholder="例如：EIP / DevOps / Dr.meow 系統" />[m
+[32m++=======[m
+[32m+                             <label asp-for="Vulnerability.Title" class="control-label">1. 系統/表單類別 (對應 Title)</label>[m
+[32m+                             <input asp-for="Vulnerability.Title" class="form-control"[m
+[32m+                                    placeholder="例如：EIP / DevOps / Dr.meow 系統" />[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                              <span asp-validation-for="Vulnerability.Title" class="text-danger"></span>[m
+                          </div>[m
+                      </div>[m
+[32m+ [m
+                      <div class="col-md-6">[m
+                          <div class="form-group">[m
+[32m++<<<<<<< HEAD[m
+[32m +                            <label asp-for="Vulnerability.AssignedTo" class="control-label fw-bold">2. 單號/指派對象 (對應AssignedTo)</label>[m
+[32m +                            <input asp-for="Vulnerability.AssignedTo" class="form-control" placeholder="例如：CHG2023001 或 申請人" />[m
+[32m++=======[m
+[32m+                             <label asp-for="Vulnerability.AssignedTo" class="control-label">2. 單號/指派對象 (對應 AssignedTo)</label>[m
+[32m+                             <input asp-for="Vulnerability.AssignedTo" class="form-control"[m
+[32m+                                    placeholder="例如：CHG2023001 或 申請人" />[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                              <span asp-validation-for="Vulnerability.AssignedTo" class="text-danger"></span>[m
+                          </div>[m
+                      </div>[m
+                  </div>[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +                <h5 class="mt-4 text-primary">變更內容</h5>[m
+[32m +                <hr class="mt-0" />[m
+[32m +                <div class="row mb-3">[m
+[32m +                    <div class="col-md-12">[m
+[32m +                        <div class="form-group">[m
+[32m +                            <label asp-for="Vulnerability.Description" class="control-label fw-bold">3. 變更/影響內容 (Description)</label>[m
+[32m +                            <textarea asp-for="Vulnerability.Description" class="form-control" rows="4" placeholder="請詳細說明變更內容或影響範圍與目的。"></textarea>[m
+[32m++=======[m
+[32m+                 <!-- 變更/漏洞內容 -->[m
+[32m+                 <div class="section-title mt-3">[m
+[32m+                     <span class="section-dot"></span>[m
+[32m+                     <span>變更／漏洞內容</span>[m
+[32m+                 </div>[m
+[32m+                 <hr />[m
+[32m+                 <div class="row mb-3">[m
+[32m+                     <div class="col-md-12">[m
+[32m+                         <div class="form-group">[m
+[32m+                             <label asp-for="Vulnerability.Description" class="control-label">[m
+[32m+                                 3. 變更／影響內容 (Description)[m
+[32m+                             </label>[m
+[32m+                             <textarea asp-for="Vulnerability.Description" class="form-control" rows="4"[m
+[32m+                                       placeholder="請詳細說明變更內容或影響範圍與目的。"></textarea>[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                              <span asp-validation-for="Vulnerability.Description" class="text-danger"></span>[m
+                          </div>[m
+                      </div>[m
+                  </div>[m
+  [m
+                  <div class="row mb-3">[m
+[31m-                     <div class="col-md-6">[m
+[32m+                     <!-- 狀態 -->[m
+[32m+                     <div class="col-md-6 mb-3 mb-md-0">[m
+                          <div class="form-group">[m
+[32m++<<<<<<< HEAD[m
+[32m +                            <label class="control-label fw-bold mb-2">4. 變更類型 / 狀態 (Status)</label>[m
+[32m +                            <div>[m
+[32m +                                <div class="form-check form-check-inline">[m
+[32m +                                    <input type="radio" asp-for="Vulnerability.Status" value="標準/獨立" id="statusStandard" class="form-check-input" />[m
+[32m +                                    <label class="form-check-label" for="statusStandard">標準 /獨立</label>[m
+[32m +                                </div>[m
+[32m +                                <div class="form-check form-check-inline">[m
+[32m +                                    <input type="radio" asp-for="Vulnerability.Status" value="緊急" id="statusEmergency" class="form-check-input" />[m
+[32m +                                    <label class="form-check-label" for="statusEmergency">緊急</label>[m
+[32m +                                </div>[m
+[32m +                                <div class="form-check form-check-inline">[m
+[32m +                                    <input type="radio" asp-for="Vulnerability.Status" value="例行" id="statusRoutine" class="form-check-input" />[m
+[32m++=======[m
+[32m+                             <label class="control-label mb-2">4. 變更類型／狀態 (Status)</label>[m
+[32m+                             <div>[m
+[32m+                                 <div class="form-check form-check-inline">[m
+[32m+                                     <input type="radio" asp-for="Vulnerability.Status" value="標準/獨立"[m
+[32m+                                            id="statusStandard" class="form-check-input" />[m
+[32m+                                     <label class="form-check-label" for="statusStandard">標準／獨立</label>[m
+[32m+                                 </div>[m
+[32m+                                 <div class="form-check form-check-inline">[m
+[32m+                                     <input type="radio" asp-for="Vulnerability.Status" value="緊急"[m
+[32m+                                            id="statusEmergency" class="form-check-input" />[m
+[32m+                                     <label class="form-check-label" for="statusEmergency">緊急</label>[m
+[32m+                                 </div>[m
+[32m+                                 <div class="form-check form-check-inline">[m
+[32m+                                     <input type="radio" asp-for="Vulnerability.Status" value="例行"[m
+[32m+                                            id="statusRoutine" class="form-check-input" />[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                                      <label class="form-check-label" for="statusRoutine">例行</label>[m
+                                  </div>[m
+                              </div>[m
+                              <span asp-validation-for="Vulnerability.Status" class="text-danger"></span>[m
+                          </div>[m
+                      </div>[m
+[32m+ [m
+[32m+                     <!-- 風險評估 -->[m
+                      <div class="col-md-6">[m
+                          <div class="form-group">[m
+[32m++<<<<<<< HEAD[m
+[32m +                            <label class="control-label fw-bold mb-2">5. 影響與風險評估 (Severity)</label>[m
+[32m +                            <div>[m
+[32m +                                <div class="form-check form-check-inline">[m
+[32m +                                    <input type="radio" asp-for="Vulnerability.Severity" value="低" id="severityLow" class="form-check-input" />[m
+[32m +                                    <label class="form-check-label" for="severityLow">低風險</label>[m
+[32m +                                </div>[m
+[32m +                                <div class="form-check form-check-inline">[m
+[32m +                                    <input type="radio" asp-for="Vulnerability.Severity" value="中" id="severityMedium" class="form-check-input" />[m
+[32m +                                    <label class="form-check-label" for="severityMedium">中風險</label>[m
+[32m +                                </div>[m
+[32m +                                <div class="form-check form-check-inline">[m
+[32m +                                    <input type="radio" asp-for="Vulnerability.Severity" value="高" id="severityHigh" class="form-check-input" />[m
+[32m++=======[m
+[32m+                             <label class="control-label mb-2">5. 影響與風險評估 (Severity)</label>[m
+[32m+                             <div>[m
+[32m+                                 <div class="form-check form-check-inline">[m
+[32m+                                     <input type="radio" asp-for="Vulnerability.Severity" value="低"[m
+[32m+                                            id="severityLow" class="form-check-input" />[m
+[32m+                                     <label class="form-check-label" for="severityLow">低風險</label>[m
+[32m+                                 </div>[m
+[32m+                                 <div class="form-check form-check-inline">[m
+[32m+                                     <input type="radio" asp-for="Vulnerability.Severity" value="中"[m
+[32m+                                            id="severityMedium" class="form-check-input" />[m
+[32m+                                     <label class="form-check-label" for="severityMedium">中風險</label>[m
+[32m+                                 </div>[m
+[32m+                                 <div class="form-check form-check-inline">[m
+[32m+                                     <input type="radio" asp-for="Vulnerability.Severity" value="高"[m
+[32m+                                            id="severityHigh" class="form-check-input" />[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                                      <label class="form-check-label" for="severityHigh">高風險</label>[m
+                                  </div>[m
+                              </div>[m
+[36m@@@ -89,40 -247,48 +311,75 @@@[m
+                      </div>[m
+                  </div>[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +                <h5 class="mt-4 text-primary">實施與復原計畫</h5>[m
+[32m +                <hr class="mt-0" />[m
+[32m++=======[m
+[32m+                 <!-- 實施與復原計畫 -->[m
+[32m+                 <div class="section-title mt-3">[m
+[32m+                     <span class="section-dot"></span>[m
+[32m+                     <span>實施與復原計畫</span>[m
+[32m+                 </div>[m
+[32m+                 <hr />[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                  <div class="row mb-3">[m
+[31m-                     <div class="col-md-6">[m
+[32m+                     <div class="col-md-6 mb-3 mb-md-0">[m
+                          <div class="form-group">[m
+[32m++<<<<<<< HEAD[m
+[32m +                            <label asp-for="Vulnerability.FoundDate" class="control-label fw-bold">6. 預計實施日期 (FoundDate)</label>[m
+[32m++=======[m
+[32m+                             <label asp-for="Vulnerability.FoundDate" class="control-label">[m
+[32m+                                 6. 預計實施日期 (FoundDate)[m
+[32m+                             </label>[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                              <input asp-for="Vulnerability.FoundDate" class="form-control" type="date" />[m
+                              <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>[m
+                          </div>[m
+                      </div>[m
+[32m+ [m
+                      <div class="col-md-6">[m
+                          <div class="form-group">[m
+[32m++<<<<<<< HEAD[m
+[32m +                            <label class="control-label fw-bold mb-2">7. 測試與復原確認 (僅供勾選)</label>[m
+[32m +                            <div>[m
+[32m +                                <div class="form-check">[m
+[32m +[m
+[32m +                                    <input class="form-check-input" type="checkbox" checked id="testPlan">[m
+[32m +                                    <label class="form-check-label" for="testPlan">測試計畫: 已規劃</label>[m
+[32m +                                </div>[m
+[32m +                                <div class="form-check">[m
+[32m +                                    <input class="form-check-input" type="checkbox" checked id="recoveryPlan">[m
+[32m +                                    <label class="form-check-label" for="recoveryPlan">復原計畫: 已規劃</label>[m
+[32m++=======[m
+[32m+                             <label class="control-label mb-2">7. 測試與復原確認 (僅供勾選)</label>[m
+[32m+                             <div>[m
+[32m+                                 <div class="form-check">[m
+[32m+                                     <input class="form-check-input" type="checkbox" checked id="testPlan" />[m
+[32m+                                     <label class="form-check-label" for="testPlan">測試計畫：已規劃</label>[m
+[32m+                                 </div>[m
+[32m+                                 <div class="form-check">[m
+[32m+                                     <input class="form-check-input" type="checkbox" checked id="recoveryPlan" />[m
+[32m+                                     <label class="form-check-label" for="recoveryPlan">復原計畫：已規劃</label>[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                                  </div>[m
+                              </div>[m
+                          </div>[m
+                      </div>[m
+                  </div>[m
+  [m
+[32m+                 <!-- 按鈕 -->[m
+                  <div class="form-group mt-4">[m
+[32m++<<<<<<< HEAD[m
+[32m +                    <input type="submit" value="新增表單 (Create)" class="btn btn-success btn-lg shadow" />[m
+[32m +                    <a asp-page="Index" class="btn btn-secondary btn-lg ms-2">返回清單</a>[m
+[32m++=======[m
+[32m+                     <input type="submit" value="新增表單 (Create)" class="btn-create" />[m
+[32m+                     <a asp-page="/UserHome" class="btn-back ms-2 text-decoration-none">返回清單</a>[m
+[32m+ [m
+[32m+ [m
+[32m++>>>>>>> origin/feature/consult-home[m
+                  </div>[m
+              </form>[m
+[31m- [m
+          </div>[m
+      </div>[m
+  </div>[m
+[1mdiff --cc Dr.meow/Pages/Vulnerabilities/Delete.cshtml[m
+[1mindex f84b5a9,23bb65b..a1bac13[m
+[1m--- a/Dr.meow/Pages/Vulnerabilities/Delete.cshtml[m
+[1m+++ b/Dr.meow/Pages/Vulnerabilities/Delete.cshtml[m
+[36m@@@ -53,6 -53,6 +53,10 @@@[m
+      <form method="post">[m
+          <input type="hidden" asp-for="Vulnerability.Id" />[m
+          <input type="submit" value="Delete" class="btn btn-danger" /> |[m
+[32m++<<<<<<< HEAD[m
+[32m +        <a asp-page="./">Back to List</a>[m
+[32m++=======[m
+[32m+         <a asp-page="/Vulnerabilities/Index">Back to List</a>[m
+[32m++>>>>>>> origin/feature/consult-home[m
+      </form>[m
+  </div>[m
+[1mdiff --cc Dr.meow/Pages/Vulnerabilities/Index.cshtml[m
+[1mindex 05bb5f9,2bfcc46..7f5d4ec[m
+[1m--- a/Dr.meow/Pages/Vulnerabilities/Index.cshtml[m
+[1m+++ b/Dr.meow/Pages/Vulnerabilities/Index.cshtml[m
+[36m@@@ -2,12 -2,12 +2,20 @@@[m
+  @model Dr.meow.Pages.Vulnerabilities.IndexModel[m
+  [m
+  @{[m
+[32m++<<<<<<< HEAD[m
+[32m +    ViewData["Title"] = "變更 ／ 漏洞清單";[m
+[32m++=======[m
+[32m+     ViewData["Title"] = "變更 / 漏洞清單";[m
+[32m++>>>>>>> origin/feature/consult-home[m
+  }[m
+  [m
+  <div class="container mt-4">[m
+      <div class="d-flex justify-content-between align-items-center mb-4">[m
+[32m++<<<<<<< HEAD[m
+[32m +        <h1 class="display-4 text-dark">系統變更／漏洞清單</h1>[m
+[32m++=======[m
+[32m+         <h1 class="display-4">系統變更／漏洞清單</h1>[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          <div>[m
+              <a asp-page-handler="ExportToExcel" class="btn btn-success shadow-sm me-2">[m
+                  <i class="fas fa-file-excel me-1"></i> 匯出 Excel 報表[m
+[36m@@@ -21,12 -21,24 +29,33 @@@[m
+      <table class="table table-hover align-middle">[m
+          <thead class="table-light">[m
+              <tr>[m
+[32m++<<<<<<< HEAD[m
+[32m +                <th>類別</th>[m
+[32m +                <th>狀態</th>[m
+[32m +                <th>嚴重性</th>[m
+[32m +                <th>填寫日期</th>[m
+[32m +                <th>指派對象</th>[m
+[32m +                <th>描述</th>[m
+[32m++=======[m
+[32m+                 <th>[m
+[32m+                     @Html.DisplayNameFor(model => model.Vulnerability[0].Title)[m
+[32m+                 </th>[m
+[32m+                 <th>[m
+[32m+                     @Html.DisplayNameFor(model => model.Vulnerability[0].Status)[m
+[32m+                 </th>[m
+[32m+                 <th>[m
+[32m+                     @Html.DisplayNameFor(model => model.Vulnerability[0].Severity)[m
+[32m+                 </th>[m
+[32m+                 <th>[m
+[32m+                     @Html.DisplayNameFor(model => model.Vulnerability[0].FoundDate)[m
+[32m+                 </th>[m
+[32m+                 <th>[m
+[32m+                     @Html.DisplayNameFor(model => model.Vulnerability[0].AssignedTo)[m
+[32m+                 </th>[m
+[32m+                 <th>[m
+[32m+                     @Html.DisplayNameFor(model => model.Vulnerability[0].Description)[m
+[32m+                 </th>[m
+[32m++>>>>>>> origin/feature/consult-home[m
+                  <th>操作</th>[m
+              </tr>[m
+          </thead>[m
+[1mdiff --cc Dr.meow/Pages/Vulnerabilities/Index.cshtml.cs[m
+[1mindex 5e59f0d,b3eeb27..764b19b[m
+[1m--- a/Dr.meow/Pages/Vulnerabilities/Index.cshtml.cs[m
+[1m+++ b/Dr.meow/Pages/Vulnerabilities/Index.cshtml.cs[m
+[36m@@@ -39,7 -39,7 +39,11 @@@[m [mnamespace Dr.meow.Pages.Vulnerabilitie[m
+              using (var workbook = new XLWorkbook())[m
+              {[m
+                  // 工作表名稱[m
+[32m++<<<<<<< HEAD[m
+[32m +                var worksheet = workbook.Worksheets.Add("變更 ／ 漏洞報表");[m
+[32m++=======[m
+[32m+                 var worksheet = workbook.Worksheets.Add("變更 / 漏洞報表");[m
+[32m++>>>>>>> origin/feature/consult-home[m
+  [m
+                  // 標題列[m
+                  var currentRow = 1;[m
+[1mdiff --cc Dr.meow/Program.cs[m
+[1mindex 088f303,334749d..ff3d504[m
+[1m--- a/Dr.meow/Program.cs[m
+[1m+++ b/Dr.meow/Program.cs[m
+[36m@@@ -1,16 -1,12 +1,26 @@@[m
+[32m++<<<<<<< HEAD[m
+[32m +﻿using Microsoft.AspNetCore.Localization;[m
+[32m +using Microsoft.EntityFrameworkCore;[m
+[32m +using Dr.meow.Data;[m
+[32m +using Dr.meow.Services;[m
+[32m++=======[m
+[32m+ using Microsoft.AspNetCore.Localization;[m
+[32m+ using Microsoft.EntityFrameworkCore;[m
+[32m+ using Dr.meow.Data;[m
+[32m++>>>>>>> origin/feature/consult-home[m
+  [m
+  var builder = WebApplication.CreateBuilder(args);[m
+  [m
+  // Razor Pages[m
+  builder.Services.AddRazorPages();[m
+[32m++<<<<<<< HEAD[m
+[32m +// ⭐ 註冊 RAG 搜尋服務（你的 AI 搜尋）[m
+[32m +builder.Services.AddHttpClient<ISearchService, SearchService>();[m
+[32m +[m
+[32m +[m
+[32m++=======[m
+[32m+ [m
+[32m++>>>>>>> origin/feature/consult-home[m
+  // ⭐ Session 服務[m
+  builder.Services.AddDistributedMemoryCache();[m
+  builder.Services.AddSession(options =>[m
+[36m@@@ -23,8 -19,8 +33,13 @@@[m
+  // DbContext[m
+  builder.Services.AddDbContext<DrMeowDbContext>(options =>[m
+      options.UseSqlServer([m
+[32m++<<<<<<< HEAD[m
+[32m +        builder.Configuration.GetConnectionString("DrMeowConnection")[m
+[32m +        ?? throw new InvalidOperationException("Connection string 'DrMeowConnection' not found.")[m
+[32m++=======[m
+[32m+         builder.Configuration.GetConnectionString("DrMeowDbContext")[m
+[32m+         ?? throw new InvalidOperationException("Connection string 'DrMeowDbContext' not found.")[m
+[32m++>>>>>>> origin/feature/consult-home[m
+      )[m
+  );[m
+  [m
+[1mdiff --cc Dr.meow/Services/ISearchService.cs[m
+[1mindex de4df62,ba2a884..10f7f8c[m
+[1m--- a/Dr.meow/Services/ISearchService.cs[m
+[1m+++ b/Dr.meow/Services/ISearchService.cs[m
+[36m@@@ -1,14 -1,15 +1,22 @@@[m
+[31m- ﻿using System.Threading;[m
+[32m+ ﻿using System.Collections.Generic;[m
+[32m+ using System.Threading;[m
+  using System.Threading.Tasks;[m
+[31m -using Dr.meow.Models;[m
+[32m +using Dr.meow.Models; // ⚠️ 一定要引用 Models，不然它看不懂 SearchResponse[m
+  [m
+  namespace Dr.meow.Services[m
+  {[m
+      public interface ISearchService[m
+      {[m
+[32m++<<<<<<< HEAD[m
+[32m +        // ✅ 關鍵修正：[m
+[32m +        // 1. 回傳型別必須是 Task<SearchResponse>[m
+[32m +        // 2. 參數必須包含 CancellationToken (因為你的實作有用到)[m
+[32m +        Task<SearchResponse> SearchAsync(string keyword, CancellationToken ct = default);[m
+[32m++=======[m
+[32m+         /// <summary>[m
+[32m+         /// 呼叫外部搜尋服務，回傳搜尋結果清單[m
+[32m+         /// </summary>[m
+[32m+         Task<List<SearchItem>> SearchAsync(string keyword, CancellationToken ct = default);[m
+[32m++>>>>>>> origin/feature/consult-home[m
+      }[m
+[31m -}[m
+[32m +}[m
+[1mdiff --cc Dr.meow/Services/SearchService.cs[m
+[1mindex adb9f3b,f79ed9d..686edfa[m
+[1m--- a/Dr.meow/Services/SearchService.cs[m
+[1m+++ b/Dr.meow/Services/SearchService.cs[m
+[36m@@@ -5,101 -6,60 +6,149 @@@[m [musing System.Threading[m
+  using System.Threading.Tasks;[m
+  using Dr.meow.Models;[m
+  using Microsoft.Extensions.Configuration;[m
+[32m++<<<<<<< HEAD[m
+[32m +using System.Collections.Generic; // 確保引用 List[m
+[32m++=======[m
+[32m+ using Microsoft.Extensions.Logging;[m
+[32m++>>>>>>> origin/feature/consult-home[m
+  [m
+  namespace Dr.meow.Services[m
+  {[m
+      public class SearchService : ISearchService[m
+      {[m
+[31m-         private readonly HttpClient _http;[m
+[32m+         private readonly HttpClient _httpClient;[m
+[32m+         private readonly ILogger<SearchService> _logger;[m
+          private readonly string _baseUrl;[m
+  [m
+[31m-         public SearchService(HttpClient http, IConfiguration config)[m
+[32m+         public SearchService([m
+[32m+             HttpClient httpClient,[m
+[32m+             IConfiguration configuration,[m
+[32m+             ILogger<SearchService> logger)[m
+          {[m
+[32m++<<<<<<< HEAD[m
+[32m +            _http = http;[m
+[32m +            // 從 appsettings.json 讀取 RAG API 的 URL[m
+[32m +            _baseUrl = config["ExternalSearch:BaseUrl"] ?? string.Empty;[m
+[32m++=======[m
+[32m+             _httpClient = httpClient;[m
+[32m+             _logger = logger;[m
+[32m+ [m
+[32m+             // appsettings.json 的 ExternalSearch:BaseUrl[m
+[32m+             _baseUrl = configuration["ExternalSearch:BaseUrl"] ?? string.Empty;[m
+[32m++>>>>>>> origin/feature/consult-home[m
+          }[m
+  [m
+[31m-         public async Task<SearchResponse> SearchAsync(string keyword, CancellationToken ct = default)[m
+[32m+         public async Task<List<SearchItem>> SearchAsync(string keyword, CancellationToken ct = default)[m
+          {[m
+[32m++<<<<<<< HEAD[m
+[32m +            // 1. 檢查設定[m
+[32m +            if (string.IsNullOrWhiteSpace(_baseUrl))[m
+[32m +            {[m
+[32m +                return new SearchResponse { Answer = "尚未設定 ExternalSearch:BaseUrl。" };[m
+[32m++=======[m
+[32m+             var results = new List<SearchItem>();[m
+[32m+ [m
+[32m+             if (string.IsNullOrWhiteSpace(_baseUrl))[m
+[32m+             {[m
+[32m+                 _logger.LogWarning("ExternalSearch:BaseUrl 未設定。");[m
+[32m+                 return results;[m
+[32m++>>>>>>> origin/feature/consult-home[m
+              }[m
+  [m
+[32m+             // 這裡的 /api/search 要改成你同學實際的路徑[m
+[32m+             var url = $"{_baseUrl.TrimEnd('/')}/api/search?keyword={Uri.EscapeDataString(keyword)}";[m
+[32m+ [m
+              try[m
+              {[m
+[32m++<<<<<<< HEAD[m
+[32m +                // 2. 建立請求 (使用匿名物件即可，只要屬性名稱對得上後端)[m
+[32m +                // 後端模型是: public class RagQueryRequest { public string Query { get; set; } }[m
+[32m +                var requestPayload = new { Query = keyword };[m
+[32m +[m
+[32m +                // 3. 呼叫後端 API[m
+[32m +                // 注意路徑：通常是 /api/rag/ask (依據你後端 Controller 的 Route 設定)[m
+[32m +                var response = await _http.PostAsJsonAsync([m
+[32m +                    $"{_baseUrl}/api/rag/ask",[m
+[32m +                    requestPayload,[m
+[32m +                    ct[m
+[32m +                );[m
+[32m +[m
+[32m +                if (!response.IsSuccessStatusCode)[m
+[32m +                {[m
+[32m +                    var body = await response.Content.ReadAsStringAsync(ct);[m
+[32m +                    return new SearchResponse[m
+[32m +                    {[m
+[32m +                        Answer = $"RAG API 連線失敗 ({(int)response.StatusCode}): {body}"[m
+[32m +                    };[m
+[32m +                }[m
+[32m +[m
+[32m +                // 4. 解析 JSON 結果 (使用前端定義的 RagResponse DTO)[m
+[32m +                // 這裡會自動把後端的 { Answer, Sources } 對應進來[m
+[32m +                var ragResult = await response.Content.ReadFromJsonAsync<RagResponse>(cancellationToken: ct);[m
+[32m +[m
+[32m +                if (ragResult == null)[m
+[32m +                {[m
+[32m +                    return new SearchResponse { Answer = "後端回傳空值。" };[m
+[32m +                }[m
+[32m +[m
+[32m +                // 5. 轉換為前端 UI 用的 SearchResponse[m
+[32m +                var uiResult = new SearchResponse[m
+[32m +                {[m
+[32m +                    Answer = ragResult.Answer ?? "(無回答)",[m
+[32m +                    Items = new List<SearchItem>()[m
+[32m +                };[m
+[32m +[m
+[32m +                // 6. 將 Sources (引用來源) 轉換為 SearchItem (側邊欄卡片)[m
+[32m +                if (ragResult.Sources != null)[m
+[32m +                {[m
+[32m +                    foreach (var src in ragResult.Sources)[m
+[32m +                    {[m
+[32m +                        uiResult.Items.Add(new SearchItem[m
+[32m +                        {[m
+[32m +                            // 組合標題：檔名 + 頁數[m
+[32m +                            Title = $"{src.FileName} (Page {src.Page})",[m
+[32m +[m
+[32m +                            // 內容：顯示原始文件片段[m
+[32m +                            Snippet = src.Content,[m
+[32m +[m
+[32m +                            // 連結：暫時用 #，未來可做成檔案下載連結[m
+[32m +                            Url = "#",[m
+[32m +[m
+[32m +                            // 來源標籤[m
+[32m +                            Source = "RAG Knowledge Base",[m
+[32m +[m
+[32m +                            ModifiedAt = DateTime.Now // 或是 null[m
+[32m +                        });[m
+[32m +                    }[m
+[32m +                }[m
+[32m +[m
+[32m +                return uiResult;[m
+[32m +            }[m
+[32m +            catch (Exception ex)[m
+[32m +            {[m
+[32m +                return new SearchResponse[m
+[32m +                {[m
+[32m +                    Answer = $"搜尋服務發生例外錯誤：{ex.Message}"[m
+[32m +                };[m
+[32m++=======[m
+[32m+                 using var resp = await _httpClient.GetAsync(url, ct);[m
+[32m+                 resp.EnsureSuccessStatusCode();[m
+[32m+ [m
+[32m+                 var options = new JsonSerializerOptions[m
+[32m+                 {[m
+[32m+                     PropertyNameCaseInsensitive = true[m
+[32m+                 };[m
+[32m+ [m
+[32m+                 await using var stream = await resp.Content.ReadAsStreamAsync(ct);[m
+[32m+                 var data = await JsonSerializer.DeserializeAsync<List<SearchItem>>(stream, options, ct);[m
+[32m+ [m
+[32m+                 return data ?? results;[m
+[32m+             }[m
+[32m+             catch (Exception ex)[m
+[32m+             {[m
+[32m+                 _logger.LogError(ex, "呼叫外部搜尋服務失敗。");[m
+[32m+                 return results;[m
+[32m++>>>>>>> origin/feature/consult-home[m
+              }[m
+          }[m
+      }[m
+[1mdiff --cc Dr.meow/appsettings.json[m
+[1mindex 09d1b36,3d81ae5..cad2bc0[m
+[1m--- a/Dr.meow/appsettings.json[m
+[1m+++ b/Dr.meow/appsettings.json[m
+[36m@@@ -1,22 -1,14 +1,37 @@@[m
+  {[m
+[32m++<<<<<<< HEAD[m
+[32m +    "Logging": {[m
+[32m +        "LogLevel": {[m
+[32m +            "Default": "Information",[m
+[32m +            "Microsoft.AspNetCore": "Warning"[m
+[32m +        }[m
+[32m +    },[m
+[32m +[m
+[32m +    "AllowedHosts": "*",[m
+[32m +[m
+[32m +    "ConnectionStrings": {[m
+[32m +        "DrMeowConnection": "Server=(localdb)\\MSSQLLocalDB;Database=DrMeowDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"[m
+[32m +    },[m
+[32m +    "ConnectionStrings": {[m
+[32m +        "DrMeowDbContext": "Server=.;Database=DrMeow;Trusted_Connection=True;MultipleActiveResultSets=true"[m
+[32m +    },[m
+[32m +[m
+[32m +[m
+[32m +    "ExternalSearch": {[m
+[32m +        "BaseUrl": "https://localhost:7068"[m
+[32m +    }[m
+[32m++=======[m
+[32m+   "ConnectionStrings": {[m
+[32m+     "DrMeowDbContext": "Server=localhost;Database=DrMeowDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"[m
+[32m+   },[m
+[32m+ [m
+[32m+   "Logging": {[m
+[32m+     "LogLevel": {[m
+[32m+       "Default": "Information",[m
+[32m+       "Microsoft.AspNetCore": "Warning"[m
+[32m+     }[m
+[32m+   },[m
+[32m+ [m
+[32m+   "AllowedHosts": "*"[m
+[32m++>>>>>>> origin/feature/consult-home[m
+  }[m

@@ -62,7 +62,7 @@ builder.Services.AddAuthentication(options =>
 // DbContext
 builder.Services.AddDbContext<DrMeowDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DrMeowDbContext")
+        builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DrMeowDbContext' not found.")
     )
 );

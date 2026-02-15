@@ -11,13 +11,14 @@ namespace Dr.meow.Models
         public string? PasswordHash { get; set; }   // Google 用戶沒有密碼
 
         // ⭐ 共用識別資訊
-        public string Email { get; set; }           // Google 一定會給 Email
+        public string Email { get; set; } = null!;　// Google 一定會給 Email
 
         // ⭐ Google 登入用（組員會用到）
         public string? GoogleId { get; set; }       // Google OAuth 回傳的唯一 ID
 
-        // ⭐ 系統控制
-        public string AccountType { get; set; }     // Admin / User
+        // ⭐ 登入來源類型
+        public string AccountType { get; set; } = "System";// System = 系統帳號註冊　Google = Google OAuth 用戶
+
         public bool IsActive { get; set; } = true;
 
         // ⭐ 權限角色（你之前做的）
