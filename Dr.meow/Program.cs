@@ -3,18 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Dr.meow.Data;
 using Dr.meow.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Http;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Razor Pages
 builder.Services.AddRazorPages();
+
 // ⭐ 註冊 RAG 搜尋服務（你的 AI 搜尋）
 builder.Services.AddHttpClient<ISearchService, SearchService>();
-
 
 // ⭐ Session 服務
 builder.Services.AddDistributedMemoryCache();
@@ -25,39 +22,19 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// ⭐ Google Authentication（重點！）
+// ⭐ 只使用 Cookie Authentication（暫時不啟用 Google）
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
 .AddCookie(options =>
 {
-    options.LoginPath = "/Login"; // 未登入時導向的頁面
+    options.LoginPath = "/Login";
     options.AccessDeniedPath = "/Error";
 
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-})
-.AddGoogle(options =>
-{
-    options.ClientId = builder.Configuration["GoogleOAuth:ClientId"];
-    options.ClientSecret = builder.Configuration["GoogleOAuth:ClientSecret"];
-
-    options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-
-    // 🛠️ 核心修正：強制 Google 每次都跳出帳號選擇視窗，實現「切換帳號」需求
-    options.Events.OnRedirectToAuthorizationEndpoint = context =>
-    {
-        context.Response.Redirect(context.RedirectUri + "&prompt=select_account");
-        return Task.CompletedTask;
-    };
-
-    options.Scope.Add("email");
-    options.Scope.Add("profile");
-    options.CallbackPath = "/signin-google";
-});
+});   // ⭐ 這個分號你原本少了
 
 // DbContext
 builder.Services.AddDbContext<DrMeowDbContext>(options =>
@@ -66,7 +43,6 @@ builder.Services.AddDbContext<DrMeowDbContext>(options =>
         ?? throw new InvalidOperationException("Connection string 'DrMeowDbContext' not found.")
     )
 );
-
 
 var app = builder.Build();
 
@@ -81,17 +57,15 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// 如果之後有 Identity 可以保留，現在也不會壞
 app.UseAuthentication();
 app.UseAuthorization();
 
 // ⭐ 一定要在 MapRazorPages 之前
 app.UseSession();
 
-// Razor Pages 路由
 app.MapRazorPages();
 
-// ⭐ 讓根目錄一打開就是 Login
+// ⭐ 讓根目錄直接跳轉 Login
 app.MapGet("/", ctx =>
 {
     ctx.Response.Redirect("/Login");
