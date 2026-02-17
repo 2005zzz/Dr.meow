@@ -6,47 +6,74 @@
 }
 
 <style>
-    /* ===== Sidebar 外框 ===== */
+    /* 左側選單卡片本身稍微圓一點 */
     .app-sidebar.card {
         border-radius: 22px;
         border: none;
         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
         position: relative;
-        z-index: 20;
+        z-index: 30; /* 讓子選單層級在上面 */
     }
 
-    .app-sidebar .list-group-item {
-        border: none;
-        background-color: #ffffff;
-        padding: 0.85rem 1.2rem;
-        transition: all 0.18s ease;
-        position: relative;
+    /* 列表容器 */
+    .app-sidebar {
+        border-radius: 22px;
+        overflow: visible; /* 重要：讓子選單可浮出 */
     }
 
-        .app-sidebar .list-group-item.text-uppercase {
-            background-color: transparent;
-            font-size: 0.78rem;
-            letter-spacing: 0.08em;
-            color: #999;
+        /* 每一個選單項目的共同樣式 */
+        .app-sidebar .list-group-item {
+            border: none;
+            background-color: #ffffff;
+            padding: 0.8rem 1.1rem;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.15s ease;
+            position: relative;
         }
 
-    .app-sidebar .list-group-item-action:hover {
-        transform: translateY(-2px);
-        background-color: #e9f9f5;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-        cursor: pointer;
-    }
+            /* 第一行標題不要浮起 */
+            .app-sidebar .list-group-item.text-uppercase {
+                background-color: transparent;
+                font-size: 0.78rem;
+                letter-spacing: 0.08em;
+                color: #999;
+                padding: 0.75rem 1.1rem;
+            }
 
-    .app-sidebar .active {
-        background-color: #d6f6ee;
-        color: #1f6e61;
-        font-weight: 600;
-    }
+        /* 滑過一般選項：微浮起＋柔陰影＋淡綠底 */
+        .app-sidebar .list-group-item-action:hover {
+            transform: translateY(-2px);
+            background-color: #e9f9f5;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+        }
 
-    /* ===== Hover 子選單 ===== */
+        /* active 狀態 */
+        .app-sidebar .list-group-item.app-menu.active {
+            background-color: #d6f6ee;
+            color: #1f6e61;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        }
 
+        /* 登出顏色 */
+        .app-sidebar .list-group-item.text-danger {
+            color: #e45b5b;
+            font-weight: 500;
+        }
+
+            .app-sidebar .list-group-item.text-danger:hover {
+                background-color: #ffecec;
+                box-shadow: 0 6px 14px rgba(228, 91, 91, 0.16);
+                transform: translateY(-2px);
+            }
+
+    /* ===== Hover 子選單（不影響右側功能區） ===== */
     .submenu-wrapper {
         position: relative;
+    }
+
+    .submenu-toggle {
+        user-select: none;
     }
 
     .submenu {
@@ -61,16 +88,18 @@
         visibility: hidden;
         transform: translateX(8px);
         transition: all .18s ease;
-        z-index: 30;
+        z-index: 50;
+        overflow: hidden;
     }
 
         .submenu a {
             display: block;
             padding: 0.75rem 1rem;
-            text-decoration: none;
             color: #333;
+            text-decoration: none;
             font-size: 0.9rem;
             transition: background .15s ease;
+            background: #fff;
         }
 
             .submenu a:hover {
@@ -82,20 +111,13 @@
         visibility: visible;
         transform: translateX(0);
     }
-
-    .text-danger:hover {
-        background-color: #ffecec;
-        box-shadow: 0 6px 14px rgba(228, 91, 91, 0.16);
-        transform: translateY(-2px);
-    }
 </style>
 
-<div class="row g-4">
-
+<div class="row g-3">
     <!-- 左側選單 -->
-    <aside class="col-lg-3">
+    <aside class="col-12 col-lg-3">
         <div class="card shadow-sm app-sidebar">
-            <div class="list-group list-group-flush">
+            <div class="list-group list-group-flush app-sidebar">
 
                 <div class="list-group-item text-secondary small text-uppercase">
                     功能
@@ -104,67 +126,428 @@
                     </span>
                 </div>
 
-                <!-- RAG 顧問 -->
-                <a class="list-group-item list-group-item-action active">
+                <!-- RAG 顧問：預設 mode=consult -->
+                <a class="list-group-item list-group-item-action app-menu active"
+                   data-mode="consult">
                     RAG 顧問
                 </a>
 
-                <!-- Hover 新增表單 -->
+                <!-- ✅ 新增表單：Hover 子選單（不跳頁） -->
                 <div class="submenu-wrapper">
-                    <div class="list-group-item list-group-item-action">
+                    <div class="list-group-item list-group-item-action submenu-toggle">
                         新增表單 ▸
                     </div>
 
                     <div class="submenu">
-                        <a asp-page="/Vulnerabilities/Create">
-                            📝 變更單
-                        </a>
-                        <a asp-page="/Requests/Create">
-                            📄 需求單
-                        </a>
+                        <!-- 你做好的變更單頁 -->
+                        <a asp-page="/Vulnerabilities/Create">📝 變更單</a>
+                        <!-- 另一個表單頁（你可改路徑/名稱） -->
+                        <a asp-page="/Forms/RequestCreate">📄 需求單</a>
+
                     </div>
                 </div>
 
-                <!-- 查看表單 -->
-                <a class="list-group-item list-group-item-action"
-                   asp-page="/Forms/Index">
+                <!-- 查看表單：同頁切換、Ajax 載入 -->
+                <a class="list-group-item list-group-item-action app-menu"
+                   data-mode="forms">
                     查看表單
                 </a>
 
-                <div class="list-group-item text-secondary small text-uppercase">
-                    問答歷史
-                </div>
+                <div class="list-group-item text-secondary small text-uppercase">問答歷史</div>
 
-                <!-- 登出 -->
-                <a class="list-group-item list-group-item-action text-danger"
-                   asp-page="/Login">
+                <a class="list-group-item list-group-item-action text-danger" asp-page="/Login">
                     登出
                 </a>
-
             </div>
         </div>
     </aside>
 
     <!-- 右側主區 -->
-    <section class="col-lg-9">
+    <section class="col-12 col-lg-9">
         <div class="card shadow-sm">
             <div class="card-header bg-white">
                 <h5 class="mb-0">Dr.Meow 使用者顧問中心</h5>
             </div>
-
             <div class="card-body">
-
-                <div class="alert alert-info py-2">
-                    您目前以「使用者」登入，可向 RAG 顧問提問，
-                    並填寫變更單或需求單。
+                <div id="noteBox" class="alert alert-info py-2">
+                    您目前以「使用者」登入，可向 RAG 顧問提問，並填寫變更／需求表單。
                 </div>
 
-                <div class="mt-4">
-                    <p>👉 請從左側選單滑鼠移到「新增表單」選擇功能。</p>
+                <!-- ✅ RAG 顧問區塊：完整保留 -->
+                <div id="ragArea">
+                    <div id="messages" class="chat-stream mb-3"></div>
+                    <div id="summaryBox" class="alert alert-secondary d-none"></div>
+                    <div id="results" class="row row-cols-1 row-cols-md-2 g-3 mt-1"></div>
+
+                    <form id="askForm" class="row g-2 mt-2">
+                        <div class="col">
+                            <input id="askInput" class="form-control"
+                                   placeholder="輸入問題，例如：最近漏洞通報與處置建議？" autocomplete="off" />
+                        </div>
+                        <div class="col-auto d-flex gap-2">
+                            <button id="btnVoice" class="btn btn-outline-secondary" type="button">🔍 語音</button>
+                            <button class="btn btn-primary" type="submit">送出</button>
+                            <button id="btnClear" class="btn btn-outline-secondary" type="button">清空</button>
+                        </div>
+                    </form>
                 </div>
 
+                <!-- ✅ 查看表單區塊：保留 Ajax  -->
+                <div id="formsArea" class="d-none">
+                    <div id="formsContainer">
+                        載入中…
+                    </div>
+                </div>
             </div>
         </div>
     </section>
-
 </div>
+
+<div class="offcanvas offcanvas-end meow-offcanvas" tabindex="-1" id="offcanvasSource">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasSourceLabel">📄 原始文件內容</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body">
+        <h6 id="sourceTitle" class="fw-bold mb-3"></h6>
+        <div id="sourceContent" class="meow-source-box"></div>
+        <div class="rag-footer">來源：RAG 知識庫</div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let globalSourceMap = {};   // <-- 全域來源索引庫
+        const messageSources = {};  // key: messageId → value: sources array
+        const FORMS_URL = '/Forms/FormsList';
+        const API_URL = '/Api/Search';
+
+        const menuItems = document.querySelectorAll('.app-menu');
+        const noteBox = document.getElementById('noteBox');
+
+        const ragArea = document.getElementById('ragArea');
+        const formsArea = document.getElementById('formsArea');
+        const formsContainer = document.getElementById('formsContainer');
+
+        const msgs = document.getElementById('messages');
+        const results = document.getElementById('results');
+        const summary = document.getElementById('summaryBox');
+        const form = document.getElementById('askForm');
+        const input = document.getElementById('askInput');
+        const btnClear = document.getElementById('btnClear');
+        const btnVoice = document.getElementById('btnVoice');
+
+        let formsLoaded = false;
+
+        // 側邊欄實體
+        const sourceOffcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasSource'));
+
+        menuItems.forEach(it => {
+            it.addEventListener('click', () => {
+                menuItems.forEach(x => x.classList.remove('active'));
+                it.classList.add('active');
+
+                const mode = it.dataset.mode;
+                if (!mode) return;
+
+                if (mode === 'consult') {
+                    ragArea.classList.remove('d-none');
+                    formsArea.classList.add('d-none');
+                    noteBox.textContent = '您目前在「RAG 顧問」模式，可向系統提問相關問題。';
+
+                    msgs.innerHTML = '';
+                    results.innerHTML = '';
+                    summary.classList.add('d-none');
+                }
+                else if (mode === 'forms') {
+                    ragArea.classList.add('d-none');
+                    formsArea.classList.remove('d-none');
+                    noteBox.textContent = '您目前在「查看表單」模式，可瀏覽已填寫的變更／需求表單。';
+
+                    if (!formsLoaded) {
+                        loadFormsList();
+                    }
+                }
+            });
+        });
+
+        async function loadFormsList() {
+            formsContainer.textContent = '載入中…';
+            try {
+                const resp = await fetch(FORMS_URL, { method: 'GET' });
+                if (!resp.ok) {
+                    const txt = await resp.text();
+                    formsContainer.innerHTML = `載入失敗（${resp.status}）：${escapeHtml(txt)}`;
+                    return;
+                }
+                const html = await resp.text();
+                formsContainer.innerHTML = html;
+                formsLoaded = true;
+            } catch (err) {
+                console.error(err);
+                formsContainer.textContent = '載入失敗，請稍後再試。';
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const q = input.value.trim();
+            if (!q) return;
+
+            pushUser(q);
+            input.value = '';
+
+            const loadingId = pushBot('查詢中，請稍候…', true);
+
+            try {
+                const resp = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: q })
+                });
+
+                if (!resp.ok) {
+                    const text = await resp.text();
+                    replaceBotMessage(loadingId, `後端發生錯誤（${resp.status}）：${escapeHtml(text)}`);
+                    return;
+                }
+
+                const data = await resp.json();
+                const sources = data.items || data.sources || data.Sources || [];
+
+                messageSources[loadingId] = sources;
+
+                sources.forEach(s => {
+                    const key = s.title || s.fileName;
+                    if (key && !globalSourceMap[key]) {
+                        globalSourceMap[key] = s;
+                    }
+                });
+
+                const rawAnswer = data.answer || data.Answer || '（沒有取得 AI 回覆）';
+                const formattedAnswer = formatText(rawAnswer, loadingId);
+
+                replaceBotMessage(loadingId, formattedAnswer);
+
+                results.innerHTML = '';
+                sources.forEach(x => addResultCard(x, loadingId));
+
+                scrollBottom();
+
+            } catch (err) {
+                console.error(err);
+                replaceBotMessage(loadingId, '查詢失敗，請檢查後端連線或稍後再試。');
+            }
+        });
+
+        btnClear.addEventListener('click', (e) => {
+            e.preventDefault();
+            input.value = '';
+        });
+
+        function formatText(text, msgId) {
+            if (!text) return '';
+            let safeText = escapeHtml(text);
+
+            safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-dark">$1</strong>');
+            safeText = safeText.replace(/\n/g, '<br>');
+
+            safeText = safeText.replace(/\[(來源|cite):\s*(.*?)\]/gi, (match, _label, fileName) => {
+                const name = (fileName || '').trim();
+                const safeNameForJs = escapeJs(name);
+                const safeMatchText = escapeHtml(match);
+                return `<a href="javascript:void(0)" class="citation-link text-decoration-none fw-bold" onclick="showSource('${safeNameForJs}', '${msgId}')">📄 ${safeMatchText}</a>`;
+            });
+
+            return safeText;
+        }
+
+        window.showSource = function (fileName, msgId) {
+            const sourceList = messageSources[msgId] || [];
+
+            if (!sourceList.length && !fileName) {
+                alert('這一題沒有可用的文件來源');
+                return;
+            }
+
+            let activeIndex = 0;
+            if (fileName) {
+                const idx = sourceList.findIndex(s =>
+                    (s.title && s.title.includes(fileName)) ||
+                    (s.fileName && s.fileName.includes(fileName))
+                );
+                if (idx >= 0) activeIndex = idx;
+            }
+
+            let currentDoc = sourceList[activeIndex];
+            if (!currentDoc && fileName) currentDoc = globalSourceMap[fileName];
+
+            if (!currentDoc) {
+                alert(`找不到文件來源：${fileName || '（未指定）'}`);
+                return;
+            }
+
+            const titleEl = document.getElementById("sourceTitle");
+            const container = document.getElementById("sourceContent");
+            let currentPageIndex = 0;
+
+            function renderPage() {
+                const pages = currentDoc.pages || [];
+                const contents = currentDoc.pageContents || {};
+
+                const pageKey = pages.length ? pages[currentPageIndex] : null;
+                const text = pageKey ? (contents[pageKey] || "(沒有內容)") : "(沒有內容)";
+
+                const docTitle = currentDoc.title || currentDoc.fileName || '未命名文件';
+                const totalPages = pages.length || 1;
+
+                titleEl.textContent = `${docTitle}（${totalPages} 頁）`;
+
+                const controlsHtml = `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <button class="meow-page-btn" id="btnPrevPage" ${currentPageIndex === 0 ? "disabled" : ""}>‹</button>
+                        <span class="meow-page-info">第 ${currentPageIndex + 1} / ${totalPages} 頁</span>
+                        <button class="meow-page-btn" id="btnNextPage" ${currentPageIndex >= totalPages - 1 ? "disabled" : ""}>›</button>
+                    </div>
+                `;
+
+                container.innerHTML = `
+                    ${controlsHtml}
+                    <div class="p-3 bg-light border rounded font-monospace small" style="white-space: pre-wrap; line-height: 1.6;">
+                        ${escapeHtml(text)}
+                    </div>
+                `;
+
+                const prevBtn = document.getElementById("btnPrevPage");
+                const nextBtn = document.getElementById("btnNextPage");
+
+                prevBtn && prevBtn.addEventListener("click", () => {
+                    if (currentPageIndex > 0) { currentPageIndex--; renderPage(); }
+                });
+                nextBtn && nextBtn.addEventListener("click", () => {
+                    if (currentPageIndex < totalPages - 1) { currentPageIndex++; renderPage(); }
+                });
+            }
+
+            renderPage();
+            sourceOffcanvas.show();
+        };
+
+        function pushUser(t) {
+            msgs.insertAdjacentHTML('beforeend', `
+                <div class="msg-row msg-user-row">
+                    <div class="msg msg-user">${escapeHtml(t)}</div>
+                </div>`);
+            scrollBottom();
+        }
+
+        function pushBot(htmlContent, isLoading = false) {
+            const id = 'msg-' + Date.now();
+            const content = isLoading
+                ? `<span class="text-secondary"><span class="spinner-border spinner-border-sm me-2"></span>${htmlContent}</span>`
+                : htmlContent;
+
+            msgs.insertAdjacentHTML('beforeend', `
+                <div class="msg-row msg-bot-row" id="${id}">
+                    <div class="msg msg-bot">${content}</div>
+                </div>`);
+            scrollBottom();
+            return id;
+        }
+
+        function replaceBotMessage(id, htmlContent) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = `<div class="msg msg-bot">${htmlContent}</div>`;
+                scrollBottom();
+            }
+        }
+
+        function scrollBottom() {
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function escapeHtml(s) {
+            return (s || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+
+        function escapeJs(s) {
+            return (s || '').replace(/'/g, "\\'");
+        }
+
+        function addResultCard(x, msgId) {
+            const title = x.title || x.fileName || '（無標題）';
+
+            results.insertAdjacentHTML('beforeend', `
+                <div class="col">
+                    <div class="card result-card h-100 shadow-sm border-0">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0 text-truncate">
+                                    <a href="javascript:void(0)" class="text-decoration-none"
+                                       onclick="showSource('${escapeJs(title)}', '${msgId}')">
+                                        📄 ${escapeHtml(title)}
+                                    </a>
+                                </h6>
+                                <span class="badge bg-light text-dark border">
+                                    Score: ${escapeHtml(x.source || 'RAG')}
+                                </span>
+                            </div>
+                            <div class="text-muted small mb-2 text-truncate">
+                                ${escapeHtml(x.snippet || '')}
+                            </div>
+                            <div class="d-flex gap-2 mt-auto">
+                                <button class="btn btn-outline-primary btn-sm w-100"
+                                        onclick="showSource('${escapeJs(title)}', '${msgId}')">
+                                    查看內文
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        (function () {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return;
+
+            const recog = new SR();
+            recog.lang = 'zh-TW';
+            recog.continuous = false;
+            recog.interimResults = true;
+
+            let listening = false;
+
+            btnVoice.addEventListener('click', () => {
+                listening ? stop() : start();
+            });
+
+            function start() {
+                try { recog.start(); listening = true; btnVoice.textContent = '🎙️ 辨識中…'; } catch (e) { }
+            }
+
+            function stop() {
+                try { recog.stop(); listening = false; btnVoice.textContent = '🔍 語音'; } catch (e) { }
+            }
+
+            recog.onresult = (e) => {
+                let final = '', interim = '';
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    const text = e.results[i][0].transcript;
+                    if (e.results[i].isFinal) final += text;
+                    else interim += text;
+                }
+                input.value = (final || interim).trim();
+            };
+
+            recog.onend = () => {
+                listening = false;
+                btnVoice.textContent = '🔍 語音';
+            };
+        })();
+    </script>
+}

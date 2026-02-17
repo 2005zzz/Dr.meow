@@ -1,0 +1,258 @@
+﻿@page
+@model Dr.meow.Pages.Forms.RequestCreateModel
+@{
+    ViewData["Title"] = "新增需求申請單";
+}
+
+<style>
+ 
+    .meow-form-wrap {
+        background: #ffffff;
+        border-radius: 22px;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .meow-form-header {
+        background: #78cdbf; 
+        padding: 26px 34px;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.8rem;
+        letter-spacing: .02em;
+    }
+
+    .meow-form-body {
+        padding: 28px 34px 34px;
+    }
+
+    .meow-section {
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+        .meow-section:first-of-type {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+    .meow-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        color: #2b6f66;
+        font-size: 1.18rem;
+        margin: 10px 0 18px;
+    }
+
+    .meow-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #78cdbf;
+        box-shadow: inset 0 0 0 4px rgba(255,255,255,0.85);
+    }
+
+    .meow-label {
+        font-weight: 700;
+        color: #2f2f2f;
+        margin-bottom: 6px;
+    }
+
+    .meow-required {
+        color: #e45b5b;
+        font-weight: 800;
+        margin-left: 4px;
+    }
+
+    /* 輸入框：同款圓角 + 綠色邊線 */
+    .meow-input, .meow-select, .meow-textarea {
+        border-radius: 14px !important;
+        border: 1.5px solid rgba(120,205,191,0.75) !important;
+        padding: 12px 14px !important;
+        box-shadow: none !important;
+    }
+
+    .meow-textarea {
+        min-height: 140px;
+        resize: vertical;
+    }
+
+        .meow-input:focus, .meow-select:focus, .meow-textarea:focus {
+            border-color: #3AB6A7 !important;
+            box-shadow: 0 0 0 .2rem rgba(58,182,167,.18) !important;
+        }
+
+    .meow-hint {
+        color: #6b7280;
+        font-size: .92rem;
+        margin-top: 6px;
+    }
+
+    .meow-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 22px;
+    }
+
+    .btn-meow-primary {
+        background: #3AB6A7;
+        border: none;
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-weight: 700;
+    }
+
+        .btn-meow-primary:hover {
+            filter: brightness(0.97);
+        }
+
+    .btn-meow-outline {
+        background: transparent;
+        border: 1.5px solid rgba(58,182,167,.65);
+        color: #2b6f66;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-weight: 700;
+    }
+
+        .btn-meow-outline:hover {
+            background: rgba(58,182,167,.08);
+        }
+</style>
+
+<div class="meow-form-wrap">
+    <div class="meow-form-header">
+        新增需求申請單
+    </div>
+
+    <div class="meow-form-body">
+
+        <form method="post">
+
+            
+            <div class="meow-section">
+                <div class="meow-section-title">
+                    <span class="meow-dot"></span>
+                    <span>1. 基本資訊與需求內容</span>
+                </div>
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+                        <div class="meow-label">提單人 / 部門</div>
+                        <input class="form-control meow-input" name="Department"
+                               placeholder="例如：門診 / 檢驗科 / 護理站" />
+                        
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="meow-label">職稱 / 角色</div>
+                        <input class="form-control meow-input" name="Role"
+                               placeholder="例如：護理師 / 行政 / 技師" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="meow-label">聯絡方式</div>
+                        <input class="form-control meow-input" name="Contact"
+                               placeholder="分機 / Email（選填）" />
+                    </div>
+
+                    <div class="col-12">
+                        <div class="meow-label">需求標題<span class="meow-required">*</span></div>
+                        <input class="form-control meow-input" name="Title" required
+                               placeholder="例如：新增技術人員類別 / 報表匯出 / 權限調整" />
+                    </div>
+
+                    <div class="col-12">
+                        <div class="meow-label">需求內容<span class="meow-required">*</span></div>
+                        <textarea class="form-control meow-textarea" name="Description" required
+                                  placeholder="請描述：目前流程/問題、影響範圍、操作步驟等。"></textarea>
+                        <
+                    </div>
+
+                </div>
+            </div>
+
+         
+            <div class="meow-section">
+                <div class="meow-section-title">
+                    <span class="meow-dot"></span>
+                    <span>2. 資訊評估（供資訊人員審核/優化）</span>
+                </div>
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+                        <div class="meow-label">系統類別<span class="meow-required">*</span></div>
+                        <input class="form-control meow-input" name="SystemCategory" required
+                               placeholder="例如：掛號系統 / 檢驗系統 / 報表系統" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="meow-label">需求類型<span class="meow-required">*</span></div>
+                        <select class="form-select meow-select" name="RequestType" required>
+                            <option value="">請選擇</option>
+                            <option>功能新增</option>
+                            <option>流程調整</option>
+                            <option>權限/帳號需求</option>
+                            <option>報表/列印需求</option>
+                            <option>介面優化</option>
+                            <option>其他</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="meow-label">優先等級<span class="meow-required">*</span></div>
+                        <select class="form-select meow-select" name="Priority" required>
+                            <option value="">請選擇</option>
+                            <option>高</option>
+                            <option selected>中</option>
+                            <option>低</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="meow-label">預期效益 / 原因</div>
+                        <textarea class="form-control meow-textarea" name="Benefit"
+                                  placeholder="例如：減少人工登錄時間、降低錯誤、提升效率（選填）"></textarea>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 3. 期望時程 -->
+            <div class="meow-section">
+                <div class="meow-section-title">
+                    <span class="meow-dot"></span>
+                    <span>3. 期望時程</span>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="meow-label">期望完成日期</div>
+                        <input type="date" class="form-control meow-input" name="ExpectedDate" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="meow-label">備註</div>
+                        <input class="form-control meow-input" name="Note" placeholder="（選填）" />
+                    </div>
+                </div>
+
+                <div class="meow-actions">
+                    <button type="submit" class="btn-meow-primary">送出需求單</button>
+                    <a asp-page="/UserHome" class="btn-meow-outline">返回</a>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
