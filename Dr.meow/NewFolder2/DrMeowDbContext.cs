@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Dr.meow.Models;
+﻿using Dr.meow.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dr.meow.Data
 {
@@ -16,6 +16,8 @@ namespace Dr.meow.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<RequestForm> RequestForms { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

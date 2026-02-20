@@ -68,7 +68,7 @@
     <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending">
-                ⏳ 待審核 <span class="badge bg-warning text-dark rounded-pill ms-1">3</span>
+                ⏳ 待審核 <span class="badge bg-warning text-dark rounded-pill ms-1">@Model.Pending.Count</span>
             </button>
         </li>
         <li class="nav-item">
@@ -85,75 +85,95 @@
 
     <div class="tab-content" id="adminTabsContent">
 
-        <div class="tab-pane fade show active" id="pending">
-            <div class="card admin-card border-pending mb-3 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="d-flex align-items-start">
-                            <div class="user-avatar">王</div>
-                            <div>
-                                <div class="d-flex align-items-center mb-1">
-                                    <h5 class="card-title mb-0 fw-bold">DevOps-20231027-001</h5>
-                                    <span class="badge bg-secondary ms-2">EIP</span>
+        <div class="tab-content" id="adminTabsContent">
+
+            <!-- ✅ 待審核 -->
+            <div class="tab-pane fade show active" id="pending">
+                @if (Model.Pending.Count == 0)
+                {
+                    <div class="text-muted">目前沒有待審核的需求單。</div>
+                }
+                else
+                {
+                    @foreach (var f in Model.Pending)
+                    {
+                        <div class="card admin-card border-pending mb-3 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex align-items-start">
+                                        <div class="user-avatar">@((f.Contact?.Length ?? 0) > 0 ? f.Contact.Substring(0, 1) : "？")</div>
+                                        <div>
+                                            <div class="d-flex align-items-center mb-1">
+                                                <h5 class="card-title mb-0 fw-bold">@f.Title</h5>
+                                                <span class="badge bg-secondary ms-2">@f.SystemCategory</span>
+                                            </div>
+                                            <p class="text-muted mb-2 small">
+                                                部門：@f.Department | 建立：@f.CreatedAt.ToString("yyyy/MM/dd HH:mm")
+                                            </p>
+                                            <p class="card-text text-dark mb-0">
+                                                <strong>摘要：</strong> @f.Description
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="action-btn-group ms-3">
+                                        <button type="button" class="btn btn-success btn-sm w-100" disabled>✔ 核准</button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm w-100" disabled>✖ 退回</button>
+                                        <button type="button" class="btn btn-outline-success btn-sm w-100" disabled>📊 匯出</button>
+                                        <button type="button" class="btn btn-link btn-sm text-end pe-0" disabled>查看詳情 ></button>
+                                    </div>
                                 </div>
-                                <p class="text-muted mb-2 small">
-                                    申請人：王小明 | 2023/10/27 09:30
-                                </p>
-                                <p class="card-text text-dark mb-0">
-                                    <strong>摘要：</strong> 更新資料庫連線模組，預計影響 15 分鐘...
-                                </p>
                             </div>
                         </div>
+                    }
+                }
+            </div>
 
-                        <div class="action-btn-group ms-3">
-                            <form action="/Form/SignOff" method="post">
-                                <input type="hidden" name="id" value="101">
-                                <input type="hidden" name="result" value="Approved">
-                                <button type="submit" class="btn btn-success btn-sm w-100">✔ 核准</button>
-                            </form>
-
-                            <button type="button" class="btn btn-outline-danger btn-sm w-100"
-                                    data-bs-toggle="modal" data-bs-target="#rejectModal"
-                                    data-id="101" data-title="DevOps-20231027-001">
-                                ✖ 退回
-                            </button>
-
-                            <a href="/Form/ExportExcel/101" class="btn btn-outline-success btn-sm w-100">
-                                📊 匯出
-                            </a>
-
-                            <a href="/Form/Details/101"
-                               class="btn btn-link btn-sm text-end pe-0">查看詳情 ></a>
+            <!-- ✅ 已核准 -->
+            <div class="tab-pane fade" id="approved">
+                @if (Model.Approved.Count == 0)
+                {
+                    <div class="text-muted">目前沒有已核准的需求單。</div>
+                }
+                else
+                {
+                    @foreach (var f in Model.Approved)
+                    {
+                        <div class="card admin-card border-approved mb-3 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-dark mb-1">
+                                    @f.Title <span class="badge bg-success ms-1">已核准</span>
+                                </h5>
+                                <p class="mb-0 text-muted small">部門：@f.Department | 建立：@f.CreatedAt.ToString("yyyy/MM/dd")</p>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    }
+                }
             </div>
-        </div>
 
-        <div class="tab-pane fade" id="approved">
-            <div class="card admin-card border-approved mb-3 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-dark mb-1">
-                        DevOps-20231026-005 <span class="badge bg-success ms-1">已核准</span>
-                    </h5>
-                    <p class="mb-0 text-muted small">申請人：李大華 | 核准：2023/10/26</p>
-                </div>
+            <!-- ✅ 已退回 -->
+            <div class="tab-pane fade" id="rejected">
+                @if (Model.Rejected.Count == 0)
+                {
+                    <div class="text-muted">目前沒有已退回的需求單。</div>
+                }
+                else
+                {
+                    @foreach (var f in Model.Rejected)
+                    {
+                        <div class="card admin-card border-rejected mb-3 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-danger mb-2">@f.Title</h5>
+                                <div class="alert alert-danger py-2 mb-0 small">
+                                    退回原因：@(string.IsNullOrWhiteSpace(f.AiReason) ? "（未填寫原因）" : f.AiReason)
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
-        </div>
 
-        <div class="tab-pane fade" id="rejected">
-            <div class="card admin-card border-rejected mb-3 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-danger mb-1">DevOps-20231025-003</h5>
-                    <div class="alert alert-danger py-2 mb-0 small">
-                        退回原因：測試計畫不完整，請補充。
-                    </div>
-                </div>
-            </div>
         </div>
-
-    </div>
-</div>
 
 
 <!-- 退回 Modal -->
