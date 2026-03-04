@@ -1,0 +1,257 @@
+﻿@page
+@model Dr.meow.Pages.Forms.ManagementModel
+@{
+   Layout = null;
+}
+
+<style>
+    /* 自定義樣式 */
+    .admin-card {
+        border-left: 5px solid #dee2e6;
+        transition: all 0.2s;
+        background-color: #fff;
+    }
+
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+    .border-pending {
+        border-left-color: #ffc107;
+    }
+
+    .border-approved {
+        border-left-color: #198754;
+    }
+
+    .border-rejected {
+        border-left-color: #dc3545;
+    }
+
+    .user-avatar {
+        width: 48px;
+        height: 48px;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #495057;
+        font-size: 1.2rem;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            font-weight: bold;
+            border-bottom: 3px solid #0d6efd;
+        }
+
+    /* ✅ 只留查看詳情的區塊 */
+    .details-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        color: #6c757d;
+        text-decoration: none;
+        white-space: nowrap;
+        padding: 6px 10px;
+        border-radius: 10px;
+        transition: all .15s ease;
+    }
+
+        .details-link:hover {
+            background: rgba(58,182,167,.12);
+            color: #2b6f66;
+            text-decoration: none;
+        }
+</style>
+
+<div class="container-fluid p-0">
+    <h4 class="fw-bold mb-3">
+        ⚙️ 需求單審核
+    </h4>
+
+    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+
+        <li class="nav-item">
+            <button class="nav-link active"
+                    id="pending-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pending"
+                    type="button">
+
+                ⏳ 待審核
+                <span class="badge bg-warning text-dark rounded-pill ms-1">
+                    @Model.Pending.Count
+                </span>
+
+            </button>
+        </li>
+
+        <li class="nav-item">
+            <button class="nav-link"
+                    id="approved-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#approved"
+                    type="button">
+
+                ✅ 已核准
+                <span class="badge bg-success rounded-pill ms-1">
+                    @Model.Approved.Count
+                </span>
+
+            </button>
+        </li>
+
+        <li class="nav-item">
+            <button class="nav-link"
+                    id="rejected-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#rejected"
+                    type="button">
+
+                ❌ 已退回
+                <span class="badge bg-danger rounded-pill ms-1">
+                    @Model.Rejected.Count
+                </span>
+
+            </button>
+        </li>
+
+    </ul>
+
+    <div class="tab-content" id="adminTabsContent">
+
+        <!-- ✅ 待審核 -->
+        <div class="tab-pane fade show active" id="pending">
+            @if (Model.Pending.Count == 0)
+            {
+                <div class="text-muted">目前沒有待審核的需求單。</div>
+            }
+            else
+            {
+                @foreach (var f in Model.Pending)
+                {
+                    <div class="card admin-card border-pending mb-3 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+
+                                <div class="d-flex align-items-start">
+                                    <div class="user-avatar">@((f.Contact?.Length ?? 0) > 0 ? f.Contact.Substring(0, 1) : "？")</div>
+
+                                    <div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <h5 class="card-title mb-0 fw-bold">@f.Title</h5>
+                                            <span class="badge bg-secondary ms-2">@f.SystemCategory</span>
+                                        </div>
+
+                                        <p class="text-muted mb-2 small">
+                                            部門：@f.Department | 建立：@f.CreatedAt.ToString("yyyy/MM/dd HH:mm")
+                                        </p>
+
+                                        <p class="card-text text-dark mb-0">
+                                            <strong>摘要：</strong> @f.Description
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- ✅ 右側只留查看詳情 -->
+                                <div class="ms-3">
+                                    <a class="details-link"
+                                       asp-page="/Request/Details"
+                                       asp-route-id="@f.Id">
+                                        查看詳情 >
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- ✅ 已核准 -->
+        <div class="tab-pane fade" id="approved">
+            @if (Model.Approved.Count == 0)
+            {
+                <div class="text-muted">目前沒有已核准的需求單。</div>
+            }
+            else
+            {
+                @foreach (var f in Model.Approved)
+                {
+                    <div class="card admin-card border-approved mb-3 shadow-sm">
+                        <div class="card-body d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title text-dark mb-1">
+                                    @f.Title <span class="badge bg-success ms-1">已核准</span>
+                                </h5>
+                                <p class="mb-0 text-muted small">部門：@f.Department | 建立：@f.CreatedAt.ToString("yyyy/MM/dd")</p>
+                            </div>
+
+                            <a class="details-link"
+                               asp-page="/Forms/RequestDetails"
+                               asp-route-id="@f.Id">
+                                查看詳情 <span aria-hidden="true">›</span>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- ✅ 已退回 -->
+        <div class="tab-pane fade" id="rejected">
+            @if (Model.Rejected.Count == 0)
+            {
+                <div class="text-muted">目前沒有已退回的需求單。</div>
+            }
+            else
+            {
+                @foreach (var f in Model.Rejected)
+                {
+                    <div class="card admin-card border-rejected mb-3 shadow-sm">
+                        <div class="card-body d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title text-danger mb-2">@f.Title</h5>
+                                <div class="alert alert-danger py-2 mb-0 small">
+                                    @{
+                                        var reason = f.Status == "Rejected"
+                                        ? f.ReviewRejectReason
+                                        : f.AiReason;
+
+                                        if (string.IsNullOrWhiteSpace(reason))
+                                            reason = "（未填寫原因）";
+
+                                        if (reason.Length > 120)
+                                            reason = reason.Substring(0, 120) + "...";
+                                    }
+
+                                    退回原因：@reason
+                                </div>
+                            </div>
+
+                            <a class="details-link"
+                               asp-page="/Forms/RequestDetails"
+                               asp-route-id="@f.Id">
+                                查看詳情 <span aria-hidden="true">›</span>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+    </div>
+</div>

@@ -4,6 +4,7 @@ using Dr.meow.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dr.meow.Migrations
 {
     [DbContext(typeof(DrMeowDbContext))]
-    partial class DrMeowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260303172609_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,39 +59,6 @@ namespace Dr.meow.Migrations
 
                     b.Property<string>("Priority")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReviewAcceptanceContent")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ReviewAcceptanceDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("ReviewBenefitManDays")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("ReviewBenefitRevenue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ReviewRejectReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ReviewSatisfactionNeed")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ReviewSatisfactionOverall")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ReviewSatisfactionStability")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ReviewSecurityAssessment")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReviewedBy")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")

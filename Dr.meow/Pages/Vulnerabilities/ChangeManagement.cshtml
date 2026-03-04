@@ -1,0 +1,401 @@
+﻿@page
+@model Dr.meow.Pages.Forms.ChangeManagementModel
+@{
+    ViewData["Title"] = "變更單審核";
+    Layout = null;
+}
+
+<style>
+    /* 卡片樣式 */
+    .admin-card {
+        border-left: 5px solid #dee2e6;
+        transition: all 0.2s;
+        background-color: #fff;
+        border-radius: 16px;
+    }
+
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+    .border-pending {
+        border-left-color: #ffc107;
+    }
+
+    .border-approved {
+        border-left-color: #198754;
+    }
+
+    .border-rejected {
+        border-left-color: #dc3545;
+    }
+
+    /* 使用者頭像 */
+    .user-avatar {
+        width: 48px;
+        height: 48px;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #495057;
+        font-size: 1.2rem;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    /* Tabs */
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 600;
+        border: none;
+    }
+
+        .nav-tabs .nav-link.active {
+            color: #1f6e61;
+            font-weight: 800;
+            border-bottom: 3px solid #3AB6A7;
+        }
+
+    /* 查看詳情（跟 Management 一樣） */
+    .details-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        color: #6c757d;
+        text-decoration: none;
+        white-space: nowrap;
+        padding: 6px 10px;
+        border-radius: 10px;
+        transition: all .15s ease;
+    }
+
+        .details-link:hover {
+            background: rgba(58,182,167,.12);
+            color: #2b6f66;
+            text-decoration: none;
+        }
+
+    /* 按鈕區 */
+    .action-btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 120px;
+    }
+
+    .btn-approve {
+        background: #3AB6A7;
+        border: none;
+        color: #fff;
+        font-weight: 700;
+    }
+
+        .btn-approve:hover {
+            filter: brightness(.97);
+        }
+
+    .btn-reject {
+        border: 1px solid #dc3545;
+        color: #dc3545;
+        font-weight: 700;
+        background: #fff;
+    }
+
+        .btn-reject:hover {
+            background: rgba(220,53,69,.08);
+        }
+</style>
+
+
+<div class="container-fluid p-0">
+
+    <h4 class="fw-bold mb-3">
+        ⚙️ 變更單審核
+    </h4>
+
+    <ul class="nav nav-tabs mb-4" id="changeTabs">
+
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pending">
+                ⏳ 待審核
+                <span class="badge bg-warning text-dark rounded-pill ms-1">
+                    @Model.Pending.Count
+                </span>
+            </button>
+        </li>
+
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#approved">
+                ✅ 已核准
+                <span class="badge bg-success rounded-pill ms-1">
+                    @Model.Approved.Count
+                </span>
+            </button>
+        </li>
+
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rejected">
+                ❌ 已退回
+                <span class="badge bg-danger rounded-pill ms-1">
+                    @Model.Rejected.Count
+                </span>
+            </button>
+        </li>
+
+    </ul>
+
+
+    <div class="tab-content">
+
+        <!-- 待審核 -->
+        <div class="tab-pane fade show active" id="pending">
+
+            @if (Model.Pending.Count == 0)
+            {
+                <div class="text-muted">目前沒有待審核的變更單。</div>
+            }
+            else
+            {
+                @foreach (var f in Model.Pending)
+                {
+                    <div class="card admin-card border-pending mb-3 shadow-sm">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-start">
+
+                                <div class="d-flex align-items-start">
+
+                                    <div class="user-avatar">
+                                        @((f.AssignedTo?.Length ?? 0) > 0 ? f.AssignedTo.Substring(0, 1) : "？")
+                                    </div>
+
+                                    <div>
+
+                                        <div class="d-flex align-items-center mb-1">
+
+                                            <h5 class="card-title mb-0 fw-bold">
+                                                @(string.IsNullOrWhiteSpace(f.TicketNumber)
+                                                                                        ? $"變更單 #{f.Id}"
+                                                                                        : f.TicketNumber)
+                                    </h5>
+
+                                    @if (!string.IsNullOrWhiteSpace(f.SystemCategory))
+                                            {
+                                                <span class="badge bg-secondary ms-2">
+                                                    @f.SystemCategory
+                                                </span>
+                                            }
+
+                                            @if (!string.IsNullOrWhiteSpace(f.TicketCategory))
+                                            {
+                                                <span class="badge bg-light text-dark ms-2 border">
+                                                    @f.TicketCategory
+                                                </span>
+                                            }
+
+                                    </div>
+
+                                    <p class="text-muted mb-2 small">
+                                        指派：@(f.AssignedTo ?? "未指派")
+                                        ｜
+                                        建立：@f.FoundDate.ToString("yyyy/MM/dd")
+                                        @(!string.IsNullOrWhiteSpace(f.ScheduledTime)
+                                                                            ? $" {f.ScheduledTime}"
+                                                                            : "")
+                                </p>
+
+                                        <p class="card-text text-dark mb-0">
+                                            <strong>摘要：</strong> @f.Description
+                                        </p>
+
+                                    </div>
+                                </div>
+
+
+                                <div class="action-btn-group ms-3">
+
+                                    <a class="details-link"
+                                       href="/Vulnerabilities/Details?id=@f.Id">
+                                        查看詳情 >
+                                    </a>
+
+                                    
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                        }
+            }
+
+        </div>
+
+
+        <!-- 已核准 -->
+        <div class="tab-pane fade" id="approved">
+
+            @if (Model.Approved.Count == 0)
+            {
+                <div class="text-muted">目前沒有已核准的變更單。</div>
+            }
+            else
+            {
+                @foreach (var f in Model.Approved)
+                {
+                    <div class="card admin-card border-approved mb-3 shadow-sm">
+
+                        <div class="card-body">
+
+                            <h5 class="card-title text-dark mb-1 fw-bold">
+                                @(string.IsNullOrWhiteSpace(f.TicketNumber)
+                                                        ? $"變更單 #{f.Id}"
+                                                        : f.TicketNumber)
+
+                        <span class="badge bg-success ms-2">
+                            已核准
+                        </span>
+                    </h5>
+
+                            <p class="mb-0 text-muted small">
+                                指派：@(f.AssignedTo ?? "未指派")
+                                ｜
+                                @f.FoundDate.ToString("yyyy/MM/dd")
+                            </p>
+
+                        </div>
+
+                    </div>
+                        }
+            }
+
+        </div>
+
+
+        <!-- 已退回 -->
+        <div class="tab-pane fade" id="rejected">
+
+            @if (Model.Rejected.Count == 0)
+            {
+                <div class="text-muted">目前沒有已退回的變更單。</div>
+            }
+            else
+            {
+                @foreach (var f in Model.Rejected)
+                {
+                    <div class="card admin-card border-rejected mb-3 shadow-sm">
+
+                        <div class="card-body">
+
+                            <h5 class="card-title text-danger mb-2 fw-bold">
+                                @(string.IsNullOrWhiteSpace(f.TicketNumber)
+                                                        ? $"變更單 #{f.Id}"
+                                                        : f.TicketNumber)
+                    </h5>
+
+                            <div class="alert alert-danger py-2 mb-0 small">
+                                退回原因：（目前未保存原因）
+                            </div>
+
+                        </div>
+
+                    </div>
+                        }
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- 退回 Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form method="post" asp-page-handler="Reject">
+
+                <div class="modal-header bg-light">
+
+                    <h5 class="modal-title text-danger fw-bold">
+                        ⚠️ 退回變更單確認
+                    </h5>
+
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <input type="hidden" name="id" id="modalFormId" />
+
+                    <p class="mb-3">
+                        您正在退回：
+                        <strong id="modalFormTitle"
+                                class="text-primary"></strong>
+                    </p>
+
+<textarea name="reason"
+          class="form-control"
+          rows="4"
+          required
+          placeholder="請填寫退回原因...">
+</textarea>
+
+                </div>
+
+
+                <div class="modal-footer bg-light">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        取消
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-danger px-4">
+                        確認退回
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    const rejectModal =
+    document.getElementById('rejectModal');
+
+    rejectModal.addEventListener('show.bs.modal',
+    function (event)
+    {
+    const btn = event.relatedTarget;
+
+    document.getElementById('modalFormId').value =
+    btn.getAttribute('data-id');
+
+    document.getElementById('modalFormTitle').textContent =
+    btn.getAttribute('data-title');
+    });
+
+</script>

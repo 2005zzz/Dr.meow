@@ -8,6 +8,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Pages\NewFolder\**" />
+	  <Content Remove="Pages\NewFolder\**" />
+	  <EmbeddedResource Remove="Pages\NewFolder\**" />
+	  <None Remove="Pages\NewFolder\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Content Include="C:\Users\10932\Downloads\程式碼\consult.css" Link="consult.css" />
 	</ItemGroup>
 
