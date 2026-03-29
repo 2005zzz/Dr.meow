@@ -1,10 +1,24 @@
 ﻿@page "/AdminHome"
 @model Dr.meow.Pages.AdminHomeModel
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 
 @{
     ViewData["Title"] = "管理者後台";
+    var roleName = HttpContextAccessor.HttpContext.Session.GetString("UserRoleName") ?? "管理者";
+    var userTeam = HttpContextAccessor.HttpContext.Session.GetString("UserTeam") ?? "";
 }
 <style>
+    .badge-role {
+        background-color: #3AB6A7;
+        color: white;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(58,182,167,0.2);
+    }
+
     /* ✅ 讓左側選單卡片跟使用者頁一樣能浮出子選單 */
     .app-sidebar.card {
         border-radius: 22px;
@@ -100,11 +114,11 @@
 
     aside.col-12.col-lg-3 {
         position: relative;
-        z-index: 99999;
+        z-index: 10;
     }
 
     .submenu {
-        z-index: 100000;
+        z-index: 20;
     }
 
     .row.g-3,
@@ -122,10 +136,13 @@
         <div class="card shadow-sm">
             <div class="list-group list-group-flush app-sidebar">
 
-                <div class="list-group-item text-secondary small text-uppercase">
-                    管理功能
-                    <span class="float-end text-muted small">
-                        @Model.Account（管理者）
+                <div class="list-group-item text-secondary small text-uppercase d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge-role ms-1">@roleName</span>
+                        管理功能
+                    </div>
+                    <span class="text-muted small">
+                        @Model.Account
                     </span>
                 </div>
 
@@ -187,43 +204,203 @@
     </section>
 </div>
 
+<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border:none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">📝 填寫審核意見</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="approveFormId" />
+                <p class="mb-3 small">單號：<strong id="approveFormTitle"></strong> (<span id="approveModalLabel" class="badge bg-primary"></span>)</p>
+                <textarea id="approveCommentInput" class="form-control" rows="4" required placeholder="請輸入核准意見..."></textarea>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">取消</button>
+                <button type="button" id="confirmApproveBtn" class="btn btn-success rounded-pill px-4" style="background-color: #3AB6A7; border:none;">
+                    確認核准
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border:none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-danger fw-bold">⚠️ 確認退回變更單</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalFormId" />
+                <p class="mb-2">您正在退回：<strong id="modalFormTitle" class="text-primary"></strong></p>
+                <textarea id="rejectReasonInput" class="form-control" rows="4" required placeholder="請填寫退回原因..."></textarea>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">取消</button>
+                <button type="button" id="btnConfirmReject" class="btn btn-danger rounded-pill px-4">
+                    確認退回
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         const adminContent = document.getElementById("adminContent");
         const noteBox = document.getElementById("noteBox");
 
-        // ⭐ 點擊左側管理功能
-        document.querySelectorAll(".app-admin").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const mode = btn.dataset.mode;
+        // --- 1. 彈窗資料綁定 ---
+                const setupModals = () => {
 
-                if (mode === "management") {
-                    noteBox.textContent = "已切換至「表單簽核管理」。";
-                    loadAdminContent("/Forms/Management");
+            // --- Approve Modal ---
+            const approveModal = document.getElementById('approveModal');
+            if (approveModal) {
+                approveModal.addEventListener('show.bs.modal', function (event) {
+                    const btn = event.relatedTarget;
+
+                    document.getElementById('approveFormId').value =
+                        btn.getAttribute('data-id');
+
+                    document.getElementById('approveFormTitle').textContent =
+                        btn.getAttribute('data-title');
+
+                    const typeLabel = document.getElementById('approveModalLabel');
+                    if (typeLabel) {
+                        typeLabel.textContent =
+                            btn.getAttribute('data-type');
+                    }
+                });
+            }
+
+            // --- Reject Modal ---
+            const rejectModal = document.getElementById('rejectModal');
+            if (rejectModal) {
+                rejectModal.addEventListener('show.bs.modal', function (event) {
+                    const btn = event.relatedTarget;
+
+                    document.getElementById('modalFormId').value =
+                        btn.getAttribute('data-id');
+
+                    document.getElementById('modalFormTitle').textContent =
+                        btn.getAttribute('data-title');
+                });
+            }
+
+        };
+
+        setupModals();
+
+        // --- 2. AJAX 核准按鈕事件 ---
+        document.getElementById('confirmApproveBtn').addEventListener('click', async function() {
+            const id = document.getElementById('approveFormId').value;
+            const comment = document.getElementById('approveCommentInput').value;
+            const btn = this;
+
+            if (!comment) { alert("請輸入評語！"); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 傳送中...';
+
+            try {
+                // 💡 使用 AJAX (Fetch) 發送到後端
+                const formData = new FormData();
+                formData.append('id', id);
+                formData.append('comment', comment);
+                
+                const resp = await fetch('/Vulnerabilities/ChangeManagement?handler=Approve', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (resp.ok) {
+                    // 🌟 核心功能：閃現成功訊息
+                    showFlashMessage("✅ 審核意見已送出！");
+
+                    // 關閉彈窗
+                    bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();
+
+                    // 留在原位並重新載入列表內容
+                    loadAdminContent('/Vulnerabilities/ChangeManagement');
+                } else {
+                    alert("送出失敗 (Error 400/500)");
                 }
-                else if (mode === "reports") {
-                    noteBox.textContent = "已切換至「列表清單」。";
-                    loadAdminContent("/Vulnerability/Index"); // 之後如果有報表頁面再改
-                }
-            });
+            } catch (err) {
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '確認核准';
+                document.getElementById('approveCommentInput').value = ''; // 清空
+            }
         });
 
-        // ⭐ AJAX 載入後端頁面（已去 Layout）
+        // --- 💡 3. AJAX 退回按鈕事件 (這是新加的) ---
+        const btnReject = document.getElementById('btnConfirmReject');
+        if (btnReject) {
+            btnReject.addEventListener('click', async function() {
+                const id = document.getElementById('modalFormId').value;
+                const reason = document.getElementById('rejectReasonInput').value;
+                if (!reason) { alert("請輸入退回理由！"); return; }
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    formData.append('reason', reason);
+
+                    const resp = await fetch('@Url.Page("/Vulnerabilities/ChangeManagement", "Reject")', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (resp.ok) {
+                        showFlashMessage("❌ 表單已成功退回！", "#e45b5b"); // 退回用紅色
+                        bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+                        loadAdminContent('/Vulnerabilities/ChangeManagement');
+                    } else {
+                        alert("退回失敗");
+                    }
+                } catch (err) { console.error(err); }
+                finally {
+                    this.disabled = false;
+                    this.innerHTML = '確認退回';
+                    document.getElementById('rejectReasonInput').value = '';
+                }
+            });
+        }
+
+        // --- 3. 閃現提醒函式 ---
+        function showFlashMessage(msg) {
+            const flash = document.createElement('div');
+            flash.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#3AB6A7; color:white; padding:12px 30px; border-radius:50px; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.1); font-weight:bold; transition: opacity 0.5s;";
+            flash.innerText = msg;
+            document.body.appendChild(flash);
+            setTimeout(() => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 500);
+            }, 2000);
+        }
+
+        // --- 4. AJAX 載入列表函式 ---
         async function loadAdminContent(url) {
-            adminContent.innerHTML = "載入中…";
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            adminContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2">更新中…</p></div>';
 
             try {
                 const resp = await fetch(url);
-
-                if (!resp.ok) {
-                    adminContent.innerHTML = `載入失敗 (${resp.status})`;
-                    return;
-                }
-
                 const html = await resp.text();
                 adminContent.innerHTML = html;
             } catch (err) {
-                adminContent.innerHTML = "載入失敗，請稍後重試。";
+                adminContent.innerHTML = "載入失敗。";
             }
         }
     </script>

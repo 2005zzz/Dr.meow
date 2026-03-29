@@ -3,6 +3,7 @@ using Dr.meow.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Dr.meow.Pages.Request
 {
@@ -15,7 +16,7 @@ namespace Dr.meow.Pages.Request
             _db = db;
         }
 
-        public RequestForm Item { get; set; } = default!;
+        public RequestTicket Item { get; set; } = default!;
 
         // ✅ 審核表單輸入（會從畫面 Post 回來）
         [BindProperty]
@@ -42,24 +43,24 @@ namespace Dr.meow.Pages.Request
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            var item = await _db.RequestForms.FirstOrDefaultAsync(x => x.Id == id);
+            // ✅ 關鍵：使用 Include 抓取所有相關表的資料
+            var item = await _db.RequestTickets
+                .Include(t => t.AiDetail)
+                .Include(t => t.UserInput)
+                .Include(t => t.AuditLogs)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (item == null) return NotFound();
-
             Item = item;
 
-            // ✅ 如果已經有審核資料，帶回畫面（方便查看/二次修改）
+            // ✅ 從不同的子表撈回資料填入 ReviewInput
             Review = new ReviewInput
             {
                 Id = item.Id,
-                AcceptanceContent = item.ReviewAcceptanceContent,
-                AcceptanceDate = item.ReviewAcceptanceDate,
-                SecurityAssessment = item.ReviewSecurityAssessment,
-                SatisfactionNeed = item.ReviewSatisfactionNeed,
-                SatisfactionStability = item.ReviewSatisfactionStability,
-                SatisfactionOverall = item.ReviewSatisfactionOverall,
-                BenefitManDays = item.ReviewBenefitManDays,
-                BenefitRevenue = item.ReviewBenefitRevenue,
-                RejectReason = item.ReviewRejectReason
+                // 資安評估現在在 AiDetail 表
+                SecurityAssessment = item.AiDetail?.SecurityAssessment,
+                // 拒絕原因可以從最後一筆 AuditLog 抓
+                RejectReason = item.AuditLogs?.OrderByDescending(l => l.Timestamp)
+                                   .FirstOrDefault(l => l.Action == "Rejected")?.Comment
             };
 
             return Page();
@@ -68,33 +69,49 @@ namespace Dr.meow.Pages.Request
         // ✅ 核准
         public async Task<IActionResult> OnPostApproveAsync()
         {
-            var item = await _db.RequestForms.FindAsync(Review.Id);
-            if (item == null) return NotFound();
+            using var transaction = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                var item = await _db.RequestTickets.Include(t => t.AiDetail).FirstOrDefaultAsync(x => x.Id == Review.Id);
+                if (item == null) return NotFound();
 
-            // 只允許「待審核」時核准（避免亂改）
-            if (item.Status != "PendingDeptBoss")
-                return RedirectToPage("/Request/Details", new { id = Review.Id });
+                // 狀態檢查：1 代表 PendingReview
+                if (item.Status != 1) return RedirectToPage("/Request/Details", new { id = Review.Id });
 
-            item.ReviewAcceptanceContent = Review.AcceptanceContent;
-            item.ReviewAcceptanceDate = Review.AcceptanceDate ?? DateTime.Now;
+                // 1. 更新主表狀態
+                item.Status = 2; // 2: InDevelopment
+                item.UpdatedAt = DateTime.Now;
 
-            item.ReviewSecurityAssessment = Review.SecurityAssessment;
+                // 2. 更新 AI 細節表的資安評估 (如果主管有修改)
+                if (item.AiDetail != null)
+                {
+                    item.AiDetail.SecurityAssessment = Review.SecurityAssessment;
+                }
 
-            item.ReviewSatisfactionNeed = Review.SatisfactionNeed;
-            item.ReviewSatisfactionStability = Review.SatisfactionStability;
-            item.ReviewSatisfactionOverall = Review.SatisfactionOverall;
+                // 3. 寫入審核軌跡 (Audit Log)
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1");
+                var auditLog = new RequestAuditLog
+                {
+                    RequestId = item.Id,
+                    ActorId = userId,
+                    Action = "Approved",
+                    Comment = "主管核准通過，進入開發階段",
+                    Timestamp = DateTime.Now
+                };
+                _db.RequestAuditLogs.Add(auditLog);
 
-            item.ReviewBenefitManDays = Review.BenefitManDays;
-            item.ReviewBenefitRevenue = Review.BenefitRevenue;
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-            item.ReviewRejectReason = null;
-            item.ReviewedBy = User?.Identity?.Name ?? "DeptBoss";
-            item.ReviewedAt = DateTime.Now;
-
-            item.Status = "Approved";
-
-            await _db.SaveChangesAsync();
-            return RedirectToPage("/AdminHome");
+                TempData["Message"] = "✅ 已核准該需求單。";
+                return RedirectToPage("/AdminHome");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError("", "核准過程出錯：" + ex.Message);
+                return await OnGetAsync(Review.Id);
+            }
         }
 
         // ✅ 退回
@@ -102,37 +119,52 @@ namespace Dr.meow.Pages.Request
         {
             if (string.IsNullOrWhiteSpace(Review.RejectReason))
             {
-                ModelState.AddModelError("", "請填寫退回原因。");
+                ModelState.AddModelError("", "請務必填寫退回原因。");
                 return await OnGetAsync(Review.Id);
             }
 
-            var item = await _db.RequestForms.FindAsync(Review.Id);
-            if (item == null) return NotFound();
+            using var transaction = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                var item = await _db.RequestTickets.FindAsync(Review.Id);
+                if (item == null) return NotFound();
 
-            if (item.Status != "PendingDeptBoss")
-                return RedirectToPage("/Request/Details", new { id = Review.Id });
+                // 1. 更新主表狀態
+                item.Status = 4; // 4: Rejected
+                item.UpdatedAt = DateTime.Now;
 
-            // 退回也可順便保存審核欄位（看你要不要）
-            item.ReviewAcceptanceContent = Review.AcceptanceContent;
-            item.ReviewSecurityAssessment = Review.SecurityAssessment;
+                // 2. 寫入審核軌跡 (包含退回理由)
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1");
+                var auditLog = new RequestAuditLog
+                {
+                    RequestId = item.Id,
+                    ActorId = userId,
+                    Action = "Rejected",
+                    Comment = Review.RejectReason,
+                    Timestamp = DateTime.Now
+                };
+                _db.RequestAuditLogs.Add(auditLog);
 
-            item.ReviewRejectReason = Review.RejectReason;
-            item.ReviewedBy = User?.Identity?.Name ?? "DeptBoss";
-            item.ReviewedAt = DateTime.Now;
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-            item.Status = "Rejected";
-
-            await _db.SaveChangesAsync();
-            return RedirectToPage("/AdminHome");
+                TempData["Message"] = "❌ 需求單已退回。";
+                return RedirectToPage("/AdminHome");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return await OnGetAsync(Review.Id);
+            }
         }
 
         // ✅ 刪除（你原本的）
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
-            var item = await _db.RequestForms.FindAsync(id);
+            var item = await _db.RequestTickets.FindAsync(id);
             if (item == null) return NotFound();
 
-            _db.RequestForms.Remove(item);
+            _db.RequestTickets.Remove(item);
             await _db.SaveChangesAsync();
 
             return RedirectToPage("/AdminHome");

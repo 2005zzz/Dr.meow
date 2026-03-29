@@ -177,16 +177,13 @@
                                value="表單送出後自動產生"
                                readonly />
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Vulnerability.FoundDate" class="control-label">
-                            預計實施日期 <span class="text-danger">*</span>
+                    <div class="col-md-10 mb-3">
+                        <label asp-for="Vulnerability.ScheduledTime" class="control-label">
+                            📅 預計實施日期與時間 <span class="text-danger">*</span>
                         </label>
-                        <input asp-for="Vulnerability.FoundDate" type="date" class="form-control" />
-                        <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Vulnerability.ScheduledTime" class="control-label">預計實施時間</label>
-                        <input asp-for="Vulnerability.ScheduledTime" type="time" class="form-control" />
+                        @* 使用 datetime-local 一次搞定 *@
+                        <input asp-for="Vulnerability.ScheduledTime" type="datetime-local" class="form-control"
+                               value="@Model.Vulnerability?.ScheduledTime?.ToString("yyyy-MM-ddTHH:mm")" />
                         <span asp-validation-for="Vulnerability.ScheduledTime" class="text-danger"></span>
                     </div>
                 </div>
@@ -416,6 +413,7 @@
         document.addEventListener('DOMContentLoaded', function () {
 
             const API_URL = 'https://rag-backend-1-3ymz.onrender.com/api/rag/analyze-change'; // ⚠️ 請確認 Port 號是否為 7068
+            //const API_URL = 'https://localhost:7068/api/rag/analyze-change';
             const descInput = document.getElementById('descriptionInput');
             const loading = document.getElementById('aiLoading');
             const reasoningBox = document.getElementById('aiReasoning');
@@ -507,6 +505,33 @@
                 } else if (reasonDiv) {
                      reasonDiv.style.display = 'none';
                 }
+            }
+
+            function applyDefaultValues() {
+            console.warn("AI 暫時無法使用，切換為『手動填寫+預設值』模式");
+
+                const defaultData = {
+                    // 確保結構與 AI 回傳的 JSON 一致
+                    systemCategory: { value: "其他", reasoning: "AI 服務離線，預設為其他。", description: "手動處理" },
+                    ticketCategory: { value: "DevOps", reasoning: "AI 服務離線，預設為 DevOps 類別。", description: "手動處理" },
+                    changeType: { value: "標準/獨立", reasoning: "AI 服務離線，預設為標準變更。", description: "手動處理" },
+                    dependency: { value: "單一元件依賴", reasoning: "AI 服務離線，預設為單一元件依賴。", description: "手動處理" },
+                    impactLevel: { value: "低", reasoning: "AI 服務離線，預設為低影響程度。", description: "手動處理" },
+                    severity: { value: "低風險", reasoning: "AI 服務離線，預設為最低風險等級。", description: "手動處理" },
+                    testPlan: { value: "部分測試", reasoning: "AI 服務離線，請手動勾選測試計畫。", description: "手動處理" },
+                    recoveryPlan: { value: "快速回復", reasoning: "AI 服務離線，請手動勾選復原計畫。", description: "手動處理" }
+                };
+
+                // 呼叫時請確認 ID 必須完全對應 HTML
+                setValAndReason('sysCat', defaultData.systemCategory);
+                setValAndReason('ticketCat', defaultData.ticketCategory);
+                setValAndReason('changeType', defaultData.changeType);
+                setValAndReason('dependency', defaultData.dependency);
+                setValAndReason('impact', defaultData.impactLevel); // 這裡是 'impact'
+                setValAndReason('severity', defaultData.severity);
+
+                checkRadioAndReason('Vulnerability.TestPlan', defaultData.testPlan);
+                checkRadioAndReason('Vulnerability.RecoveryPlan', defaultData.recoveryPlan);
             }
 
             // --- 實作：用戶修改警示邏輯 (當用戶修改 AI 推薦值時彈出警告) ---
@@ -603,9 +628,19 @@
                     const data = JSON.parse(jsonText);
                     console.log('AI Response Parsed Data:', data);
 
+
                     // 檢查總結欄位
-                    if (!data || !data.summaryReasoning) {
-                        throw new Error('JSON 結構不完整或核心欄位缺失。');
+                    // if (!data || !data.summaryReasoning || data.summaryReasoning.includes("分析失敗")) {
+                    //     throw new Error('JSON 結構不完整或核心欄位缺失。');
+                    // }
+
+                    // 🔍 關鍵修正：檢查資料內容是否為空 (例如 systemCategory.value 是否為 null)
+                    // 即使 summaryReasoning 存在，但若內容都是 null，仍視為失敗並觸發預設值
+                    const isDataValid = data && data.systemCategory && data.systemCategory.value !== null;
+
+                    if (!isDataValid || data.summaryReasoning.includes("分析失敗")) {
+                        // 主動拋出錯誤以進入 catch 區塊執行 applyDefaultValues()
+                        throw new Error('AI 回傳資料無效或服務連線失敗。');
                     }
 
                     // --- 自動填寫邏輯 (讀取巢狀結構，並觸發顯示推理) ---
@@ -635,9 +670,11 @@
                 } catch (error) {
                     console.error('AI Analysis failed:', error);
 
+                    applyDefaultValues();
+
                     reasoningBox.style.backgroundColor = '#ffe9ea';
                     reasoningText.style.color = '#8a1f2a';
-                    reasoningText.innerText = `AI 分析失敗：${error.message}，請檢查網絡或手動填寫。`;
+                    reasoningText.innerText = `⚠️ AI 顧問目前離線：已自動填入保守預設值，請您手動完成剩餘欄位並確認內容。`;
                     reasoningBox.style.display = 'block';
 
                 } finally {

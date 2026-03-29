@@ -120,19 +120,14 @@
 
                 <div class="section-title">1. 基本資訊</div>
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label asp-for="Vulnerability.TicketNumber" class="form-label"></label>
-                        <input asp-for="Vulnerability.TicketNumber" class="form-control" readonly style="background-color: #e9ecef;" />
-                        <span asp-validation-for="Vulnerability.TicketNumber" class="text-danger"></span>
+                        <input asp-for="Vulnerability.TicketNumber" class="form-control" readonly placeholder="系統自動產生" style="background-color: #f8f9fa;" />
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Vulnerability.FoundDate" class="form-label"></label>
-                        <input asp-for="Vulnerability.FoundDate" type="date" class="form-control" />
-                        <span asp-validation-for="Vulnerability.FoundDate" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label asp-for="Vulnerability.ScheduledTime" class="form-label">預計實施時間</label>
-                        <input asp-for="Vulnerability.ScheduledTime" type="time" class="form-control" />
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Vulnerability.ScheduledTime" class="form-label">預計實施日期與時間 <span class="text-danger">*</span></label>
+                        <input asp-for="Vulnerability.ScheduledTime" type="datetime-local" class="form-control" />
                         <span asp-validation-for="Vulnerability.ScheduledTime" class="text-danger"></span>
                     </div>
                 </div>

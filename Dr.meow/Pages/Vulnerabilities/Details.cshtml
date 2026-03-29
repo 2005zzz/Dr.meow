@@ -218,7 +218,15 @@
 
                 <dt class="col-sm-3">預計實施時間</dt>
                 <dd class="col-sm-9">
-                    @Model.Vulnerability.FoundDate.ToString("yyyy/MM/dd") @Model.Vulnerability.ScheduledTime
+                    @* 🚀 修正：FoundDate 已刪除，統一顯示 ScheduledTime (DateTime 型態) *@
+                    @if (Model.Vulnerability.ScheduledTime.HasValue)
+                    {
+                        @Model.Vulnerability.ScheduledTime.Value.ToString("yyyy/MM/dd HH:mm")
+                    }
+                    else
+                    {
+                        <span class="text-muted">尚未排定時間</span>
+                    }
                 </dd>
 
                 <dt class="col-sm-3">計畫確認</dt>
@@ -227,9 +235,19 @@
                     <div><strong>回復計畫：</strong> @Html.DisplayFor(model => model.Vulnerability.RecoveryPlan)</div>
                 </dd>
 
-                <dt class="col-sm-3">指派給 (AssignedTo)</dt>
+                <dt class="col-sm-3">提單人 (AssignedTo)</dt>
                 <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.Vulnerability.AssignedTo)
+                    @* 🚀 修正：AssignedTo 已改為 Requester 關聯 *@
+                    @if (Model.Vulnerability.Requester != null)
+                    {
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi bi-person"></i> @Model.Vulnerability.Requester.UserName (@Model.Vulnerability.Requester.Account)
+                        </span>
+                    }
+                    else
+                    {
+                        @:系統管理員 (ID: @Model.Vulnerability.RequesterId)
+                    }
                 </dd>
 
                 <dt class="col-sm-3">流程狀態 (Status)</dt>

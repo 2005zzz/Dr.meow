@@ -175,8 +175,142 @@
         font-weight: 500;
     }
 
-        .view-btn:hover {
-            text-decoration: underline;
+    .view-btn:hover {
+        text-decoration: underline;
+    }
+
+    /* --- 進度條 Stepper 樣式 --- */
+    .status-stepper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 5px;
+        margin: 15px 0;
+        position: relative;
+    }
+
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        z-index: 2;
+    }
+
+    .step-dot {
+        width: 12px;
+        height: 12px;
+        background-color: #e0e0e0;
+        border-radius: 50%;
+        margin-bottom: 6px;
+        transition: all 0.4s ease;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #eee;
+    }
+
+    .step-label {
+        font-size: 0.7rem;
+        color: #999;
+        font-weight: 600;
+    }
+
+    .step-line {
+        flex-grow: 1;
+        height: 2px;
+        background-color: #eee;
+        margin-bottom: 22px; /* 這裡要微調對齊 Dot */
+        z-index: 1;
+    }
+
+    /* 已完成：品牌綠色 */
+    .step-active .step-dot {
+        background-color: #3AB6A7;
+        box-shadow: 0 0 0 2px #3AB6A7;
+    }
+
+    .step-active .step-label {
+        color: #3AB6A7;
+    }
+
+    /* 處理中：呼吸燈動畫 */
+    .step-processing .step-dot {
+        background-color: #3AB6A7;
+        animation: pulse-green 2s infinite;
+    }
+
+    .step-processing .step-label {
+        color: #1f6e61;
+        font-weight: bold;
+    }
+
+    /* 被退回：警告紅 */
+    .step-rejected .step-dot {
+        background-color: #dc3545;
+        animation: pulse-red 1.5s infinite;
+    }
+
+    .step-rejected .step-label {
+        color: #dc3545;
+    }
+
+    /* 動態線段顏色 */
+    .line-active {
+        background-color: #3AB6A7;
+    }
+
+    /* 動畫定義 */
+    @@keyframes pulse-green {
+        0% {
+            box-shadow: 0 0 0 0 rgba(58, 182, 167, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 8px rgba(58, 182, 167, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(58, 182, 167, 0);
+        }
+    }
+
+    @@keyframes pulse-red {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        }
+    }
+    /* 進度條展開容器 */
+    .collapse-stepper {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out; /* 平滑展開效果 */
+        background-color: #fcfdfd;
+        border-top: 1px dashed transparent;
+    }
+
+        /* 展開時的樣式 */
+        .collapse-stepper.show {
+            max-height: 150px; /* 給一個足夠的高度 */
+            border-top: 1px dashed #eee;
+            padding-top: 10px;
+            margin-top: 15px;
+        }
+
+    /* 狀態點擊提示 */
+    .status-clicker {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .status-clicker:hover {
+            background: #f8f9fa;
         }
 </style>
 
@@ -185,17 +319,28 @@
     {
         @foreach (var item in Model.VulnerabilityList)
         {
+            // 狀態邏輯判斷
+            string s1 = "", s2 = "", s3 = "", l1 = "", l2 = "";
+            var st = item.Main.Status;
+            var currentId = item.Main.Id;
+
+            if (st == "Rejected") { s1 = s2 = s3 = "step-rejected"; }
+            else if (st == "Pending") { s1 = "step-processing"; }
+            else if (st == "PendingCross") { s1 = "step-active"; l1 = "line-active"; s2 = "step-processing"; }
+            else if (st == "PendingCISO") { s1 = s2 = "step-active"; l1 = l2 = "line-active"; s3 = "step-processing"; }
+            else if (st == "Approved") { s1 = s2 = s3 = "step-active"; l1 = l2 = "line-active"; }
+
             // --- 邏輯判斷區 ---
 
             // 1. 風險顏色判斷 (根據 Severity)
             string riskClass = "risk-low";
-            if (item.Severity?.Contains("中") == true) { riskClass = "risk-medium"; }
-            else if (item.Severity?.Contains("高") == true) { riskClass = "risk-high"; }
-            else if (item.Severity?.Contains("重大") == true) { riskClass = "risk-critical"; }
+            if (item.Main.Severity?.Contains("中") == true) { riskClass = "risk-medium"; }
+            else if (item.Main.Severity?.Contains("高") == true) { riskClass = "risk-high"; }
+            else if (item.Main.Severity?.Contains("重大") == true) { riskClass = "risk-critical"; }
 
             // 2. 變更類型顏色判斷 (根據 ChangeType)
-            string statusText = item.ChangeType ?? "未分類";
-            string statusClass = "status-pending";
+            string statusText = item.Main.ChangeType ?? "未分類";
+            string statusClass = (statusText.Contains("緊急")) ? "status-rejected" : "status-approved";
 
             if (statusText.Contains("緊急")) { statusClass = "status-rejected"; }
             else if (statusText.Contains("例行") || statusText.Contains("標準")) { statusClass = "status-approved"; }
@@ -204,29 +349,37 @@
                 <div class="card-header-custom">
                     <div class="d-flex flex-column">
                         <span class="ticket-id">
-                            @(string.IsNullOrEmpty(item.TicketNumber) ? $"表單 #{item.Id}" : item.TicketNumber)
+                            @(string.IsNullOrEmpty(item.Main.TicketNumber) ? $"表單 #{item.Main.Id}" : item.Main.TicketNumber)
                         </span>
-
                         <span class="assigned-to">
-                            <i class="bi bi-person-circle"></i> 指派給：@(item.AssignedTo ?? "未指派")
+                            <i class="bi bi-person-circle"></i> 提單人：
+                            @if (item.Main.Requester != null)
+                            {
+                                @item.Main.Requester.UserName @:(@item.Main.Requester.Account)
+                            }
                         </span>
                     </div>
 
-                    <div class="badge-group text-end" style="max-width: 50%;">
-                        @if (!string.IsNullOrEmpty(item.SystemCategory))
-                        {
-                            <span class="badge-system">@item.SystemCategory</span>
-                        }
+                    <div class="badge-group text-end">
+                        @* 💡 修改處：在狀態標籤加上 onclick 事件 *@
+                        <span class="badge-status @statusClass me-1" onclick="toggleStepper('@item.Main.Id')">
+                            @(st == "Rejected" ? "❌ 已退回" : st == "Approved" ? "✅ 准予實施" : "⏳ 審核中")
+                            <small class="ms-1" style="font-size:0.6rem; opacity:0.8;">(點擊看進度)</small>
+                        </span>
 
-                        @if (!string.IsNullOrEmpty(item.TicketCategory))
+                        @if (!string.IsNullOrEmpty(item.Main.SystemCategory))
                         {
-                            <span class="badge-ticket-cat">@item.TicketCategory</span>
+                            <span class="badge-system">@item.Main.SystemCategory</span>
+                        }
+                        @if (!string.IsNullOrEmpty(item.Main.TicketCategory))
+                        {
+                            <span class="badge-ticket-cat">@item.Main.TicketCategory</span>
                         }
                     </div>
                 </div>
 
                 <div class="summary-text">
-                    <strong>變更摘要：</strong> @item.Description
+                    <strong>變更摘要：</strong> @item.Main.Description
                 </div>
 
                 <div class="meta-info">
@@ -237,33 +390,64 @@
 
                     <div class="meta-item">
                         <span class="meta-label">📅 預計實施：</span>
-                        <span>@item.FoundDate.ToString("yyyy/MM/dd") @(item.ScheduledTime ?? "")</span>
+                        <span>@item.Main.ScheduledTime?.ToString("yyyy/MM/dd HH:mm")</span>
                     </div>
 
                     <div class="meta-item">
                         <span class="meta-label">🛡️ 風險：</span>
-                        <span class="badge-risk @riskClass">@(item.Severity ?? "未評估")</span>
+                        <span class="badge-risk @riskClass">@(item.Main.Severity ?? "未評估")</span>
                     </div>
 
-                    @if (!string.IsNullOrEmpty(item.ImpactLevel))
+                    @if (!string.IsNullOrEmpty(item.Main.ImpactLevel))
                     {
                         <div class="meta-item">
                             <span class="meta-label">💥 影響：</span>
-                            <span>@item.ImpactLevel</span>
+                            <span>@item.Main.ImpactLevel</span>
                         </div>
                     }
 
-                    @if (!string.IsNullOrEmpty(item.Dependency))
+                    @if (!string.IsNullOrEmpty(item.Main.Dependency))
                     {
                         <div class="meta-item">
                             <span class="meta-label">🔗 依賴：</span>
-                            <span>@item.Dependency</span>
+                            <span>@item.Main.Dependency</span>
                         </div>
                     }
                 </div>
 
-                <div class="text-end pt-2">
-                    <a asp-page="/Vulnerabilities/Details" asp-route-id="@item.Id" class="btn btn-link view-btn">
+                <div id="stepper-@item.Main.Id" class="collapse-stepper">
+                    <div class="status-stepper">
+                        <div class="step-item @s1">
+                            <div class="step-dot"></div>
+                            <div class="step-label">組長初審</div>
+                        </div>
+                        <div class="step-line @l1"></div>
+                        <div class="step-item @s2">
+                            <div class="step-dot"></div>
+                            <div class="step-label">跨組覆核</div>
+                        </div>
+                        <div class="step-line @l2"></div>
+                        <div class="step-item @s3">
+                            <div class="step-dot"></div>
+                            <div class="step-label">最終核准</div>
+                        </div>
+                    </div>
+
+                    @if (st == "Rejected")
+                    {
+                        <div class="alert alert-danger py-1 px-3 small mx-3 mt-3" style="font-size: 0.8rem; border-radius: 10px;">
+                            <strong>⚠️ 退回理由：</strong> @(item.LatestRejectReason ?? "請聯繫審核主管了解詳情")
+                        </div>
+                    }
+                </div>
+
+                <div class="text-end pt-2 d-flex justify-content-between align-items-center">
+                    @* 💡 左下角加一個小提示，增加引導 *@
+                    <button class="btn btn-link p-0 text-muted small text-decoration-none" onclick="toggleStepper('@item.Main.Id')">
+                        <i class="bi bi-chevron-down"></i> 詳細審核進度
+                    </button>
+
+                    <a asp-page="/Vulnerabilities/Details" asp-route-id="@item.Main.Id" class="view-btn">
                         查看完整內容 &gt;
                     </a>
                 </div>
@@ -277,3 +461,19 @@
         </div>
     }
 </div>
+
+<script>
+    function toggleStepper(id) {
+        const el = document.getElementById('stepper-' + id);
+        if (el) {
+            el.classList.toggle('show');
+
+            // 可選：切換按鈕圖示方向
+            const icon = el.parentElement.querySelector('.bi-chevron-down, .bi-chevron-up');
+            if (icon) {
+                icon.classList.toggle('bi-chevron-down');
+                icon.classList.toggle('bi-chevron-up');
+            }
+        }
+    }
+</script>

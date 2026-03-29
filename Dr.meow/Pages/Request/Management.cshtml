@@ -147,16 +147,18 @@
                             <div class="d-flex justify-content-between align-items-start">
 
                                 <div class="d-flex align-items-start">
-                                    <div class="user-avatar">@((f.Contact?.Length ?? 0) > 0 ? f.Contact.Substring(0, 1) : "？")</div>
+                                    <div class="user-avatar"> @((f.UserInput?.Contact?.Length ?? 0) > 0 ? f.UserInput.Contact.Substring(0, 1) : "？")</div>
 
                                     <div>
                                         <div class="d-flex align-items-center mb-1">
                                             <h5 class="card-title mb-0 fw-bold">@f.Title</h5>
-                                            <span class="badge bg-secondary ms-2">@f.SystemCategory</span>
+                                            <span class="badge @(f.Status == 0 ? "bg-info" : "bg-warning") ms-2">
+                                                @(f.Status == 0 ? "AI 分析中" : "待主管審核")
+                                            </span>
                                         </div>
 
                                         <p class="text-muted mb-2 small">
-                                            部門：@f.Department | 建立：@f.CreatedAt.ToString("yyyy/MM/dd HH:mm")
+                                            部門：@f.UserInput?.Department | 建立：@f.CreatedAt.ToString("yyyy/MM/dd HH:mm")
                                         </p>
 
                                         <p class="card-text text-dark mb-0">
@@ -181,11 +183,10 @@
             }
         </div>
 
-        <!-- ✅ 已核准 -->
         <div class="tab-pane fade" id="approved">
             @if (Model.Approved.Count == 0)
             {
-                <div class="text-muted">目前沒有已核准的需求單。</div>
+                <div class="text-muted p-3">目前沒有已核准的需求單。</div>
             }
             else
             {
@@ -195,13 +196,19 @@
                         <div class="card-body d-flex justify-content-between align-items-start">
                             <div>
                                 <h5 class="card-title text-dark mb-1">
-                                    @f.Title <span class="badge bg-success ms-1">已核准</span>
+                                    @f.Title
+                                    <span class="badge @(f.Status == 3 ? "bg-primary" : "bg-success") ms-1">
+                                        @(f.Status == 3 ? "已結案" : "開發中/已核准")
+                                    </span>
                                 </h5>
-                                <p class="mb-0 text-muted small">部門：@f.Department | 建立：@f.CreatedAt.ToString("yyyy/MM/dd")</p>
+                                <p class="mb-0 text-muted small">
+                                    部門：@(f.UserInput?.Department ?? "未註記") |
+                                    建立：@f.CreatedAt.ToString("yyyy/MM/dd")
+                                </p>
                             </div>
 
                             <a class="details-link"
-                               asp-page="/Forms/RequestDetails"
+                               asp-page="/Request/Details"
                                asp-route-id="@f.Id">
                                 查看詳情 <span aria-hidden="true">›</span>
                             </a>
@@ -211,11 +218,10 @@
             }
         </div>
 
-        <!-- ✅ 已退回 -->
         <div class="tab-pane fade" id="rejected">
             @if (Model.Rejected.Count == 0)
             {
-                <div class="text-muted">目前沒有已退回的需求單。</div>
+                <div class="text-muted p-3">目前沒有已退回的需求單。</div>
             }
             else
             {
@@ -223,27 +229,44 @@
                 {
                     <div class="card admin-card border-rejected mb-3 shadow-sm">
                         <div class="card-body d-flex justify-content-between align-items-start">
-                            <div>
+                            <div class="flex-grow-1">
                                 <h5 class="card-title text-danger mb-2">@f.Title</h5>
                                 <div class="alert alert-danger py-2 mb-0 small">
                                     @{
-                                        var reason = f.Status == "Rejected"
-                                        ? f.ReviewRejectReason
-                                        : f.AiReason;
+                                        // ✅ 優先尋找主管在 AuditLogs 留下的退回紀錄
+                                        var lastAuditLog = f.AuditLogs?
+                                        .OrderByDescending(l => l.Timestamp)
+                                        .FirstOrDefault(l => l.Action == "Rejected");
 
-                                        if (string.IsNullOrWhiteSpace(reason))
-                                            reason = "（未填寫原因）";
+                                        string reason = "";
 
-                                        if (reason.Length > 120)
-                                            reason = reason.Substring(0, 120) + "...";
+                                        if (lastAuditLog != null)
+                                        {
+                                            reason = $"[主管退回] {lastAuditLog.Comment}";
+                                        }
+                                        else if (f.AiDetail != null && !f.AiDetail.IsITRelated)
+                                        {
+                                            // 如果沒有審核紀錄但狀態是 Rejected，通常是 AI 判定非 IT 相關
+                                            reason = $"[AI 自動攔截] {f.AiDetail.AiReason}";
+                                        }
+                                        else
+                                        {
+                                            reason = "（未提供具體原因）";
+                                        }
+
+                                        // 字數截斷
+                                        if (reason.Length > 100)
+                                        {
+                                            reason = reason.Substring(0, 100) + "...";
+                                        }
                                     }
 
-                                    退回原因：@reason
+                                    <strong>原因：</strong> @reason
                                 </div>
                             </div>
 
-                            <a class="details-link"
-                               asp-page="/Forms/RequestDetails"
+                            <a class="details-link ms-3"
+                               asp-page="/Request/Details"
                                asp-route-id="@f.Id">
                                 查看詳情 <span aria-hidden="true">›</span>
                             </a>

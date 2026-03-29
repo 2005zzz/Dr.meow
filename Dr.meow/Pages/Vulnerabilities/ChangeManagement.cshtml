@@ -1,5 +1,7 @@
 ﻿@page
 @model Dr.meow.Pages.Forms.ChangeManagementModel
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 @{
     ViewData["Title"] = "變更單審核";
     Layout = null;
@@ -23,12 +25,29 @@
         border-left-color: #ffc107;
     }
 
-    .border-approved {
+    .border-tracking {
+        border-left-color: #0dcaf0;
+    }
+    /* 處理中用青藍色 */
+    .border-closed {
         border-left-color: #198754;
     }
+    /* 已結案用綠色 */
 
     .border-rejected {
         border-left-color: #dc3545;
+    }
+
+    /* 虛線區隔 */
+    .section-divider {
+        border-bottom: 1px dashed #ced4da;
+        flex-grow: 1;
+        margin-left: 1rem;
+    }
+
+    .status-text {
+        font-size: 0.85rem;
+        font-weight: bold;
     }
 
     /* 使用者頭像 */
@@ -119,34 +138,26 @@
     </h4>
 
     <ul class="nav nav-tabs mb-4" id="changeTabs">
-
         <li class="nav-item">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pending">
-                ⏳ 待審核
-                <span class="badge bg-warning text-dark rounded-pill ms-1">
-                    @Model.Pending.Count
-                </span>
+                ⏳ 待處理 <span class="badge bg-warning text-dark rounded-pill ms-1">@Model.Pending.Count</span>
             </button>
         </li>
-
         <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#approved">
-                ✅ 已核准
-                <span class="badge bg-success rounded-pill ms-1">
-                    @Model.Approved.Count
-                </span>
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tracking">
+                🔄 處理中 <span class="badge bg-info text-white rounded-pill ms-1">@Model.Tracking.Count</span>
             </button>
         </li>
-
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#closed">
+                ✅ 已結案 <span class="badge bg-success rounded-pill ms-1">@Model.Closed.Count</span>
+            </button>
+        </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rejected">
-                ❌ 已退回
-                <span class="badge bg-danger rounded-pill ms-1">
-                    @Model.Rejected.Count
-                </span>
+                ❌ 已退回 <span class="badge bg-danger rounded-pill ms-1">@Model.Rejected.Count</span>
             </button>
         </li>
-
     </ul>
 
 
@@ -163,239 +174,313 @@
             {
                 @foreach (var f in Model.Pending)
                 {
-                    <div class="card admin-card border-pending mb-3 shadow-sm">
+                    // 💡 取得 Session 並判斷是否為本組初審
+                    var myTeam = HttpContextAccessor.HttpContext.Session.GetString("UserTeam");
+                    bool isMyTeam = f.Main.Department == myTeam;
+
+                    <div class="card admin-card mb-3 shadow-sm @(isMyTeam ? "border-pending" : "border-info")"
+                         style="@(isMyTeam ? "" : "border-left-color: #fd7e14;")">
 
                         <div class="card-body">
+
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="fw-bold" style="color: @(isMyTeam ? "#1f6e61" : "#d97706"); font-size: 0.85rem;">
+                                    @(isMyTeam ? "● 待本組組長初審任務" : "● 待跨組組長覆核任務")
+                                </div>
+                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #ced4da;"></div>
+                            </div>
 
                             <div class="d-flex justify-content-between align-items-start">
 
                                 <div class="d-flex align-items-start">
-
-                                    <div class="user-avatar">
-                                        @((f.AssignedTo?.Length ?? 0) > 0 ? f.AssignedTo.Substring(0, 1) : "？")
+                                    <div class="user-avatar" style="background-color: @(isMyTeam ? "#e9f9f5" : "#fff4e6");">
+                                        @((f.Main.Requester?.UserName?.Length ?? 0) > 0 ? f.Main.Requester.UserName.Substring(0, 1) : "👤")
                                     </div>
 
                                     <div>
-
                                         <div class="d-flex align-items-center mb-1">
+                                            <h5 class="card-title mb-0 fw-bold text-dark">
+                                                @(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)
+                                            </h5>
 
-                                            <h5 class="card-title mb-0 fw-bold">
-                                                @(string.IsNullOrWhiteSpace(f.TicketNumber)
-                                                                                        ? $"變更單 #{f.Id}"
-                                                                                        : f.TicketNumber)
-                                    </h5>
-
-                                    @if (!string.IsNullOrWhiteSpace(f.SystemCategory))
+                                            @if (!isMyTeam)
                                             {
-                                                <span class="badge bg-secondary ms-2">
-                                                    @f.SystemCategory
-                                                </span>
+                                                <span class="badge bg-warning text-dark ms-2" style="font-size: 0.7rem;">跨組覆核</span>
                                             }
+                                        </div>
 
-                                            @if (!string.IsNullOrWhiteSpace(f.TicketCategory))
-                                            {
-                                                <span class="badge bg-light text-dark ms-2 border">
-                                                    @f.TicketCategory
-                                                </span>
-                                            }
-
-                                    </div>
-
-                                    <p class="text-muted mb-2 small">
-                                        指派：@(f.AssignedTo ?? "未指派")
-                                        ｜
-                                        建立：@f.FoundDate.ToString("yyyy/MM/dd")
-                                        @(!string.IsNullOrWhiteSpace(f.ScheduledTime)
-                                                                            ? $" {f.ScheduledTime}"
-                                                                            : "")
-                                </p>
-
-                                        <p class="card-text text-dark mb-0">
-                                            <strong>摘要：</strong> @f.Description
+                                        <p class="text-muted mb-2 small">
+                                            申請人：@(f.Main.Requester?.UserName ?? "系統人") ｜
+                                            部門：@f.Main.Department ｜
+                                            建立：@f.Main.CreatedAt.ToString("yyyy/MM/dd")
                                         </p>
 
+                                        <p class="card-text text-dark mb-0">
+                                            <strong>摘要：</strong> @f.Main.Description
+                                        </p>
+
+                                        @* 💡 顯示前一位主管的評語 (僅在覆核時顯示) *@
+                                        @if (!isMyTeam)
+                                        {
+                                            <div class="mt-2 p-2 bg-light rounded small border-start border-warning" style="font-size: 0.8rem;">
+                                                <strong>💡 初審組長評語：</strong>
+                                                @* 🚀 修正：改從 ViewModel 的 FirstReviewComment 抓取 *@
+                                                @(string.IsNullOrEmpty(f.FirstReviewComment) ? "通過，請協助覆核。" : f.FirstReviewComment)
+                                            </div>
+                                        }
                                     </div>
                                 </div>
 
-
-                                <div class="action-btn-group ms-3">
-
-                                    <a class="details-link"
-                                       href="/Vulnerabilities/Details?id=@f.Id">
+                                <div class="action-btn-group ms-3 text-end">
+                                    <a class="details-link mb-2" href="/Vulnerabilities/Details?id=@f.Main.Id">
                                         查看詳情 >
                                     </a>
 
-                                    
+                                    @* 💡 修改核准按鈕：改為觸發 approveModal *@
+                                    <button type="button" class="btn btn-sm btn-approve w-100 mb-1 rounded-pill"
+                                            data-bs-toggle="modal" data-bs-target="#approveModal"
+                                            data-id="@f.Main.Id"
+                                            data-type="@(isMyTeam ? "初步核准" : "最終核准")"
+                                            data-title="@(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)">
+                                        @(isMyTeam ? "初步核准" : "最終核准")
+                                    </button>
 
+                                    <button type="button" class="btn btn-sm btn-reject w-100 rounded-pill"
+                                            data-bs-toggle="modal" data-bs-target="#rejectModal"
+                                            data-id="@f.Main.Id"
+                                            data-title="@(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)">
+                                        退回
+                                    </button>
                                 </div>
 
                             </div>
-
                         </div>
-
                     </div>
-                        }
+                }
             }
-
         </div>
 
 
-        <!-- 已核准 -->
-        <div class="tab-pane fade" id="approved">
-
-            @if (Model.Approved.Count == 0)
+        @* --- 2. 處理中 (Tracking) --- *@
+        <div class="tab-pane fade" id="tracking">
+            @if (Model.Tracking.Count == 0)
             {
-                <div class="text-muted">目前沒有已核准的變更單。</div>
+                <div class="text-muted text-center py-5">目前沒有追蹤中的單據。</div>
             }
             else
             {
-                @foreach (var f in Model.Approved)
+                @foreach (var f in Model.Tracking)
                 {
-                    <div class="card admin-card border-approved mb-3 shadow-sm">
-
+                    <div class="card admin-card border-tracking mb-3 shadow-sm opacity-75">
                         <div class="card-body">
-
-                            <h5 class="card-title text-dark mb-1 fw-bold">
-                                @(string.IsNullOrWhiteSpace(f.TicketNumber)
-                                                        ? $"變更單 #{f.Id}"
-                                                        : f.TicketNumber)
-
-                        <span class="badge bg-success ms-2">
-                            已核准
-                        </span>
-                    </h5>
-
-                            <p class="mb-0 text-muted small">
-                                指派：@(f.AssignedTo ?? "未指派")
-                                ｜
-                                @f.FoundDate.ToString("yyyy/MM/dd")
-                            </p>
-
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-text text-info">
+                                    ● 您已簽核完成 (目前進度：@(f.Main.Status == "PendingCross" ? "等待他組組長覆核" : "等待資安長審核"))
+                                </div>
+                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #ced4da;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-1">@f.Main.TicketNumber</h6>
+                                    <p class="text-muted mb-0 small">
+                                        您於 @f.Main.CreatedAt.ToString("yyyy/MM/dd") 已完成該階段授權
+                                    </p>
+                                </div>
+                                <a class="details-link" href="/Vulnerabilities/Details?id=@f.Main.Id">追蹤流程 ></a>
+                            </div>
                         </div>
-
                     </div>
-                        }
+                }
             }
-
         </div>
 
+        @* --- 3. 已結案 (Closed) --- *@
+        <div class="tab-pane fade" id="closed">
+            @if (Model.Closed.Count == 0)
+            {
+                <div class="text-muted text-center py-5">尚無已完成結案的單據。</div>
+            }
+            else
+            {
+                @foreach (var f in Model.Closed)
+                {
+                    <div class="card admin-card border-approved mb-3 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-text text-success">● 最終結案 (此單據已正式生效)</div>
+                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #ced4da;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="fw-bold mb-1">@f.Main.TicketNumber <span class="badge bg-success ms-2">SUCCESS</span></h6>
+                                    <p class="text-muted mb-0 small">結案日期：@DateTime.Now.ToString("yyyy/MM/dd") ｜ 部門：@f.Main.Department</p>
+                                </div>
+                                <a class="details-link text-success" href="/Vulnerabilities/Details?id=@f.Main.Id">查看憑證</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
 
-        <!-- 已退回 -->
+        @* --- 4. 已退回 (Rejected) --- *@
         <div class="tab-pane fade" id="rejected">
-
             @if (Model.Rejected.Count == 0)
             {
-                <div class="text-muted">目前沒有已退回的變更單。</div>
+                <div class="text-muted text-center py-5">目前沒有退回紀錄。</div>
             }
             else
             {
                 @foreach (var f in Model.Rejected)
                 {
+                    var userId = int.Parse(HttpContextAccessor.HttpContext.Session.GetString("UserId") ?? "0");
+                    var myTeam = HttpContextAccessor.HttpContext.Session.GetString("UserTeam") ?? "";
+
+                    // 💡 邏輯 A：我是最後那個「按下退回鍵」的人
+                    bool isLastReviewerMe = f.Main.LastReviewerId == userId;
+
+                    // 💡 邏輯 B：這是我這組的單子，且被「別人」退回 (需要我處理)
+                    bool needsActionByMe = (f.Main.Department == myTeam && !isLastReviewerMe);
+
                     <div class="card admin-card border-rejected mb-3 shadow-sm">
-
                         <div class="card-body">
-
-                            <h5 class="card-title text-danger mb-2 fw-bold">
-                                @(string.IsNullOrWhiteSpace(f.TicketNumber)
-                                                        ? $"變更單 #{f.Id}"
-                                                        : f.TicketNumber)
-                    </h5>
-
-                            <div class="alert alert-danger py-2 mb-0 small">
-                                退回原因：（目前未保存原因）
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="fw-bold @(isLastReviewerMe ? "text-danger" : "text-warning")" style="font-size: 0.85rem;">
+                                    @if (isLastReviewerMe)
+                                    {
+                                        <span>● 您已退回此申請 (等待申請人修正)</span>
+                                    }
+                                    else if (needsActionByMe)
+                                    {
+                                        <span>● 他組主管/資安長 已退回 (⚠️ 請您處理)</span>
+                                    }
+                                    else
+                                    {
+                                        @* 這裡處理「非本組也非我退」但出現在列表的情況（雖然過濾後理論上不會出現） *@
+                                        <span>● 已退回</span>
+                                    }
+                                </div>
+                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #f5c2c7;"></div>
                             </div>
 
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold text-dark mb-1">@f.Main.TicketNumber</h6>
+                                    <div class="alert alert-danger py-2 mb-2 small" style="background-color: #fff5f5; border-color: #feb2b2;">
+                                        <strong>❌ 退回理由：</strong> @(f.LatestRejectReason ?? "內容填寫不完整，請重新檢查。")
+                                    </div>
+                                    @if (f.Main.UpdatedAt.HasValue)
+                                    {
+                                        <div class="text-muted small">處理時間：@f.Main.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</div>
+                                    }
+                                </div>
+
+                                <div class="action-btn-group ms-3 text-end">
+                                    @if (needsActionByMe)
+                                    {
+                                        @* 💡 只有當「我是這組的主管」且「不是我退的」時，才顯示操作按鈕 *@
+                                        <button class="btn btn-sm btn-outline-warning w-100 mb-1 rounded-pill">轉交組員</button>
+                                        <button class="btn btn-sm btn-approve w-100 rounded-pill">親自修正</button>
+                                    }
+                                    else
+                                    {
+                                        @* 💡 如果是我退的，就顯示狀態即可 *@
+                                        <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">已執行退回</span>
+                                    }
+                                </div>
+                            </div>
                         </div>
-
                     </div>
-                        }
+                }
             }
-
         </div>
 
     </div>
-
 </div>
 
+@* <!-- 審核 Modal --> *@
+@* <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true"> *@
+@*     <div class="modal-dialog"> *@
+@*         <div class="modal-content" style="border-radius: 16px;"> *@
+@*             <form method="post" asp-page-handler="Approve"> *@
+@*                 <div class="modal-header border-0"> *@
+@*                     <h5 class="modal-title fw-bold">📝 填寫審核意見</h5> *@
+@*                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button> *@
+@*                 </div> *@
+@*                 <div class="modal-body"> *@
+@*                     <input type="hidden" name="id" id="approveFormId" /> *@
+@*                     <p class="mb-3">正在進行 <span id="approveModalLabel" class="badge bg-primary"></span>： <strong id="approveFormTitle"></strong></p> *@
+@*                     <textarea name="comment" class="form-control" rows="4" required placeholder="請輸入您的審核評語..."></textarea> *@
+@*                 </div> *@
+@*                 <div class="modal-footer border-0"> *@
+@*                     <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">取消</button> *@
+@*                     <button type="submit" class="btn btn-success rounded-pill px-4" style="background-color: #3AB6A7; border:none;">確認核准</button> *@
+@*                 </div> *@
+@*             </form> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
 
-<!-- 退回 Modal -->
-<div class="modal fade" id="rejectModal" tabindex="-1">
-
-    <div class="modal-dialog">
-
-        <div class="modal-content">
-
-            <form method="post" asp-page-handler="Reject">
-
-                <div class="modal-header bg-light">
-
-                    <h5 class="modal-title text-danger fw-bold">
-                        ⚠️ 退回變更單確認
-                    </h5>
-
-                    <button type="button" class="btn-close"
-                            data-bs-dismiss="modal"></button>
-
-                </div>
-
-
-                <div class="modal-body">
-
-                    <input type="hidden" name="id" id="modalFormId" />
-
-                    <p class="mb-3">
-                        您正在退回：
-                        <strong id="modalFormTitle"
-                                class="text-primary"></strong>
-                    </p>
-
-<textarea name="reason"
-          class="form-control"
-          rows="4"
-          required
-          placeholder="請填寫退回原因...">
-</textarea>
-
-                </div>
-
-
-                <div class="modal-footer bg-light">
-
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal">
-                        取消
-                    </button>
-
-                    <button type="submit"
-                            class="btn btn-danger px-4">
-                        確認退回
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-    </div>
-</div>
+@* <!-- 退回 Modal --> *@
+@* <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true"> *@
+@*     <div class="modal-dialog"> *@
+@*         <div class="modal-content" style="border-radius: 16px;"> *@
+@*             <form method="post" asp-page-handler="Reject"> *@
+@*                 <div class="modal-header border-0"> *@
+@*                     <h5 class="modal-title text-danger fw-bold">⚠️ 確認退回</h5> *@
+@*                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button> *@
+@*                 </div> *@
+@*                 <div class="modal-body"> *@
+@*                     <input type="hidden" name="id" id="modalFormId" /> *@
+@*                     <p>正在退回：<strong id="modalFormTitle"></strong></p> *@
+@*                     <textarea name="reason" class="form-control" rows="4" required placeholder="請填寫退回原因..."></textarea> *@
+@*                 </div> *@
+@*                 <div class="modal-footer border-0"> *@
+@*                     <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">取消</button> *@
+@*                     <button type="submit" class="btn btn-danger rounded-pill px-4">確認退回</button> *@
+@*                 </div> *@
+@*             </form> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
 
 
-<script>
+@* <script> *@
+@*     (function() { *@
+@*         // 1. 解決 AJAX 背景變黑：先清除所有殘留的背景陰影 *@
+@*         document.querySelectorAll('.modal-backdrop').forEach(el => el.remove()); *@
 
-    const rejectModal =
-    document.getElementById('rejectModal');
+@*         // 2. 處理重複 Modal：如果 body 已經有同樣 ID 的 Modal，先刪掉舊的 *@
+@*         ['approveModal', 'rejectModal'].forEach(id => { *@
+@*             const oldModal = document.body.querySelector(`#${id}`); *@
+@*             if (oldModal && oldModal.parentNode === document.body) { *@
+@*                 oldModal.remove(); *@
+@*             } *@
+@*         }); *@
 
-    rejectModal.addEventListener('show.bs.modal',
-    function (event)
-    {
-    const btn = event.relatedTarget;
+@*         const approveModalEl = document.getElementById('approveModal'); *@
+@*         const rejectModalEl = document.getElementById('rejectModal'); *@
 
-    document.getElementById('modalFormId').value =
-    btn.getAttribute('data-id');
+@*         // 3. 強制外掛到 body *@
+@*         if (approveModalEl) document.body.appendChild(approveModalEl); *@
+@*         if (rejectModalEl) document.body.appendChild(rejectModalEl); *@
 
-    document.getElementById('modalFormTitle').textContent =
-    btn.getAttribute('data-title');
-    });
+@*         // 4. 事件綁定 (使用 Bootstrap 實例確保穩定) *@
+@*         if (approveModalEl) { *@
+@*             approveModalEl.addEventListener('show.bs.modal', function (event) { *@
+@*                 const btn = event.relatedTarget; *@
+@*                 document.getElementById('approveFormId').value = btn.getAttribute('data-id'); *@
+@*                 document.getElementById('approveFormTitle').textContent = btn.getAttribute('data-title'); *@
+@*                 document.getElementById('approveModalLabel').textContent = btn.getAttribute('data-type'); *@
+@*             }); *@
+@*         } *@
 
-</script>
+@*         if (rejectModalEl) { *@
+@*             rejectModalEl.addEventListener('show.bs.modal', function (event) { *@
+@*                 const btn = event.relatedTarget; *@
+@*                 document.getElementById('modalFormId').value = btn.getAttribute('data-id'); *@
+@*                 document.getElementById('modalFormTitle').textContent = btn.getAttribute('data-title'); *@
+@*             }); *@
+@*         } *@
+@*     })(); *@
+@* </script> *@

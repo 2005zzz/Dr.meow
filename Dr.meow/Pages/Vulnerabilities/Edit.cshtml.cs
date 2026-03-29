@@ -58,11 +58,18 @@ namespace Dr.meow.Pages.Vulnerabilities
                 return NotFound();
             }
 
-            // ⭐【關鍵】保留原本的指派對象
-            Vulnerability.AssignedTo = dbVulnerability.AssignedTo;
-
-            // ⭐ 再更新
-            _context.Attach(Vulnerability).State = EntityState.Modified;
+            dbVulnerability.Description = Vulnerability.Description;
+            dbVulnerability.SystemCategory = Vulnerability.SystemCategory;
+            dbVulnerability.TicketCategory = Vulnerability.TicketCategory;
+            dbVulnerability.ChangeType = Vulnerability.ChangeType;
+            dbVulnerability.Severity = Vulnerability.Severity;
+            dbVulnerability.ImpactLevel = Vulnerability.ImpactLevel;
+            dbVulnerability.Dependency = Vulnerability.Dependency;
+            dbVulnerability.TestPlan = Vulnerability.TestPlan;
+            dbVulnerability.RecoveryPlan = Vulnerability.RecoveryPlan;
+            dbVulnerability.ScheduledTime = Vulnerability.ScheduledTime; // 這裡現在是 DateTime? 了
+            dbVulnerability.Summary = Vulnerability.Summary;
+            dbVulnerability.UpdatedAt = DateTime.Now;
 
             try
             {

@@ -20,6 +20,7 @@ namespace Dr.meow.Pages.Vulnerabilities
         }
 
         public Vulnerability Vulnerability { get; set; } = default!;
+        public List<VulnerabilityLog> Logs { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -28,15 +29,21 @@ namespace Dr.meow.Pages.Vulnerabilities
                 return NotFound();
             }
 
-            var vulnerability = await _context.Vulnerability.FirstOrDefaultAsync(m => m.Id == id);
-            if (vulnerability == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Vulnerability = vulnerability;
-            }
+            // ?? 2. 使用 Include 抓取 Requester，不然頭像會報錯
+            var vulnerability = await _context.Vulnerability
+                .Include(v => v.Requester)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (vulnerability == null) return NotFound();
+
+            Vulnerability = vulnerability;
+
+            // ?? 3. 順便抓取這張單子所有的審核紀錄 (按時間排序)
+            Logs = await _context.VulnerabilityLogs
+                //.Include(l => l.Reviewer) // 如果妳想顯示是哪個主管簽的，就要 Include Reviewer
+                .Where(l => l.VulnerabilityId == id)
+                .OrderByDescending(l => l.CreatedAt)
+                .ToListAsync();
+
             return Page();
         }
     }

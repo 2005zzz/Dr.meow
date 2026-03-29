@@ -154,13 +154,23 @@
                             <td>@item.ImpactLevel</td>
                             <td>@item.Dependency</td>
 
-                            <td>@item.FoundDate.ToString("yyyy/MM/dd")</td>
-                            <td>@item.ScheduledTime</td>
+                            <td colspan="2">
+                                @item.ScheduledTime?.ToString("yyyy/MM/dd HH:mm")
+                            </td>
 
                             <td>@item.TestPlan</td>
                             <td>@item.RecoveryPlan</td>
 
-                            <td>@item.AssignedTo</td>
+                            <td>
+                                @if (item.Requester != null)
+                                {
+                                    @item.Requester.UserName
+                                }
+                                else
+                                {
+                                    <span class="text-muted">未知</span>
+                                }
+                            </td>
 
                             <td title="@item.Description">
                                 @(item.Description?.Length > 20

@@ -1,5 +1,7 @@
 ﻿@page
 @model Dr.meow.Pages.UserHomeModel
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 
 @{
     ViewData["Title"] = "使用者顧問中心";
@@ -111,6 +113,102 @@
         visibility: visible;
         transform: translateX(0);
     }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .custom-input {
+        padding-right: 60px; /* 給右側按鈕空間 */
+        border-radius: 10px;
+    }
+
+    /* 🔥 模式按鈕區 */
+    .mode-dropdown {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+    }
+
+    /* 按鈕本體（透明感） */
+    .mode-toggle-btn {
+        background: transparent;
+        border: none;
+        padding: 6px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+        /* hover 才有感覺 */
+        .mode-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(4px);
+        }
+
+    /* 箭頭動畫 */
+    .arrow {
+        font-size: 12px;
+        transition: transform 0.2s ease;
+    }
+
+    /* 展開時旋轉 */
+    .mode-dropdown.open .arrow {
+        transform: rotate(180deg);
+    }
+
+    /* 下拉選單 */
+    .mode-menu {
+        position: absolute;
+        right: 0;
+        top: 120%;
+        min-width: 140px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: none;
+        overflow: hidden;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .mode-dropdown.open .mode-menu {
+        display: block;
+    }
+
+    /* 選項 */
+    .mode-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .mode-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .mode-item.active {
+            font-weight: bold;
+        }
+
+    /* 動畫 */
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
 </style>
 
 <div class="row g-3">
@@ -119,10 +217,21 @@
         <div class="card shadow-sm app-sidebar">
             <div class="list-group list-group-flush app-sidebar">
 
-                <div class="list-group-item text-secondary small text-uppercase">
-                    功能
-                    <span class="float-end text-muted small">
-                        @Model.Account（使用者）
+                <div class="list-group-item text-secondary small text-uppercase d-flex justify-content-between align-items-center">
+                    <div>
+                        功能
+                        @{
+                            var userTeam = HttpContextAccessor.HttpContext.Session.GetString("UserTeam");
+                            if (!string.IsNullOrEmpty(userTeam))
+                            {
+                                <span class="badge" style="background-color: #3AB6A7; color: white; border-radius: 8px; padding: 4px 8px; margin-right: 5px;">
+                                    @userTeam
+                                </span>
+                            }
+                        }
+                    </div>
+                    <span class="text-muted small">
+                        @Model.Account
                     </span>
                 </div>
 
@@ -181,9 +290,26 @@
 
                     <form id="askForm" class="row g-2 mt-2">
                         <div class="col">
-                            <input id="askInput" class="form-control"
-                                   placeholder="輸入問題，例如：最近漏洞通報與處置建議？" autocomplete="off" />
+                            <div class="input-wrapper">
+                                <input id="askInput" class="form-control custom-input"
+                                       placeholder="輸入問題，例如：最近漏洞通報與處置建議？"
+                                       autocomplete="off" />
+
+                                <!-- 🔥 嵌在 input 裡的模式切換 -->
+                                <div class="mode-dropdown">
+                                    <button type="button" class="mode-toggle-btn">
+                                        🤖
+                                        <span class="arrow">▾</span>
+                                    </button>
+
+                                    <div class="mode-menu">
+                                        <div class="mode-item active" data-mode="consult">🤖 問答模式</div>
+                                        <div class="mode-item" data-mode="forms">📝 填表模式</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="col-auto d-flex gap-2">
                             <button id="btnVoice" class="btn btn-outline-secondary" type="button">🔍 語音</button>
                             <button class="btn btn-primary" type="submit">送出</button>
@@ -239,9 +365,85 @@
         const btnVoice = document.getElementById('btnVoice');
 
         let formsLoaded = false;
+                // ✅ 全域變數紀錄目前表單狀態
+        let currentFormContext = {
+            type: null, // 'Request' or 'Vulnerability'
+            step: 0     // 0: 初始, 1: 詢問內容中
+        };
 
         // 側邊欄實體
         const sourceOffcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasSource'));
+                // ===== 模式切換 dropdown =====
+        const dropdown = document.querySelector('#askForm .mode-dropdown');
+        const toggleBtn = document.querySelector('.mode-toggle-btn');
+        const modeItems = document.querySelectorAll('.mode-item');
+
+        toggleBtn.addEventListener('click', () => {
+            dropdown.classList.toggle('open');
+        });
+
+        // 點外面關閉
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        // 模式切換
+        modeItems.forEach(item => {
+            item.addEventListener('click', () => {
+
+                // UI 更新
+                modeItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+
+                const mode = item.dataset.mode;
+                const label = item.textContent;
+
+                toggleBtn.innerHTML = `${label.split(' ')[0]} <span class="arrow">▾</span>`;
+
+                dropdown.classList.remove('open');
+
+                // 🔥 功能切換（接你原本的）
+                if (mode === 'consult') {
+                    ragArea.classList.remove('d-none');
+                    formsArea.classList.add('d-none');
+                    noteBox.textContent = '您目前在「問答模式」，可向 AI 提問。';
+                    input.placeholder = "輸入問題，例如：最近漏洞通報與處置建議？";
+                }
+                else if (mode === 'forms') {
+                    // 1. 維持在對話介面
+                    ragArea.classList.remove('d-none');
+                    formsArea.classList.add('d-none');
+
+                    // 2. 更新提示文字
+                    noteBox.innerHTML = 'AI 將協助您分析需求內容並自動建議表單欄位。';
+                    input.placeholder = "請點選下方表單類型，或直接描述您的需求...";
+
+                    // 3. 觸發機器人主動引導 (噴出頭像與按鈕)
+                    // 這裡我們加一個延遲感，讓它看起來像機器人在思考後說話
+                    setTimeout(() => {
+                        const welcomeId = 'bot-' + Date.now();
+                        const welcomeHtml = `
+                            <div class="msg-row msg-bot-row animate-fadeIn">
+                                <div class="d-flex align-items-start">
+                                    <div class="user-avatar me-2" style="background-color: #3AB6A7; color: white;">🐱</div>
+                                    <div class="msg msg-bot shadow-sm">
+                                        您好！我是 <strong>Dr.Meow 智慧助手</strong>。為了準確協助您，請先選擇您要申請的表單類型：
+                                        <div class="mt-3 d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary bg-white shadow-sm" onclick="handleFormSelect('Request')">📄 需求申請單</button>
+                                            <button class="btn btn-sm btn-outline-info bg-white shadow-sm" onclick="handleFormSelect('Vulnerability')">🛠️ 系統變更單</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        msgs.insertAdjacentHTML('beforeend', welcomeHtml);
+                        scrollBottom();
+                    }, 500);
+                }
+            });
+        });
 
         menuItems.forEach(it => {
             it.addEventListener('click', () => {
@@ -345,6 +547,40 @@
             e.preventDefault();
             input.value = '';
         });
+
+        function toggleStepper(id) {
+            const el = document.getElementById('stepper-' + id);
+            if (el) {
+                el.classList.toggle('show');
+
+                // 可選：切換按鈕圖示方向
+                const icon = el.parentElement.querySelector('.bi-chevron-down, .bi-chevron-up');
+                if (icon) {
+                    icon.classList.toggle('bi-chevron-down');
+                    icon.classList.toggle('bi-chevron-up');
+                }
+            }
+        }
+
+        window.handleFormSelect = function(type) {
+            // 從 Session 取得 Team (這行要確保妳的頁面能讀到這個值)
+            const userTeam = "@(HttpContextAccessor.HttpContext.Session.GetString("UserTeam"))";
+
+            if (type === 'Vulnerability' && userTeam !== 'TEAM1') {
+                pushBot("⚠️ 抱歉，**系統變更單** 涉及核心系統異動，僅限 **資訊組 (TEAM1)** 成員填寫。<br>如果您有新的功能想法，建議改填寫 **需求申請單** 喔！");
+                return;
+            }
+
+            // 紀錄目前的模式
+            currentFormContext.type = type;
+            currentFormContext.step = 1;
+
+            pushUser(`我想填寫 ${type === 'Request' ? '需求申請單' : '系統變更單'}`);
+
+            setTimeout(() => {
+                pushBot(`好的，已為您開啟 **${type === 'Request' ? '需求單' : '變更單'}** 智慧填寫模式。<br>請簡單描述您的需求（例如：我想申請門禁權限，或是網頁選單需要增加按鈕），我會幫您判斷是否符合資安範疇並補全內容。`);
+            }, 600);
+        };
 
         function formatText(text, msgId) {
             if (!text) return '';

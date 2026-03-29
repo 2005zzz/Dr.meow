@@ -32,7 +32,8 @@ namespace Dr.meow.Pages.Api
             }
 
             // 呼叫 SearchService (傳入 request.Query)
-            var result = await _searchService.SearchAsync(request.Query, ct);
+            // ✅ 指定名稱，明確告訴它第二個參數是模式，第三個是 Token
+            var result = await _searchService.SearchAsync(request.Query, mode: "consult", ct: ct);
 
             if (result == null)
             {

@@ -28,7 +28,6 @@ namespace Dr.meow.Pages.Vulnerabilities
         // 🎯 輔助方法：創建一個安全的空 Vulnerability 實例，避免前端 Razor 崩潰 (即「清空欄位」)
         private Vulnerability CreateBlankVulnerability()
         {
-            // 必須確保所有在前端 Delete.cshtml 中存取的屬性都設為非 null 的值
             return new Vulnerability
             {
                 Id = -1,
@@ -37,14 +36,10 @@ namespace Dr.meow.Pages.Vulnerabilities
                 TicketCategory = "",
                 ChangeType = "",
                 Severity = "",
-                ImpactLevel = "",
-                Dependency = "",
-                ScheduledTime = "",
-                TestPlan = "",
-                RecoveryPlan = "",
-                AssignedTo = "",
                 Description = "",
-                FoundDate = DateTime.MinValue
+                Status = "",
+                CreatedAt = DateTime.MinValue
+                // 💡 其他如 AssignedTo, TestPlan, RecoveryPlan 已經不在 Model 裡了，所以不必設值
             };
         }
 
@@ -56,6 +51,7 @@ namespace Dr.meow.Pages.Vulnerabilities
             // 則表示這是從 OnPost 刪除成功後重定向回來的頁面，應該顯示成功狀態。
             if (id == null)
             {
+          
                 if (TempData.ContainsKey("StatusMessage"))
                 {
                     // 設定為成功狀態，讓前端 Razor 顯示成功畫面
@@ -66,7 +62,7 @@ namespace Dr.meow.Pages.Vulnerabilities
                 }
 
                 // 如果沒有 ID 且沒有成功訊息，則認為請求無效 (讓前端顯示無效提示)
-                return Page();
+                return RedirectToPage("/Forms/FormsList");
             }
 
             // 2. 正常顯示刪除確認頁面
@@ -103,17 +99,14 @@ namespace Dr.meow.Pages.Vulnerabilities
             {
                 try
                 {
-                    Vulnerability = vulnerability;
-                    _context.Vulnerability.Remove(Vulnerability);
+                    // 💡 注意：因為資料庫設有 ON DELETE CASCADE，
+                    // 刪除這筆 Vulnerability 時，相關的 VulnerabilityLogs 會被自動清掉。
+                    _context.Vulnerability.Remove(vulnerability);
                     await _context.SaveChangesAsync();
 
-                    // ⭐ 刪除成功：設定成功通知並重定向
                     TempData["StatusMessage"] = "✅ 申請單已成功刪除！";
-
-                    // ⭐ 關鍵：重定向回當前頁面，但不帶 ID 參數 (RedirectToPage(null))
-                    // 這樣頁面會刷新並進入 OnGetAsync(id = null) 的邏輯，
-                    // 由於 TempData 存在，前端會顯示成功訊息。
-                    return RedirectToPage(null, new { id = (int?)null });
+                    // 重定向回當前頁面，但不帶 ID
+                    return RedirectToPage(new { id = (int?)null });
                 }
                 catch (DbUpdateException)
                 {

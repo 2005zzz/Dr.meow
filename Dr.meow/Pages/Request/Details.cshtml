@@ -220,16 +220,30 @@
                 <div class="meta-val">@Model.Item.Title</div>
 
                 <div class="meta-key">系統類別</div>
-                <div class="meta-val">@Model.Item.SystemCategory</div>
+                <div class="meta-val">@(Model.Item.UserInput?.SystemCategory ?? "未分類")</div>
 
                 <div class="meta-key">部門</div>
-                <div class="meta-val">@Model.Item.Department</div>
+                <div class="meta-val">@(Model.Item.UserInput?.Department ?? "未知部門")</div>
 
                 <div class="meta-key">建立時間</div>
                 <div class="meta-val">@Model.Item.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
 
                 <div class="meta-key">狀態</div>
-                <div class="meta-val">@Model.Item.Status</div>
+                <div class="meta-val">
+                    @{
+                        // 簡單的狀態轉換顯示
+                        string statusText = Model.Item.Status switch
+                        {
+                            0 => "⏳ AI 分析中",
+                            1 => "👤 待主管審核",
+                            2 => "🚀 開發中",
+                            3 => "✅ 已結案",
+                            4 => "❌ 已退回",
+                            _ => "❓ 未知狀態"
+                        };
+                    }
+                    @statusText
+                </div>
 
                 <div class="meta-key">需求內容 (Description)</div>
                 <div class="meta-val">
@@ -237,8 +251,8 @@
                 </div>
             </div>
 
-            @* ✅ 審核區：只在待審核顯示 *@
-            @if (Model.Item.Status == "PendingDeptBoss")
+            @* ✅ 審核區：只在狀態為 1 (PendingReview) 時顯示 *@
+            @if (Model.Item.Status == 1)
             {
                 <hr class="my-4" />
 
@@ -366,30 +380,66 @@
                 </div>
             }
 
-            @* ✅ 已核准/已退回 顯示結果 *@
-            @if (Model.Item.Status == "Approved")
+            @* ✅ 顯示審核結果 (狀態 2:已核准/開發中, 4:已退回) *@
+
+            @if (Model.Item.Status == 2 || Model.Item.Status == 3)
             {
-                <div class="alert alert-success mt-4">
-                    ✅ 已核准
-                    @if (!string.IsNullOrWhiteSpace(Model.Item.ReviewedBy) || Model.Item.ReviewedAt != null)
-                    {
-                        <span>｜審核者：@Model.Item.ReviewedBy｜時間：@Model.Item.ReviewedAt</span>
-                    }
+                // ✅ 從 AuditLogs 找出最後一筆 "Approved" 的紀錄
+                var approveLog = Model.Item.AuditLogs?
+                .OrderByDescending(l => l.Timestamp)
+                .FirstOrDefault(l => l.Action == "Approved");
+
+                <div class="alert alert-success mt-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <i class="bi bi-check-circle-fill me-2"></i> <strong>✅ 需求已核准通過</strong>
+                        @if (approveLog != null)
+                        {
+                            <div class="small mt-1 text-dark">
+                                <span>審核代碼：@approveLog.ActorId</span>
+                                <span class="mx-2">|</span>
+                                <span>核准時間：@approveLog.Timestamp.ToString("yyyy/MM/dd HH:mm")</span>
+                            </div>
+                        }
+                    </div>
+                    <span class="badge bg-success">開發中</span>
                 </div>
             }
 
-            @if (Model.Item.Status == "Rejected")
+            @if (Model.Item.Status == 4)
             {
+                // ✅ 從 AuditLogs 找出最後一筆 "Rejected" 的紀錄
+                var rejectLog = Model.Item.AuditLogs?
+                .OrderByDescending(l => l.Timestamp)
+                .FirstOrDefault(l => l.Action == "Rejected");
+
                 <div class="alert alert-danger mt-4">
-                    ❌ 已退回
-                    @if (!string.IsNullOrWhiteSpace(Model.Item.ReviewRejectReason))
+                    <div class="fw-bold mb-1"><i class="bi bi-x-circle-fill me-2"></i> ❌ 需求已退回修正</div>
+                    @if (rejectLog != null)
                     {
-                        <span>｜原因：@Model.Item.ReviewRejectReason</span>
+                        <div class="bg-white p-2 rounded border border-danger-subtle mt-2">
+                            <strong>退回原因：</strong> @(string.IsNullOrWhiteSpace(rejectLog.Comment) ? "未填寫具體原因" : rejectLog.Comment)
+                        </div>
+                        <div class="small mt-2 text-muted">
+                            審核代碼：@rejectLog.ActorId ｜ 時間：@rejectLog.Timestamp.ToString("yyyy/MM/dd HH:mm")
+                        </div>
                     }
                 </div>
             }
 
-            @* ✅ 下方功能按鈕（你如果還沒做 Edit 頁，可先把編輯按鈕註解） *@
+            @* ✅ 下方功能按鈕 *@
+            <div class="mt-4 gap-2 d-flex">
+                <a asp-page="/Forms/Management" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> 回列表
+                </a>
+
+                @* 如果 status 是 4 (退回)，可以顯示一個「重新編輯」按鈕 *@
+                @if (Model.Item.Status == 4)
+                {
+                    <a asp-page="/Request/Edit" asp-route-id="@Model.Item.Id" class="btn btn-primary">
+                        重新編輯送出
+                    </a>
+                }
+            </div>
             
 
         </div>

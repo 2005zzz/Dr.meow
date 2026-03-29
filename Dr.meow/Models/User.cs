@@ -23,5 +23,15 @@ namespace Dr.meow.Models
 
         // ⭐ 權限角色（你之前做的）
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
+        // ⭐ 新增：所屬組別（例如：Team1, Team2, IT_Engineers）
+        // 這樣組員提交時，系統才能根據此欄位判斷「第一關」要給哪個組長
+        public string? Department { get; set; }
+
+        // ⭐ 新增：真實姓名（用於表單顯示，Google 登入時抓取 Name）
+        public string? UserName { get; set; }
+
+        // 新增日期追蹤
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

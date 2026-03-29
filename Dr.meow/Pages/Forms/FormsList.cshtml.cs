@@ -3,33 +3,53 @@ using Microsoft.EntityFrameworkCore;
 using Dr.meow.Data;
 using Dr.meow.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dr.meow.Pages.Forms
 {
-    // 請確保此處的命名空間與您的專案結構一致
     public class FormsListModel : PageModel
     {
-        // 宣告資料庫上下文
         private readonly DrMeowDbContext _context;
 
-        // 這是儲存從資料庫讀取出來的漏洞/變更清單的屬性
-        public IList<Vulnerability> VulnerabilityList { get; set; } = default!;
-
-        // 構造函式：透過依賴注入取得資料庫上下文
         public FormsListModel(DrMeowDbContext context)
         {
             _context = context;
         }
 
-        // 處理 HTTP GET 請求
+        // 🚀 建立一個內嵌類別 (ViewModel)，專門用來裝卡片需要的資料
+        public class VulnerabilityVM
+        {
+            public Vulnerability Main { get; set; } = default!;
+            public string? LatestRejectReason { get; set; }
+        }
+
+        // 修正屬性型別：現在我們改用 VM 清單
+        public IList<VulnerabilityVM> VulnerabilityList { get; set; } = new List<VulnerabilityVM>();
+
         public async Task OnGetAsync()
         {
-            // 從資料庫中讀取所有的 Vulnerability 紀錄
-            // 如果您的資料表名稱有變動，請在這裡修正
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr)) return;
+
+            int currentUserId = int.Parse(userIdStr);
+
+            // 🚀 核心邏輯：使用 .Select 一次把主表、關聯人、以及最後一筆退回理由勾出來
             VulnerabilityList = await _context.Vulnerability
-                                                .OrderByDescending(v => v.Id) // 依照 Id 降冪排序，顯示最新的紀錄
-                                                .ToListAsync();
+                .Include(v => v.Requester) // 抓提單人
+                .Where(v => v.RequesterId == currentUserId)
+                .OrderByDescending(v => v.Id)
+                .Select(v => new VulnerabilityVM
+                {
+                    Main = v,
+                    // 🎯 子查詢：去 VulnerabilityLogs 找這張單子最新的「Rejected」留言
+                    LatestRejectReason = _context.VulnerabilityLogs
+                        .Where(l => l.VulnerabilityId == v.Id && l.Action == "Rejected")
+                        .OrderByDescending(l => l.CreatedAt)
+                        .Select(l => l.Comment)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
         }
     }
 }
