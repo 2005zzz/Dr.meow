@@ -62,6 +62,7 @@ namespace Dr.meow.Pages.Request
     {
         private readonly ISearchService _searchService;
         private readonly DrMeowDbContext _db;
+<<<<<<< Updated upstream
         private readonly IBackgroundJobClient _backgroundJob;
         private readonly IServiceScopeFactory _scopeFactory;
 
@@ -70,6 +71,10 @@ namespace Dr.meow.Pages.Request
             DrMeowDbContext db,
             IBackgroundJobClient backgroundJob,
             IServiceScopeFactory scopeFactory)
+=======
+        private readonly AiReviewService _aiReviewService = new AiReviewService();
+        public RequestCreateModel(ISearchService searchService, DrMeowDbContext db)
+>>>>>>> Stashed changes
         {
             _searchService = searchService;
             _db = db;
@@ -82,7 +87,23 @@ namespace Dr.meow.Pages.Request
 
         public void OnGet() { }
 
+<<<<<<< Updated upstream
         public async Task<IActionResult> OnPostAsync()
+=======
+        public async Task<IActionResult> OnPostAsync(
+            string Department,
+            string JobTitle, 
+            string Contact,
+            string Title,
+            string Description,
+            string SystemCategory,
+            string RequestType,
+            string Priority,
+            string Benefit,
+            string ExpectedDate,
+            string Note
+        )
+>>>>>>> Stashed changes
         {
             // ✅ 1) Model Validation (檢查 ViewModel 上的特性)
             if (!ModelState.IsValid) return Page();
@@ -95,6 +116,7 @@ namespace Dr.meow.Pages.Request
                 return RedirectToPage("/Account/Login");
             }
 
+<<<<<<< Updated upstream
             var ticketNumber = await GenerateUniqueTicketNumber();
 
             using var transaction = await _db.Database.BeginTransactionAsync();
@@ -156,6 +178,41 @@ namespace Dr.meow.Pages.Request
                 return Page();
             }
 
+=======
+
+            // ✅ 3) 先建立需求單物件
+            var form = new RequestForm
+            {
+                Department = Department,
+                JobTitle = JobTitle,
+                Contact = Contact,
+                Title = Title,
+                Description = Description,
+                SystemCategory = SystemCategory,
+                Priority = Priority,
+                CreatedAt = DateTime.Now
+            };
+
+            // ✅ 4) 用 AiReviewService 做 AI 審核
+            var (pass, reason) = _aiReviewService.Review(form);
+
+            form.AiPass = pass;
+            form.AiReason = reason;
+            form.AiReviewedAt = DateTime.Now;
+
+            // ✅ 5) AI 決定進哪一區
+            if (pass)
+                form.Status = "PendingDeptBoss";
+            else
+                form.Status = "Rejected";
+
+            _db.RequestForms.Add(form);
+            await _db.SaveChangesAsync();
+
+            TempData["Message"] = "✅ 已送出需求單。AI 審核結果：" + form.AiReason;
+
+            // 送出後回到自己頁面（清空表單）
+>>>>>>> Stashed changes
             return RedirectToPage("/Request/RequestCreate");
         }
 

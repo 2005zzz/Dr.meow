@@ -25,10 +25,15 @@
 	-->
 	<ItemGroup>
 		<PackageReference Include="EPPlus" Version="6.1.0" />
+<<<<<<< Updated upstream
 		<PackageReference Include="Hangfire" Version="1.8.23" />
 		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
 		<PackageReference Include="Hangfire.MemoryStorage" Version="1.8.1.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.13" />
+=======
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
+		<PackageReference Include="Microsoft.SemanticKernel" Version="1.74.0" />
+>>>>>>> Stashed changes
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
 
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">

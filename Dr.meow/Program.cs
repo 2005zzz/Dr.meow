@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Localization;
+﻿using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Dr.meow.Data;
 using Dr.meow.Services;
@@ -37,7 +40,12 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
+builder.Services.AddAzureOpenAIChatCompletion(
+    deploymentName: builder.Configuration["AzureOpenAI:DeploymentName"]!,
+    apiKey: builder.Configuration["AzureOpenAI:ApiKey"]!,
+    endpoint: builder.Configuration["AzureOpenAI:Endpoint"]!,
+    modelId: "gpt-5.2-chat"
+);
 // ⭐ 只使用 Cookie Authentication（暫時不啟用 Google）
 builder.Services.AddAuthentication(options =>
 {

@@ -266,10 +266,15 @@ namespace Dr.meow.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+<<<<<<< Updated upstream
                     b.Property<DateTime?>("ExpectedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Note")
+=======
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+>>>>>>> Stashed changes
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Priority")
