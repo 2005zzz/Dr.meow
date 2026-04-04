@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 註冊 HttpContextAccessor，這樣你才能在 Razor Pages 中使用 @inject
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddControllers();
 
 // Razor Pages
 builder.Services.AddRazorPages();
@@ -106,5 +107,6 @@ app.MapGet("/", ctx =>
     ctx.Response.Redirect("/Login");
     return Task.CompletedTask;
 });
+app.MapControllers();
 
 app.Run();
