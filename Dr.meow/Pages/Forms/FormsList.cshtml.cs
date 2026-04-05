@@ -23,9 +23,15 @@ namespace Dr.meow.Pages.Forms
             public Vulnerability Main { get; set; } = default!;
             public string? LatestRejectReason { get; set; }
         }
+        public class RequestTicketVM
+        {
+            public RequestTicket Main { get; set; } = default!;
+            public string? LatestRejectReason { get; set; }
+        }
 
         // 修正屬性型別：現在我們改用 VM 清單
         public IList<VulnerabilityVM> VulnerabilityList { get; set; } = new List<VulnerabilityVM>();
+        public IList<RequestTicketVM> RequestList { get; set; } = new List<RequestTicketVM>();
 
         public async Task OnGetAsync()
         {
@@ -50,6 +56,19 @@ namespace Dr.meow.Pages.Forms
                         .FirstOrDefault()
                 })
                 .ToListAsync();
+            RequestList = await _context.RequestTickets
+    .Where(r => r.RequesterId == currentUserId)
+    .OrderByDescending(r => r.Id)
+    .Select(r => new RequestTicketVM
+    {
+        Main = r,
+        LatestRejectReason = _context.RequestAuditLogs
+            .Where(l => l.RequestId == r.Id && l.Action == "Rejected")
+            .OrderByDescending(l => l.Timestamp)
+            .Select(l => l.Comment)
+            .FirstOrDefault()
+    })
+    .ToListAsync();
         }
     }
 }

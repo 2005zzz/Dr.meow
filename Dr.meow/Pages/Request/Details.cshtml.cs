@@ -56,11 +56,30 @@ namespace Dr.meow.Pages.Request
             Review = new ReviewInput
             {
                 Id = item.Id,
-                // 資安評估現在在 AiDetail 表
-                SecurityAssessment = item.AiDetail?.SecurityAssessment,
-                // 拒絕原因可以從最後一筆 AuditLog 抓
-                RejectReason = item.AuditLogs?.OrderByDescending(l => l.Timestamp)
-                                   .FirstOrDefault(l => l.Action == "Rejected")?.Comment
+                // ✅ AI 自動預填主管審核欄位
+                AcceptanceContent = item.AiDetail?.AiReviewComment,
+                SecurityAssessment = item.AiDetail?.SecurityAssessment switch
+                {
+                    "符合" => "符合",
+                    "不適用" => "不適用",
+                    "需補件" => "需補件",
+                    "低風險" => "符合",
+                    "無明顯風險" => "符合",
+                    "中風險" => "需補件",
+                    "高風險" => "需補件",
+                    "建議補強" => "需補件",
+                    _ => ""
+                },
+                SatisfactionNeed = item.AiDetail?.AiRequirementScore,
+                SatisfactionStability = item.AiDetail?.AiStabilityScore,
+                SatisfactionOverall = item.AiDetail?.AiOverallScore,
+                BenefitManDays = item.AiDetail?.AiSavedManDays,
+                BenefitRevenue = item.AiDetail?.AiRevenue,
+
+                // ✅ 退回原因仍抓最後一筆人工退回紀錄
+                RejectReason = item.AuditLogs?
+                 .OrderByDescending(l => l.Timestamp)
+                 .FirstOrDefault(l => l.Action == "Rejected")?.Comment
             };
 
             return Page();
@@ -83,13 +102,32 @@ namespace Dr.meow.Pages.Request
                 item.UpdatedAt = DateTime.Now;
 
                 // 2. 更新 AI 細節表的資安評估 (如果主管有修改)
-                if (item.AiDetail != null)
+                // 2. 更新 AI 細節表（主管可修改 AI 草稿後，按核准時覆蓋成最終版本）
+                if (item.AiDetail == null)
                 {
-                    item.AiDetail.SecurityAssessment = Review.SecurityAssessment;
+                    item.AiDetail = new RequestAiDetail
+                    {
+                        RequestId = item.Id,
+                        ProcessedAt = DateTime.Now,
+                        IsProcessed = true
+                    };
                 }
 
+                item.AiDetail.AiReviewComment = Review.AcceptanceContent;
+                item.AiDetail.SecurityAssessment = Review.SecurityAssessment;
+                item.AiDetail.AiRequirementScore = Review.SatisfactionNeed;
+                item.AiDetail.AiStabilityScore = Review.SatisfactionStability;
+                item.AiDetail.AiOverallScore = Review.SatisfactionOverall;
+                item.AiDetail.AiSavedManDays = Review.BenefitManDays;
+                item.AiDetail.AiRevenue = Review.BenefitRevenue;
+
                 // 3. 寫入審核軌跡 (Audit Log)
-                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1");
+                var userIdStr = HttpContext.Session.GetString("UserId");
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+                {
+                    TempData["Message"] = "❌ 授權逾時，請重新登入";
+                    return RedirectToPage("/Login");
+                }
                 var auditLog = new RequestAuditLog
                 {
                     RequestId = item.Id,
@@ -134,7 +172,12 @@ namespace Dr.meow.Pages.Request
                 item.UpdatedAt = DateTime.Now;
 
                 // 2. 寫入審核軌跡 (包含退回理由)
-                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1");
+                var userIdStr = HttpContext.Session.GetString("UserId");
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+                {
+                    TempData["Message"] = "❌ 授權逾時，請重新登入";
+                    return RedirectToPage("/Login");
+                }
                 var auditLog = new RequestAuditLog
                 {
                     RequestId = item.Id,

@@ -8,34 +8,24 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Pages\NewFolder\**" />
-	  <Content Remove="Pages\NewFolder\**" />
-	  <EmbeddedResource Remove="Pages\NewFolder\**" />
-	  <None Remove="Pages\NewFolder\**" />
+		<Compile Remove="Pages\NewFolder\**" />
+		<Content Remove="Pages\NewFolder\**" />
+		<EmbeddedResource Remove="Pages\NewFolder\**" />
+		<None Remove="Pages\NewFolder\**" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="C:\Users\10932\Downloads\程式碼\consult.css" Link="consult.css" />
+		<Content Include="C:\Users\10932\Downloads\程式碼\consult.css" Link="consult.css" />
 	</ItemGroup>
 
-	<!--
-	*** 重點：只保留 PackageReference。
-	*** 現代 .NET Sdk 會自動包含所有 .cs 和 .cshtml 檔案，
-	*** 所以我們移除了所有手動的 <Compile Include...> 和 <Compile Remove...> 語句。
-	-->
 	<ItemGroup>
 		<PackageReference Include="EPPlus" Version="6.1.0" />
-<<<<<<< Updated upstream
 		<PackageReference Include="Hangfire" Version="1.8.23" />
 		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
 		<PackageReference Include="Hangfire.MemoryStorage" Version="1.8.1.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.13" />
-=======
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
 		<PackageReference Include="Microsoft.SemanticKernel" Version="1.74.0" />
->>>>>>> Stashed changes
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
-
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -45,13 +35,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
 	</ItemGroup>
-
-	<!--
-	*** 請注意：如果 Models/Searchstos.cs 不在 Dr.meow 專案的根目錄下
-	*** 且不在任何已知資料夾內（如 Pages），.NET SDK 仍會自動找到它。
-	-->
 
 </Project>

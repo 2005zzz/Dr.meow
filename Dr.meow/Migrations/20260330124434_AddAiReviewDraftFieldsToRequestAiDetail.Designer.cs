@@ -4,6 +4,7 @@ using Dr.meow.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dr.meow.Migrations
 {
     [DbContext(typeof(DrMeowDbContext))]
-    partial class DrMeowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260330124434_AddAiReviewDraftFieldsToRequestAiDetail")]
+    partial class AddAiReviewDraftFieldsToRequestAiDetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,26 +94,8 @@ namespace Dr.meow.Migrations
                     b.Property<int>("RequestId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AiOverallScore")
-                        .HasColumnType("int");
-
                     b.Property<string>("AiReason")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("AiRequirementScore")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("AiRevenue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("AiReviewComment")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("AiSavedManDays")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("AiStabilityScore")
-                        .HasColumnType("int");
 
                     b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
@@ -407,7 +392,7 @@ namespace Dr.meow.Migrations
                             UserId = 1,
                             Account = "enginee",
                             AccountType = "Admin",
-                            CreatedAt = new DateTime(2026, 3, 30, 20, 49, 34, 611, DateTimeKind.Local).AddTicks(9442),
+                            CreatedAt = new DateTime(2026, 3, 30, 20, 44, 31, 464, DateTimeKind.Local).AddTicks(9069),
                             Email = "dept@drmeow.com",
                             IsActive = true,
                             PasswordHash = "123456"
@@ -417,7 +402,7 @@ namespace Dr.meow.Migrations
                             UserId = 2,
                             Account = "team1boss",
                             AccountType = "Admin",
-                            CreatedAt = new DateTime(2026, 3, 30, 20, 49, 34, 611, DateTimeKind.Local).AddTicks(9446),
+                            CreatedAt = new DateTime(2026, 3, 30, 20, 44, 31, 464, DateTimeKind.Local).AddTicks(9076),
                             Department = "Team1",
                             Email = "team1@drmeow.com",
                             IsActive = true,
@@ -428,7 +413,7 @@ namespace Dr.meow.Migrations
                             UserId = 3,
                             Account = "team2boss",
                             AccountType = "Admin",
-                            CreatedAt = new DateTime(2026, 3, 30, 20, 49, 34, 611, DateTimeKind.Local).AddTicks(9448),
+                            CreatedAt = new DateTime(2026, 3, 30, 20, 44, 31, 464, DateTimeKind.Local).AddTicks(9081),
                             Department = "Team2",
                             Email = "team2@drmeow.com",
                             IsActive = true,
@@ -439,7 +424,7 @@ namespace Dr.meow.Migrations
                             UserId = 4,
                             Account = "superboss",
                             AccountType = "Admin",
-                            CreatedAt = new DateTime(2026, 3, 30, 20, 49, 34, 611, DateTimeKind.Local).AddTicks(9451),
+                            CreatedAt = new DateTime(2026, 3, 30, 20, 44, 31, 464, DateTimeKind.Local).AddTicks(9085),
                             Email = "super@drmeow.com",
                             IsActive = true,
                             PasswordHash = "123456"
@@ -449,7 +434,7 @@ namespace Dr.meow.Migrations
                             UserId = 5,
                             Account = "gmember1",
                             AccountType = "User",
-                            CreatedAt = new DateTime(2026, 3, 30, 20, 49, 34, 611, DateTimeKind.Local).AddTicks(9453),
+                            CreatedAt = new DateTime(2026, 3, 30, 20, 44, 31, 464, DateTimeKind.Local).AddTicks(9089),
                             Department = "Team1",
                             Email = "user1@drmeow.com",
                             IsActive = true,
@@ -460,7 +445,7 @@ namespace Dr.meow.Migrations
                             UserId = 6,
                             Account = "gmember2",
                             AccountType = "User",
-                            CreatedAt = new DateTime(2026, 3, 30, 20, 49, 34, 611, DateTimeKind.Local).AddTicks(9456),
+                            CreatedAt = new DateTime(2026, 3, 30, 20, 44, 31, 464, DateTimeKind.Local).AddTicks(9094),
                             Department = "Team2",
                             Email = "user2@drmeow.com",
                             IsActive = true,

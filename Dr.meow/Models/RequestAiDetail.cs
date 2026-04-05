@@ -19,5 +19,12 @@ namespace Dr.meow.Models
         public bool IsProcessed { get; set; }
 
         public virtual RequestTicket RequestTicket { get; set; }
+
+        public string? AiReviewComment { get; set; }      // AI 建議的驗收內容 / 審核意見
+        public int? AiRequirementScore { get; set; }      // 需求一致性 1~5
+        public int? AiStabilityScore { get; set; }        // 功能穩定性 1~5
+        public int? AiOverallScore { get; set; }          // 整體 1~5
+        public decimal? AiSavedManDays { get; set; }      // 每月節省人力
+        public decimal? AiRevenue { get; set; }           // 創造收益
     }
 }

@@ -315,7 +315,8 @@
 </style>
 
 <div class="container-fluid pt-3">
-    @if (Model.VulnerabilityList != null && Model.VulnerabilityList.Any())
+   @if ((Model.VulnerabilityList != null && Model.VulnerabilityList.Any()) ||
+     (Model.RequestList != null && Model.RequestList.Any()))
     {
         @foreach (var item in Model.VulnerabilityList)
         {
@@ -453,12 +454,146 @@
                 </div>
             </div>
         }
+       @foreach (var item in Model.RequestList)
+{
+    // ===== 需求單審核進度邏輯 =====
+string rs1 = "", rs2 = "", rs3 = "", rl1 = "", rl2 = "";
+var rst = item.Main.Status;
+
+// 只用 0 / 1 / 3
+// 0 = PendingAI
+// 1 = PendingReview
+// 3 = Completed
+// 4 = Rejected
+
+if (rst == 4)
+{
+    rs1 = rs2 = rs3 = "step-rejected";
+}
+else if (rst == 0)
+{
+    rs1 = "step-processing";
+}
+else if (rst == 1)
+{
+    rs1 = "step-active";
+    rl1 = "line-active";
+    rs2 = "step-processing";
+}
+else if (rst == 3)
+{
+    rs1 = rs2 = rs3 = "step-active";
+    rl1 = rl2 = "line-active";
+}
+else
+{
+    rs1 = "step-processing";
+}
+
+// ===== 狀態標籤文字與顏色 =====
+string requestStatusText = "⏳ 審核中";
+string requestStatusClass = "status-pending";
+
+if (rst == 4)
+{
+    requestStatusText = "❌ 已退回";
+    requestStatusClass = "status-rejected";
+}
+else if (rst == 3)
+{
+    requestStatusText = "✅ 已完成";
+    requestStatusClass = "status-approved";
+}
+else if (rst == 1)
+{
+    requestStatusText = "⏳ 審核中";
+    requestStatusClass = "status-pending";
+}
+else if (rst == 0)
+{
+    requestStatusText = "⏳ 審核中";
+    requestStatusClass = "status-pending";
+}
+
+    <div class="custom-card">
+        <div class="card-header-custom">
+            <div>
+                <span class="ticket-id">
+                    @(string.IsNullOrEmpty(item.Main.TicketNumber) ? $"需求單 #{item.Main.Id}" : item.Main.TicketNumber)
+                </span>
+                <span class="assigned-to">
+                    提單人：@item.Main.RequesterId
+                </span>
+            </div>
+
+            <div class="badge-group text-end">
+                <span class="badge-status @requestStatusClass me-1"
+      onclick="document.getElementById('request-stepper-@item.Main.Id').classList.toggle('show')"
+      style="cursor:pointer;">
+                    @requestStatusText
+                    <small class="ms-1" style="font-size:0.6rem; opacity:0.8;">(點擊看進度)</small>
+                </span>
+
+                <span class="badge-system">需求單</span>
+            </div>
+        </div>
+
+        <div class="summary-text">
+            <strong>需求摘要：</strong> @item.Main.Description
+        </div>
+
+        <div class="meta-info">
+            <div class="meta-item">
+                <span class="meta-label">📅 建立時間：</span>
+                <span>@item.Main.CreatedAt.ToString("yyyy/MM/dd HH:mm")</span>
+            </div>
+        </div>
+
+        <div id="request-stepper-@item.Main.Id" class="collapse-stepper">
+            <div class="status-stepper">
+                <div class="step-item @rs1">
+                    <div class="step-dot"></div>
+                    <div class="step-label">AI 初審</div>
+                </div>
+                <div class="step-line @rl1"></div>
+                <div class="step-item @rs2">
+                    <div class="step-dot"></div>
+                    <div class="step-label">開發人員審核</div>
+                </div>
+                <div class="step-line @rl2"></div>
+                <div class="step-item @rs3">
+                    <div class="step-dot"></div>
+                    <div class="step-label">通過</div>
+                </div>
+            </div>
+
+        @if (rst == 4)
+{
+    <div class="alert alert-danger py-2 px-3 small mx-3 mt-3" style="font-size: 0.9rem; border-radius: 14px;">
+        <strong>⚠️ 退回理由：</strong> @(item.LatestRejectReason ?? "請聯繫開發人員了解詳情")
+    </div>
+}
+        </div>
+
+        <div class="text-end pt-2 d-flex justify-content-between align-items-center">
+            <button type="button"
+        class="btn btn-link p-0 text-muted small text-decoration-none"
+        onclick="document.getElementById('request-stepper-@item.Main.Id').classList.toggle('show')">
+                <i class="bi bi-chevron-down"></i> 詳細審核進度
+            </button>
+
+            <a asp-page="/Request/Details" asp-route-id="@item.Main.Id" class="view-btn">
+                查看完整內容 &gt;
+            </a>
+        </div>
+    </div>
+}
     }
     else
     {
         <div class="alert alert-info mt-4 text-center">
-            <i class="bi bi-info-circle"></i> 目前沒有任何變更或漏洞紀錄。
-        </div>
+    <i class="bi bi-info-circle"></i> 目前沒有任何表單紀錄。
+</div>
     }
 </div>
 
@@ -476,4 +611,5 @@
             }
         }
     }
+    
 </script>

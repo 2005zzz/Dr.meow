@@ -153,7 +153,7 @@
                                         <div class="d-flex align-items-center mb-1">
                                             <h5 class="card-title mb-0 fw-bold">@f.Title</h5>
                                             <span class="badge @(f.Status == 0 ? "bg-info" : "bg-warning") ms-2">
-                                                @(f.Status == 0 ? "AI 分析中" : "待主管審核")
+                                                @(f.Status == 0 ? "AI 分析中" : "待開發人員審核")
                                             </span>
                                         </div>
 
@@ -198,7 +198,7 @@
                                 <h5 class="card-title text-dark mb-1">
                                     @f.Title
                                     <span class="badge @(f.Status == 3 ? "bg-primary" : "bg-success") ms-1">
-                                        @(f.Status == 3 ? "已結案" : "開發中/已核准")
+                                        @(f.Status == 3 ? "已結案" : "已核准")
                                     </span>
                                 </h5>
                                 <p class="mb-0 text-muted small">

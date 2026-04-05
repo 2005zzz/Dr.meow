@@ -24,9 +24,11 @@ namespace Dr.meow.Pages.Forms
         {
             // 💡 預載入關聯資料，方便列表顯示細節
             var allTickets = await _db.RequestTickets
-                .Include(t => t.AiDetail)
-                .OrderByDescending(x => x.CreatedAt)
-                .ToListAsync();
+              .Include(t => t.AiDetail)
+              .Include(t => t.UserInput)
+              .Include(t => t.AuditLogs)
+              .OrderByDescending(x => x.CreatedAt)
+              .ToListAsync();
 
             // ✅ 1. 待審核 (包含 0:等待AI, 1:等待主管)
             Pending = allTickets
