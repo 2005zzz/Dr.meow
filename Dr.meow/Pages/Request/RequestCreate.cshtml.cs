@@ -1,17 +1,19 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
-using System.Security.Claims;
-using System.Text.Json;
-using System.ComponentModel.DataAnnotations;
 using Dr.meow.Data;
 using Dr.meow.Models;
 using Dr.meow.Services;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Hangfire;
+using Microsoft.SemanticKernel.ChatCompletion;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace Dr.meow.Pages.Request
 {
@@ -153,10 +155,9 @@ namespace Dr.meow.Pages.Request
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // D. 丟背景任務做 AI 分析
-                _backgroundJob.Enqueue(() => ProcessAiAnalysisAsync(ticket.Id));
-
-                TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！AI 正在進行資安掃描與改寫中...";
+                // D. 先直接執行 AI 分析（暫時繞過 Hangfire 做除錯）
+                await ProcessAiAnalysisAsync(ticket.Id);
+                TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！AI 已完成分析。";
             }
             catch (Exception ex)
             {
@@ -186,6 +187,9 @@ namespace Dr.meow.Pages.Request
         [AutomaticRetry(Attempts = 2)]
         public async Task ProcessAiAnalysisAsync(int ticketId)
         {
+            System.Diagnostics.Debug.WriteLine("🔥🔥🔥 AI任務有進來 🔥🔥🔥");
+            System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\job_entered.txt", $"有進到 ProcessAiAnalysisAsync，ticketId={ticketId}，時間={DateTime.Now}");
+
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<DrMeowDbContext>();
 
@@ -232,10 +236,12 @@ namespace Dr.meow.Pages.Request
    - 驗收方式或驗收標準
    - 若有風險或限制，簡短提醒
    字數控制在 80~180 字。
-2.securityAssessment 只能輸出以下三種之一：
-   - 符合
-   - 不適用
-   - 需補件
+2.securityAssessment 請根據需求內容的風險程度，自行判斷並輸出以下三個分類之一：
+   - 符合：表示需求風險低，或不涉及資安疑慮
+   - 不適用：表示此需求與資安無關
+   - 需補件：表示需求可能存在風險、資訊不足，或需要進一步評估
+   請務必根據語意自行判斷，不要輸出其他文字（例如：中、低、高、中風險等），
+   最終結果只能是上述三個值之一。
 3.aiRequirementScore（1~5）：
    1 = 幾乎看不懂需求
    2 = 有部分內容，但描述不清楚或邏輯混亂
@@ -280,6 +286,7 @@ namespace Dr.meow.Pages.Request
 
                 var result = await _chatService.GetChatMessageContentAsync(history);
                 var aiText = result.Content ?? "";
+                System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\last_ai_response.txt", aiText);
 
                 var cleanJson = aiText
                  .Replace("```json", "")
@@ -288,6 +295,48 @@ namespace Dr.meow.Pages.Request
 
                 var aiData = JsonSerializer.Deserialize<AiResponseModel>(
                     cleanJson ?? "",
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\before_review_ai.txt", "有走到第二段 AI 前");
+                // ⭐ 新增：第二段 AI（審核評分）
+                var reviewPrompt = $@"
+你是醫院需求單審核評分助手，負責根據需求內容評估其明確性、穩定性、整體價值，
+並保守估算可節省人力與可能收益。
+
+請只回傳純 JSON，格式如下：
+{{
+    ""aiRequirementScore"": 4,
+    ""aiStabilityScore"": 4,
+    ""aiOverallScore"": 4,
+    ""aiSavedManDays"": 2.5,
+    ""aiRevenue"": 0
+}}
+
+評分規則：
+1. aiRequirementScore（1~5）：需求清楚程度
+2. aiStabilityScore（1~5）：系統風險與穩定性
+3. aiOverallScore（1~5）：整體價值與可行性
+4. aiSavedManDays：保守估算節省人力（0~3 常見）
+5. aiRevenue：內部系統通常填 0
+
+需求單資料：
+標題：{ticket.Title}
+內容：{ticket.Description}
+";
+
+                var reviewHistory = new ChatHistory();
+                reviewHistory.AddUserMessage(reviewPrompt);
+
+                var reviewResult = await _chatService.GetChatMessageContentAsync(reviewHistory);
+                var reviewText = reviewResult.Content ?? "";
+                System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\last_ai_reviewscore_response.txt", reviewText);
+
+                var cleanReviewJson = reviewText
+                    .Replace("```json", "")
+                    .Replace("```", "")
+                    .Trim();
+
+                var reviewData = JsonSerializer.Deserialize<ReviewScoreAiResponseModel>(
+                    cleanReviewJson,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (aiData == null)
@@ -306,22 +355,52 @@ namespace Dr.meow.Pages.Request
                     await db.SaveChangesAsync();
                     return;
                 }
+                // ✅ 統一校正 SecurityAssessment，只允許三種值
+                var rawSecurity = aiData.SecurityAssessment?.Trim() ?? "";
+                Console.WriteLine($"[AI原始 SecurityAssessment] = {rawSecurity}");
 
+                aiData.SecurityAssessment = rawSecurity switch
+                {
+                    "符合" => "符合",
+                    "不適用" => "不適用",
+                    "需補件" => "需補件",
+
+                    "低" => "符合",
+                    "低風險" => "符合",
+                    "無明顯風險" => "符合",
+
+                    "中" => "需補件",
+                    "中風險" => "需補件",
+                    "高" => "需補件",
+                    "高風險" => "需補件",
+                    "建議補強" => "需補件",
+
+                    _ => "需補件"
+                };
+
+                System.Diagnostics.Debug.WriteLine($"[AI原始 SecurityAssessment] = {rawSecurity}");
+                System.Diagnostics.Debug.WriteLine($"[校正後 SecurityAssessment] = {aiData.SecurityAssessment}");
+                System.Diagnostics.Debug.WriteLine($"[準備存進DB的 SecurityAssessment] = {aiData.SecurityAssessment}");
                 var aiDetail = new RequestAiDetail
                 {
                     RequestId = ticketId,
                     IsITRelated = aiData.IsITRelated,
                     RefinedTitle = aiData.RefinedTitle,
                     RefinedDescription = aiData.RefinedDescription,
-                    SecurityAssessment = aiData.SecurityAssessment,
+                    SecurityAssessment =
+    aiData.SecurityAssessment == "符合" ||
+    aiData.SecurityAssessment == "不適用" ||
+    aiData.SecurityAssessment == "需補件"
+        ? aiData.SecurityAssessment
+        : "需補件",
                     AiReason = aiData.Reason,
 
                     AiReviewComment = aiData.AiReviewComment,
-                    AiRequirementScore = aiData.AiRequirementScore,
-                    AiStabilityScore = aiData.AiStabilityScore,
-                    AiOverallScore = aiData.AiOverallScore,
-                    AiSavedManDays = aiData.AiSavedManDays,
-                    AiRevenue = aiData.AiRevenue,
+                    AiRequirementScore = reviewData?.AiRequirementScore,
+                    AiStabilityScore = reviewData?.AiStabilityScore,
+                    AiOverallScore = reviewData?.AiOverallScore,
+                    AiSavedManDays = reviewData?.AiSavedManDays,
+                    AiRevenue = reviewData?.AiRevenue,
 
                     ProcessedAt = DateTime.Now,
                     IsProcessed = true
@@ -360,7 +439,14 @@ namespace Dr.meow.Pages.Request
             }
         }
     }
-
+    public class ReviewScoreAiResponseModel
+    {
+        public int? AiRequirementScore { get; set; }
+        public int? AiStabilityScore { get; set; }
+        public int? AiOverallScore { get; set; }
+        public decimal? AiSavedManDays { get; set; }
+        public decimal? AiRevenue { get; set; }
+    }
     public class AiResponseModel
     {
         public bool IsApproved { get; set; }

@@ -341,13 +341,138 @@
         <div class="rag-footer">來源：RAG 知識庫</div>
     </div>
 </div>
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+
+            <div class="modal-header border-0 p-4" style="background: linear-gradient(135deg, #E6F7F5 0%, #D1EBE9 100%);">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center">
+                    <span class="fs-4 me-2">🤖</span> AI 助手已為您產出預覽表單
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4 p-md-5 bg-white">
+                <div class="alert alert-soft-success small py-3 px-4 mb-4 d-flex align-items-center" style="background-color: #F0FBF9; border: 1px solid #D1EBE9; border-radius: 12px; color: #2D8B7A;">
+                    <i class="bi bi-check-circle-fill fs-5 me-3"></i>
+                    <div>
+                        <strong class="d-block mb-1" id="modalAlertTitle">此需求已通過資安範疇初步審核</strong>
+                        <span class="opacity-75">內容已由 AI 助手根據 ISMS 規範與對話補全，請確認資訊。</span>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <h6 class="text-secondary fw-bold mb-3" style="font-size: 0.9rem;"><i class="bi bi-person-badge me-2"></i> 申請人基本資訊</h6>
+                        <div class="row g-3 p-3 mx-0" style="background-color: #F8FBFB; border-radius: 12px; border: 1px dashed #D1EBE9;">
+                            <div class="col-md-4">
+                                <label class="form-label x-small text-secondary fw-bold">部門</label>
+                                <input type="text" id="modalDept" class="form-control form-control-sm border-0 bg-white" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label x-small text-secondary fw-bold">分機</label>
+                                <input type="text" id="modalExt" class="form-control form-control-sm border-0 bg-white" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label id="modalDateLabel" class="form-label x-small text-secondary fw-bold">期望完成日期</label>
+                                <input type="text" id="modalDate" class="form-control form-control-sm border-0 bg-white" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="vulnerabilityAnalysisArea" class="col-12 d-none">
+                        <h6 class="text-info fw-bold mb-3" style="font-size: 0.9rem;"><i class="bi bi-shield-lock me-2"></i> 資安風險評估與 AI 推理</h6>
+                        <div class="row g-3 p-3 mx-0" style="background-color: #F0F7FF; border-radius: 12px; border: 1px solid #D0E3FF;">
+                            <div class="col-md-6">
+                                <label class="form-label x-small text-primary fw-bold">系統類別</label>
+                                <input type="text" id="modalSystemCategory" class="form-control form-control-sm bg-white" readonly>
+                                <div id="reasoning_SystemCategory" class="ai-reasoning-note"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label x-small text-primary fw-bold">工單類別</label>
+                                <input type="text" id="modalTicketCategory" class="form-control form-control-sm bg-white" readonly>
+                                <div id="reasoning_TicketCategory" class="ai-reasoning-note"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label x-small text-primary fw-bold">變更類型</label>
+                                <input type="text" id="modalChangeType" class="form-control form-control-sm bg-white" readonly>
+                                <div id="reasoning_ChangeType" class="ai-reasoning-note"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label x-small text-primary fw-bold">依賴性</label>
+                                <input type="text" id="modalDependency" class="form-control form-control-sm bg-white" readonly>
+                                <div id="reasoning_Dependency" class="ai-reasoning-note"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label x-small text-primary fw-bold">影響程度</label>
+                                <input type="text" id="modalImpactLevel" class="form-control form-control-sm bg-white" readonly>
+                                <div id="reasoning_ImpactLevel" class="ai-reasoning-note"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label small text-secondary fw-bold">表單標題</label>
+                        <input type="text" id="modalTitle" class="form-control form-control-lg fw-bold border-secondary-subtle" readonly style="border-radius: 10px; background-color: #fcfcfc;">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-secondary fw-bold">優先/風險等級 (Severity)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-secondary-subtle"><i class="bi bi-flag-fill text-warning"></i></span>
+                            <input type="text" id="modalPriority" class="form-control form-control-lg fw-bold text-center border-secondary-subtle" readonly style="background-color: #fcfcfc;">
+                        </div>
+                        <div id="reasoning_Severity" class="ai-reasoning-note"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small text-secondary fw-bold">內容詳細說明 (AI 補全結果)</label>
+                        <textarea id="modalDesc" class="form-control" rows="4" style="border-radius: 12px; border: 1px solid #dee2e6; font-size: 0.95rem; line-height: 1.6; padding: 15px;"></textarea>
+                    </div>
+
+                    <div id="vulnerabilityPlanArea" class="col-12 d-none">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-bold">測試計畫 (Test Plan)</label>
+                                <textarea id="modalTestPlan" class="form-control bg-light" rows="3" readonly style="border-radius: 10px; font-size: 0.85rem;"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-bold">回復計畫 (Recovery Plan)</label>
+                                <textarea id="modalRecoveryPlan" class="form-control bg-light" rows="3" readonly style="border-radius: 10px; font-size: 0.85rem;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .ai-reasoning-note {
+                    font-size: 0.72rem;
+                    color: #5a8d84;
+                    margin-top: 4px;
+                    padding-left: 8px;
+                    border-left: 2px solid #8fdacb;
+                    font-style: italic;
+                    line-height: 1.3;
+                    display: none; /* 預設隱藏，由 JS 控制顯示 */
+                }
+            </style>
+
+            <div class="modal-footer border-0 p-4 bg-light">
+                <button type="button" class="btn btn-link text-secondary text-decoration-none px-4" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary px-5 py-2 fw-bold shadow-sm" onclick="submitFinalFormToDb()" style="background-color: #3AB6A7; border: none; border-radius: 12px;">
+                    ✅ 確認送出申請
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
         let globalSourceMap = {};   // <-- 全域來源索引庫
         const messageSources = {};  // key: messageId → value: sources array
         const FORMS_URL = '/Forms/FormsList';
-        const API_URL = '/Api/Search';
+        const API_URL = 'https://localhost:7068/api/rag/ask';
 
         const menuItems = document.querySelectorAll('.app-menu');
         const noteBox = document.getElementById('noteBox');
@@ -389,11 +514,11 @@
             }
         });
 
-        // 模式切換
+                // ✅ 模式切換 (已加入 async 修飾詞)
         modeItems.forEach(item => {
-            item.addEventListener('click', () => {
+            item.addEventListener('click', async () => { // <--- 重點在此：加入了 async
 
-                // UI 更新
+                // 1. UI 狀態更新
                 modeItems.forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
 
@@ -401,29 +526,49 @@
                 const label = item.textContent;
 
                 toggleBtn.innerHTML = `${label.split(' ')[0]} <span class="arrow">▾</span>`;
-
                 dropdown.classList.remove('open');
 
-                // 🔥 功能切換（接你原本的）
+                // 2. 變數與 UI 清空 (斷捨離)
+                currentFormContext = { type: null, step: 0 };
+                msgs.innerHTML = '';
+                results.innerHTML = '';
+                summary.classList.add('d-none');
+
+                // 3. 模式特定行為
                 if (mode === 'consult') {
+                    // 🔥 [同步修正]：切換時同步更新左側選單的 active 狀態
+                    const consultBtn = document.querySelector('.app-menu[data-mode="consult"]');
+                    if(consultBtn) consultBtn.classList.add('active');
+
+                    // ✅ [問答模式斷捨離]：通知後端清空 Session 歷史
+                    try {
+                        // 使用 await 發送 POST 請求
+                        const resp = await fetch('/api/rag/reset-history', { method: 'POST' });
+                        if (resp.ok) {
+                            console.log("🧹 AI 上下文已重置，現在進入純淨問答模式");
+                        }
+                    } catch (err) {
+                        console.error("重置 AI 歷史失敗", err);
+                    }
+
+                    // 更新右側面板
                     ragArea.classList.remove('d-none');
                     formsArea.classList.add('d-none');
                     noteBox.textContent = '您目前在「問答模式」，可向 AI 提問。';
                     input.placeholder = "輸入問題，例如：最近漏洞通報與處置建議？";
                 }
                 else if (mode === 'forms') {
-                    // 1. 維持在對話介面
                     ragArea.classList.remove('d-none');
                     formsArea.classList.add('d-none');
 
-                    // 2. 更新提示文字
                     noteBox.innerHTML = 'AI 將協助您分析需求內容並自動建議表單欄位。';
                     input.placeholder = "請點選下方表單類型，或直接描述您的需求...";
 
-                    // 3. 觸發機器人主動引導 (噴出頭像與按鈕)
-                    // 這裡我們加一個延遲感，讓它看起來像機器人在思考後說話
+                    // 觸發機器人主動引導
                     setTimeout(() => {
-                        const welcomeId = 'bot-' + Date.now();
+                        // 再次雙重檢查，確保容器是空的才噴
+                        if (msgs.innerHTML !== '') return;
+
                         const welcomeHtml = `
                             <div class="msg-row msg-bot-row animate-fadeIn">
                                 <div class="d-flex align-items-start">
@@ -445,6 +590,7 @@
             });
         });
 
+                // 左側選單切換
         menuItems.forEach(it => {
             it.addEventListener('click', () => {
                 menuItems.forEach(x => x.classList.remove('active'));
@@ -454,15 +600,21 @@
                 if (!mode) return;
 
                 if (mode === 'consult') {
+                    // ✅ 同步下拉選單圖示
+                    toggleBtn.innerHTML = `🤖 <span class="arrow">▾</span>`;
+                    modeItems.forEach(i => i.classList.remove('active'));
+                    document.querySelector('.mode-item[data-mode="consult"]').classList.add('active');
+
                     ragArea.classList.remove('d-none');
                     formsArea.classList.add('d-none');
                     noteBox.textContent = '您目前在「RAG 顧問」模式，可向系統提問相關問題。';
 
-                    msgs.innerHTML = '';
+                    // msgs.innerHTML = ''; // 如果妳不想清空歷史可以註解掉這行
                     results.innerHTML = '';
                     summary.classList.add('d-none');
                 }
                 else if (mode === 'forms') {
+                    // ✅ 切換到查看清單：顯示清單，隱藏對話
                     ragArea.classList.add('d-none');
                     formsArea.classList.remove('d-none');
                     noteBox.textContent = '您目前在「查看表單」模式，可瀏覽已填寫的變更／需求表單。';
@@ -497,16 +649,50 @@
             const q = input.value.trim();
             if (!q) return;
 
+            const activeMode = document.querySelector('.mode-item.active').dataset.mode;
+            console.log("🚀 目前發送模式為：", activeMode);
+            let finalQuery = q; // 預設只傳送使用者的原始問題
+
+            // ✅ 1. 填表模式下的「強制脫鉤」處理
+            if (activeMode === 'forms') {
+                const type = currentFormContext.type;
+                const date = document.getElementById('prefill-date')?.value || "";
+
+                if (type === 'Vulnerability') {
+                    // 🔥 [變更單]：直接注入固定資訊，並下達「禁止詢問」指令
+                    finalQuery = `
+                        [核心任務：系統變更申請]
+                        實施時間：${date}
+                        變更內容：${q}
+                        ---
+                        【資安約束條件】
+                        1. 此為資訊中心內部技術變更，已由系統核備申請人資訊。
+                        2. 禁止詢問部門、分機、姓名等個人資料。
+                        3. 請立即根據內容分析資安風險(Severity, Impact, TestPlan, RecoveryPlan)並直接回傳 JSON。
+                    `;
+                    console.log("📝 變更單模式：已啟動靜態上下文注入，屏蔽行政詢問。");
+                } else {
+                    // ✅ [需求單]：維持原本的採集邏輯
+                    const dept = document.getElementById('prefill-dept')?.value || "";
+                    const ext = document.getElementById('prefill-ext')?.value || "";
+                    finalQuery = `[需求申請模式] 部門:${dept}, 分機:${ext}, 期望日期:${date} \n [需求描述] ${q}`;
+                }
+            } else {
+                console.log("💬 問答模式：純淨發送問題");
+            }
+
+            // 畫面上顯示原本的口語內容就好 (保持簡潔)
             pushUser(q);
             input.value = '';
 
-            const loadingId = pushBot('查詢中，請稍候…', true);
+            const loadingId = pushBot('Dr.Meow 正在處理中...', true);
 
             try {
                 const resp = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: q })
+                    // ✅ 改傳送加料後的 finalQuery
+                    body: JSON.stringify({ query: finalQuery, mode: currentFormContext.type})
                 });
 
                 if (!resp.ok) {
@@ -516,31 +702,155 @@
                 }
 
                 const data = await resp.json();
-                const sources = data.items || data.sources || data.Sources || [];
 
-                messageSources[loadingId] = sources;
-
-                sources.forEach(s => {
-                    const key = s.title || s.fileName;
-                    if (key && !globalSourceMap[key]) {
-                        globalSourceMap[key] = s;
-                    }
-                });
-
+                // --- A. 處理文字回答 (加入反覆點開的連結) ---
                 const rawAnswer = data.answer || data.Answer || '（沒有取得 AI 回覆）';
-                const formattedAnswer = formatText(rawAnswer, loadingId);
+                const isReady = data.isFormReady || data.IsFormReady || data.isComplete || data.IsComplete || false;
+                const jsonStr = data.formDataJson || data.FormDataJson || "";
 
+                let formattedAnswer = formatText(rawAnswer, loadingId);
+                
+
+                // ✅ [新功能]：如果表單準備好了，在文字下方加一個「常駐連結」
+                if (isReady || (jsonStr && jsonStr.includes("{"))) {
+                    const safeJson = encodeURIComponent(jsonStr); // 保護 JSON 字串
+                    formattedAnswer += `
+                        <div class="mt-3 pt-2 border-top border-light" id="reopen-container-${loadingId}">
+                            <button class="btn btn-sm btn-link text-decoration-none p-0"
+                                    style="color: #3AB6A7; font-weight: 600;"
+                                    onclick="reopenModal('${loadingId}', '${safeJson}')">
+                                <i class="bi bi-pencil-square"></i> 👁️ 查看/修改預覽表單
+                            </button>
+                            <div id="status-locked-${loadingId}" class="small text-muted d-none animate-fadeIn">
+                                <i class="bi bi-lock-fill"></i> 此需求已完成送出，表單已鎖定。
+                            </div>
+                        </div>
+                    `;
+                }
                 replaceBotMessage(loadingId, formattedAnswer);
 
-                results.innerHTML = '';
-                sources.forEach(x => addResultCard(x, loadingId));
+                // --- B. 處理 RAG 來源 ---
+                if (activeMode === 'consult') {
+                    // (原本的 RAG 來源邏輯維持不變)
+                    const sources = data.items || data.sources || data.Sources || [];
+                    results.innerHTML = '';
+                    messageSources[loadingId] = data.items || data.sources || [];
+                    sources.forEach(s => addResultCard(s, loadingId));
+                } else {
+                    results.innerHTML = '';
+                }
+                    // 🔥 --- C. 關鍵邏輯：強力診斷與彈窗 ---
+            console.log("📢 [DEBUG] 原始 data 物件:", data);
+            const rawDataKeys = Object.keys(data);
+            console.log("📢 後端回傳的所有欄位:", rawDataKeys);
 
-                scrollBottom();
+            console.log("📢 [DEBUG] 判定結果 - isReady:", isReady, "| 存不存在 jsonStr:", !!jsonStr);
 
-            } catch (err) {
-                console.error(err);
-                replaceBotMessage(loadingId, '查詢失敗，請檢查後端連線或稍後再試。');
+            // ✅ 2. 彈窗預覽邏輯：整合變更單資安欄位
+            if (isReady || (jsonStr && jsonStr.includes("{"))) {
+                window.lastActiveBotMsgId = loadingId;
+                try {
+                    const cleanJson = jsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
+                    const formData = JSON.parse(cleanJson);
+                    window.latestAiFormData = formData;
+
+                    const prefilledDept = document.getElementById('prefill-dept')?.value || "";
+                    const prefilledExt = document.getElementById('prefill-ext')?.value || "";
+                    const prefilledDate = document.getElementById('prefill-date')?.value || "";
+                    const isChange = (currentFormContext.type === 'Vulnerability');
+
+                    // A. 基礎欄位填充
+                    document.getElementById('modalTitle').value = formData.Title || formData.title || "";
+                    document.getElementById('modalDesc').value = formData.Description || formData.description || "";
+
+                    // B. 基本資訊與標籤切換
+                    const deptField = document.getElementById('modalDept');
+                    const extField = document.getElementById('modalExt');
+                    const dateField = document.getElementById('modalDate');
+                    const dateLabel = document.getElementById('modalDateLabel');
+                    const alertTitle = document.getElementById('modalAlertTitle');
+
+                    if(deptField) deptField.value = isChange ? "資訊中心" : prefilledDept;
+                    if(extField) extField.value = prefilledExt;
+                    if(dateField) dateField.value = isChange ? prefilledDate.replace('T', ' ') : prefilledDate;
+                    if(dateLabel) dateLabel.innerText = isChange ? "預計實施日期與時間" : "期望完成日期";
+                    if(alertTitle) alertTitle.innerText = isChange ? "此變更申請已通過資安風險預評" : "此需求已通過資安範疇初步審核";
+
+                    // C. 🔥 變更單專屬區塊處理
+                    const analysisArea = document.getElementById('vulnerabilityAnalysisArea');
+                    const planArea = document.getElementById('vulnerabilityPlanArea');
+
+                    // 定義一個小工具：用來填充「欄位值」以及對應的「理由」
+                    const fillFieldWithReason = (fieldId, value, reason) => {
+                        const valInput = document.getElementById(`modal${fieldId}`);
+                        const reasonDiv = document.getElementById(`reasoning_${fieldId}`);
+                        if (valInput) valInput.value = value || "";
+                        if (reasonDiv) {
+                            reasonDiv.innerHTML = reason ? `💡 ${reason}` : "";
+                            reasonDiv.style.display = reason ? 'block' : 'none';
+                        }
+                    };
+
+                    if (isChange) {
+                        analysisArea.classList.remove('d-none');
+                        planArea.classList.remove('d-none');
+
+                        // 填入專業欄位與對應理由 (對應後端 C# 的 Key 名稱)
+                        fillFieldWithReason('SystemCategory', formData.SystemCategory, formData.SystemCategoryReasoning);
+                        fillFieldWithReason('TicketCategory', formData.TicketCategory, formData.TicketCategoryReasoning);
+                        fillFieldWithReason('ChangeType', formData.ChangeType, formData.ChangeTypeReasoning);
+                        fillFieldWithReason('Dependency', formData.Dependency, formData.DependencyReasoning);
+                        fillFieldWithReason('ImpactLevel', formData.ImpactLevel, formData.ImpactLevelReasoning);
+
+                        // Severity 特別處理 (前端 ID 是 modalPriority)
+                        document.getElementById('modalPriority').value = formData.Severity || "低風險";
+                        const sevReasonDiv = document.getElementById('reasoning_Severity');
+                        if (sevReasonDiv) {
+                            sevReasonDiv.innerHTML = formData.SeverityReasoning ? `💡 ${formData.SeverityReasoning}` : "";
+                            sevReasonDiv.style.display = formData.SeverityReasoning ? 'block' : 'none';
+                        }
+                        // 填入計畫內容
+                        document.getElementById('modalTestPlan').value = formData.TestPlan || "依標準作業程序進行測試。";
+                        document.getElementById('modalRecoveryPlan').value = formData.RecoveryPlan || "若執行異常，將立即執行備份還原。";
+                    } else {
+                        analysisArea.classList.add('d-none');
+                        planArea.classList.add('d-none');
+                        document.getElementById('modalPriority').value = formData.Priority || "中";
+
+                        // 隱藏所有理由區塊
+                        document.querySelectorAll('.ai-reasoning-note').forEach(el => el.style.display = 'none');
+                    }
+
+                    //     填入專業資安欄位 (對應妳的 Vulnerability 模型)
+                    //     document.getElementById('modalSystemCategory').value = formData.SystemCategory || formData.systemCategory || "未定義";
+                    //     document.getElementById('modalChangeType').value = formData.ChangeType || formData.changeType || "標準";
+                    //     document.getElementById('modalDependency').value = formData.Dependency || formData.dependency || "無";
+                    //     document.getElementById('modalImpactLevel').value = formData.ImpactLevel || formData.impactLevel || "低";
+                    //     document.getElementById('modalPriority').value = formData.Severity || formData.severity || "低風險";
+
+                    //     填入計畫
+                    //     document.getElementById('modalTestPlan').value = formData.TestPlan || formData.testPlan || "依標準作業程序進行測試。";
+                    //     document.getElementById('modalRecoveryPlan').value = formData.RecoveryPlan || formData.recoveryPlan || "若執行異常，將立即執行備份還原。";
+                    // } else {
+                    //     analysisArea.classList.add('d-none');
+                    //     planArea.classList.add('d-none');
+                    //     document.getElementById('modalPriority').value = formData.Priority || formData.priority || "中";
+                    // }
+                        // D. 顯示 Modal
+                    if (document.activeElement) document.activeElement.blur();
+                    new bootstrap.Modal(document.getElementById('previewModal')).show();
+
+                    console.log(`✅ [SUCCESS] ${isChange ? '變更單' : '需求單'} 預覽已彈出`);
+                } catch (jsonErr) {
+                    console.error("❌ [ERROR] JSON 解析失敗:", jsonErr);
+                }
             }
+            scrollBottom();
+
+        } catch (err) {
+            console.error(err);
+            replaceBotMessage(loadingId, '查詢失敗，請檢查後端連線。');
+        }
         });
 
         btnClear.addEventListener('click', (e) => {
@@ -563,23 +873,130 @@
         }
 
         window.handleFormSelect = function(type) {
-            // 從 Session 取得 Team (這行要確保妳的頁面能讀到這個值)
-            const userTeam = "@(HttpContextAccessor.HttpContext.Session.GetString("UserTeam"))";
+            // const userTeam = "@(HttpContextAccessor.HttpContext.Session.GetString("UserTeam"))";
+            // const userDept = "@(HttpContextAccessor.HttpContext.Session.GetString("UserDept") ?? "資訊中心")"; 假設有部門 Session
+            // const userExt = "@(HttpContextAccessor.HttpContext.Session.GetString("UserExt") ?? "")";   假設有分機 Session
 
-            if (type === 'Vulnerability' && userTeam !== 'TEAM1') {
-                pushBot("⚠️ 抱歉，**系統變更單** 涉及核心系統異動，僅限 **資訊組 (TEAM1)** 成員填寫。<br>如果您有新的功能想法，建議改填寫 **需求申請單** 喔！");
-                return;
+            // if (type === 'Vulnerability' && userTeam !== 'TEAM1') {
+            //     pushBot("⚠️ 抱歉，**系統變更單** 僅限 **資訊組 (TEAM1)** 成員填寫。");
+            //     return;
+            // }
+            // ✅ [新功能]：如果對話框已經有內容，就噴出一條華麗的分隔線
+            if (msgs.innerHTML.trim() !== "") {
+                const typeLabel = type === 'Request' ? '需求申請' : '系統變更';
+                const separatorHtml = `
+                    <div class="d-flex align-items-center my-4 animate-fadeIn">
+                        <div class="flex-grow-1" style="height: 1px; background: linear-gradient(to right, transparent, #3AB6A7);"></div>
+                        <div class="mx-3 small fw-bold" style="color: #3AB6A7; letter-spacing: 1px;">
+                            <i class="bi bi-stars"></i> 新任務：${typeLabel}
+                        </div>
+                        <div class="flex-grow-1" style="height: 1px; background: linear-gradient(to left, transparent, #3AB6A7);"></div>
+                    </div>
+                `;
+                msgs.insertAdjacentHTML('beforeend', separatorHtml);
             }
 
-            // 紀錄目前的模式
             currentFormContext.type = type;
             currentFormContext.step = 1;
 
-            pushUser(`我想填寫 ${type === 'Request' ? '需求申請單' : '系統變更單'}`);
+                // 2. 判斷類型並噴出對應卡片
+            if (type === 'Vulnerability') {
+                fetch('/api/rag/reset-history', { method: 'POST' })
+                .then(() => console.log("🧹 歷史紀錄已重置"));
+                // 🔥 【變更單專屬：採集時間與變更內容】
+                pushUser(`我想填寫 系統變更單`);
 
-            setTimeout(() => {
-                pushBot(`好的，已為您開啟 **${type === 'Request' ? '需求單' : '變更單'}** 智慧填寫模式。<br>請簡單描述您的需求（例如：我想申請門禁權限，或是網頁選單需要增加按鈕），我會幫您判斷是否符合資安範疇並補全內容。`);
-            }, 600);
+                setTimeout(() => {
+                    const welcomeHtml = `
+                        <div class="msg-row msg-bot-row animate-fadeIn">
+                            <div class="msg msg-bot shadow-sm border-start border-4" style="border-color: #0dcaf0 !important;">
+                                <h6 class="fw-bold text-info"><i class="bi bi-tools"></i> 系統變更：快速資訊採集</h6>
+                                <div class="small text-muted mb-3">請提供實施時間與變更描述，AI 將為您評估風險：</div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-12">
+                                        <label class="x-small text-secondary fw-bold">📅 預計實施日期與時間 <span class="text-danger">*</span></label>
+                                        <input type="datetime-local" id="prefill-date" class="form-control form-control-sm"
+                                               value="${new Date(Date.now() + 86400000).toISOString().slice(0, 16)}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="x-small text-secondary fw-bold">📝 變更內容摘要</label>
+                                        <textarea id="prefill-change-desc" class="form-control form-control-sm" rows="3"
+                                                  placeholder="請描述變更內容，例如：更新 HIS 系統資料庫索引以提升查詢效率..."></textarea>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-sm btn-info text-white w-100 fw-bold shadow-sm" onclick="submitChangeFlow()">
+                                    確認並開始 AI 風險分析 <i class="bi bi-robot"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    msgs.insertAdjacentHTML('beforeend', welcomeHtml);
+                    scrollBottom();
+                }, 600);
+
+            } else {
+                // ✅ 【需求單專屬：原本的部門/分機流程】
+                pushUser(`我想填寫 需求申請單`);
+
+                setTimeout(() => {
+                    // 從 Session 抓資料 (這裡沿用妳原本的變數)
+                    const userDept = "@(HttpContextAccessor.HttpContext.Session.GetString("UserDept") ?? "資訊中心")";
+                    const userExt = "@(HttpContextAccessor.HttpContext.Session.GetString("UserExt") ?? "")";
+
+                    const infoCardHtml = `
+                        <div class="msg-row msg-bot-row animate-fadeIn">
+                            <div class="msg msg-bot shadow-sm border-start border-4 border-success">
+                                <h6 class="fw-bold"><i class="bi bi-person-badge"></i> 第一步：確認您的基本資料</h6>
+                                <div class="small text-muted mb-2">請確認或修正以下資訊，以便後續聯繫：</div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <label class="x-small text-secondary">所屬部門</label>
+                                        <input type="text" id="prefill-dept" class="form-control form-control-sm" value="${userDept}">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="x-small text-secondary">聯絡分機</label>
+                                        <input type="text" id="prefill-ext" class="form-control form-control-sm" value="${userExt}" placeholder="分機號碼">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="x-small text-secondary">期望完成日期</label>
+                                        <input type="date" id="prefill-date" class="form-control form-control-sm" value="${new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0]}">
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm btn-success w-100 mt-1" onclick="startDescriptionStep()">
+                                    資料無誤，開始描述需求 <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    msgs.insertAdjacentHTML('beforeend', infoCardHtml);
+                    scrollBottom();
+                }, 600);
+            };
+        };
+
+         // 🚀 新增：變更單專用的送出處理
+        window.submitChangeFlow = function() {
+            const desc = document.getElementById('prefill-change-desc')?.value.trim();
+            if (!desc) { alert("請輸入變更內容摘要"); return; }
+
+            // 鎖定 UI
+            document.querySelectorAll('.msg-bot-row:last-child input, .msg-bot-row:last-child textarea').forEach(i => i.disabled = true);
+            document.querySelector('.msg-bot-row:last-child button')?.remove();
+
+            // 把內容塞進底部的 askInput 並自動觸發送出
+            input.value = desc;
+            form.dispatchEvent(new Event('submit'));
+        };
+
+        // ✅ 切換到需求描述步驟
+        window.startDescriptionStep = function() {
+            // 鎖定剛才的輸入框（防止重複改）
+            document.querySelectorAll('.msg-bot input').forEach(i => i.disabled = true);
+            document.querySelector('.msg-bot button').remove();
+
+            pushBot("好的，基本資料已紀錄。接下來，**請簡單描述您的需求**（例如：我要申請 HIS 權限）。<br><br><small class='text-secondary'>我會根據四階文件與資安規範為您分析並自動補全表單。</small>");
         };
 
         function formatText(text, msgId) {
@@ -598,6 +1015,170 @@
 
             return safeText;
         }
+        // ✅ 1. 讓使用者隨時點開「查看預覽表單」
+        window.reopenModal = function(msgId, encodedJson) {
+            try {
+                const jsonStr = decodeURIComponent(encodedJson);
+                const cleanJson = jsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
+                const formData = JSON.parse(cleanJson);
+
+                // 填入 AI 資料
+                document.getElementById('modalTitle').value = formData.Title || formData.title || "";
+                document.getElementById('modalDesc').value = formData.Description || formData.description || "";
+                document.getElementById('modalPriority').value = formData.Priority || formData.priority || "中";
+
+                // 填入基本資訊 (從剛才對話框內的 input 抓最新的)
+                document.getElementById('modalDept').value = document.getElementById('prefill-dept')?.value || "";
+                document.getElementById('modalExt').value = document.getElementById('prefill-ext')?.value || "";
+                document.getElementById('modalDate').value = document.getElementById('prefill-date')?.value || "";
+
+                // 暫存目前的訊息 ID 供送出時使用
+                window.lastActiveBotMsgId = msgId;
+
+                const modalEl = document.getElementById('previewModal');
+                const previewModal = new bootstrap.Modal(modalEl);
+                previewModal.show();
+            } catch (e) {
+                console.error("解析失敗", e);
+            }
+        };
+
+            // ✅ 這是二合一後的「完全體」函數，請確保 JS 裡只有這一個 submitFinalFormToDb
+        window.submitFinalFormToDb = async function() {
+            // 修正：抓取對話容器的 ID 應與妳 HTML 中的 messages 一致
+            const msgsContainer = document.getElementById('messages');
+
+            const ai = window.latestAiFormData || {};
+            // 1. 組合完整資料 (包含所有資安與技術欄位)
+            const finalData = {
+                // 基礎欄位
+                Title: document.getElementById('modalTitle')?.value || "未命名需求",
+                Description: document.getElementById('modalDesc')?.value || "",
+
+                // 優先級與風險 (Vulnerability 模型對應 Severity)
+                Priority: document.getElementById('modalPriority')?.value || "中",
+                Severity: document.getElementById('modalPriority')?.value || "低風險",
+
+                // 申請人資訊
+                Department: document.getElementById('modalDept')?.value || "資訊中心",
+                Extension: document.getElementById('modalExt')?.value || "",
+                ExpectedDate: document.getElementById('modalDate')?.value || "",
+                        RefinedTitle: ai.RefinedTitle || ai.refinedTitle || document.getElementById('modalTitle')?.value || "",
+        RefinedDescription: ai.RefinedDescription || ai.refinedDescription || document.getElementById('modalDesc')?.value || "",
+        SecurityAssessment: ai.SecurityAssessment || ai.securityAssessment || "需補件",
+        AiReason: ai.AiReason || ai.aiReason || "AI 自動分析存檔",
+        AiReviewComment: ai.AiReviewComment || ai.aiReviewComment || "",
+
+        AiRequirementScore: ai.AiRequirementScore ?? ai.aiRequirementScore ?? null,
+        AiStabilityScore: ai.AiStabilityScore ?? ai.aiStabilityScore ?? null,
+        AiOverallScore: ai.AiOverallScore ?? ai.aiOverallScore ?? null,
+        AiSavedManDays: ai.AiSavedManDays ?? ai.aiSavedManDays ?? null,
+        AiRevenue: ai.AiRevenue ?? ai.aiRevenue ?? null,
+
+                // 🛡️ 變更單專屬資安欄位 (從預覽 Modal 抓取最新值)
+                SystemCategory: document.getElementById('modalSystemCategory')?.value || "Other",
+                TicketCategory: document.getElementById('modalTicketCategory')?.value || "DevOps",
+                ChangeType: document.getElementById('modalChangeType')?.value || "標準",
+                Dependency: document.getElementById('modalDependency')?.value || "無",
+                ImpactLevel: document.getElementById('modalImpactLevel')?.value || "低",
+                TestPlan: document.getElementById('modalTestPlan')?.value || "依標準程序測試",
+                RecoveryPlan: document.getElementById('modalRecoveryPlan')?.value || "執行備份還原",
+
+                // 系統邏輯欄位
+                FormType: currentFormContext?.type || "General",
+                ChatSnapshot: msgsContainer?.innerHTML || ""
+            };
+
+            // 🔍 診斷 Log：妳可以在瀏覽器 F12 看到這次有沒有成功抓到所有欄位
+            console.log("================ [ 傳送資料診斷 ] ================");
+            console.log("🚀 送往後端的資料：", finalData);
+            console.log("================================================");
+
+            try {
+                // ✅ 建議直接這樣寫，確保路徑跟妳 Swagger 看到的一模一樣
+                const baseUrl = API_URL.substring(0, API_URL.lastIndexOf('/'));
+                const resp = await fetch(`${baseUrl}/save-form`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(finalData)
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    console.log("✅ [DEBUG] 存檔成功，資料內容:", data);
+
+                    // --- A. 關閉彈窗 ---
+                    const modalEl = document.getElementById('previewModal');
+                    if (document.activeElement) document.activeElement.blur();
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+
+                    // --- B. 執行鎖定邏輯 ---
+                    const currentId = window.lastActiveBotMsgId;
+                    if (currentId) {
+                        const btn = document.querySelector(`#reopen-container-${currentId} button`);
+                        const status = document.getElementById(`status-locked-${currentId}`);
+                        if (btn) btn.classList.add('d-none');
+                        if (status) status.classList.remove('d-none');
+                    }
+
+                    // --- C. 準備噴出成功訊息與「續辦引導」 ---
+                    const ticketNo = data.ticketNumber || data.TicketNumber || ("REQ-" + new Date().getTime());
+                    const docId = data.documentId || data.DocumentId || "0";
+
+                    const entryHtml = `
+                        <div class="alert alert-success border-0 shadow-sm mb-4 animate-fadeIn" style="border-radius: 15px; background: #F0FBF9;">
+                            <div class="fw-bold mb-2 text-success"><i class="bi bi-send-check-fill"></i> 成功送出！單號：${ticketNo}</div>
+                            <div class="small text-secondary mb-3">此申請案已完成對話紀錄備份。您現在可以前往查看正式單據或繼續填表。</div>
+
+                            <button onclick="switchToFormsTab()" class="btn btn-sm btn-success w-100 fw-bold mb-3"
+                                    style="border-radius: 10px; background: #3AB6A7; border: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                🚀 前往查看正式單據
+                            </button>
+
+                            <div class="pt-3 border-top border-light">
+                                <div class="small text-muted fw-bold mb-2 text-center text-primary">✨ 還需要處理其他表單嗎？</div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-primary flex-grow-1 bg-white shadow-sm" onclick="handleFormSelect('Request')">📄 填新需求單</button>
+                                    <button class="btn btn-sm btn-outline-info flex-grow-1 bg-white shadow-sm" onclick="handleFormSelect('Vulnerability')">🛠️ 填新變更單</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // 延遲噴出，確保 Modal 動畫跑完
+                    setTimeout(() => {
+                        pushBot(entryHtml);
+
+                        // 強制捲動到底部
+                        setTimeout(() => {
+                            if(msgsContainer) msgsContainer.scrollTop = msgsContainer.scrollHeight;
+                        }, 100);
+                    }, 500);
+
+                } else {
+                    const errorText = await resp.text();
+                    alert("儲存失敗：" + errorText);
+                }
+            } catch (e) {
+                console.error("❌ [FATAL ERROR] 儲存過程出錯：", e);
+            }
+        };
+                window.switchToFormsTab = function() {
+            // 找到左側那個「查看表單」的按鈕
+            const formsMenuBtn = document.querySelector('a[data-mode="forms"]');
+
+            if (formsMenuBtn) {
+                // 執行原本的選單點擊邏輯
+                formsMenuBtn.click();
+
+                // 如果妳在對話視窗內，可能需要滾動回頂部看列表
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // 備援方案：如果找不到按鈕，才進行硬跳轉
+                window.location.href = '/Forms/Index';
+            }
+        };
 
         window.showSource = function (fileName, msgId) {
             const sourceList = messageSources[msgId] || [];
