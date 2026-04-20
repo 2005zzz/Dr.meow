@@ -131,52 +131,7 @@
 
 <div class="row g-3">
 
-    <!-- 左側選單 -->
-    <aside class="col-12 col-lg-3">
-        <div class="card shadow-sm">
-            <div class="list-group list-group-flush app-sidebar">
-
-                <div class="list-group-item text-secondary small text-uppercase d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="badge-role ms-1">@roleName</span>
-                        管理功能
-                    </div>
-                    <span class="text-muted small">
-                        @Model.Account
-                    </span>
-                </div>
-
-                <!-- ⭐ 改為 AJAX 模式切換 -->
-                <!-- ✅ 新增表單：Hover 子選單（不跳頁） -->
-                <div class="submenu-wrapper">
-                    <div class="list-group-item list-group-item-action submenu-toggle">
-                        表單簽核管理 ▸
-                    </div>
-
-                    <div class="submenu">
-                        <a href="#" onclick="loadAdminContent('/Vulnerabilities/ChangeManagement'); return false;">
-                            📝 變更單
-                        </a>
-
-                        <a href="#" onclick="loadAdminContent('/Request/Management'); return false;">
-                            📄 需求單
-                        </a>
-                    </div>
-                </div>
-
-                <a class="list-group-item list-group-item-action app-admin"
-                   data-mode="reports"
-                   asp-page="/Vulnerabilities/Index">
-                    <!-- 【重點修改】新增 asp-page 屬性，指向根目錄下的 Index 頁面 -->
-                    列表清單
-                </a>
-
-                <a class="list-group-item list-group-item-action text-danger" asp-page="/Login">
-                    登出
-                </a>
-            </div>
-        </div>
-    </aside>
+    
 
     <!-- 右側主區 -->
     <section class="col-12 col-lg-9">

@@ -2,7 +2,7 @@
 @model Dr.meow.Pages.Forms.FormsListModel
 @{
     ViewData["Title"] = "卡片式變更/漏洞清單";
-    Layout = null;
+   
 }
 
 <style>
@@ -454,98 +454,109 @@
                 </div>
             </div>
         }
-       @foreach (var item in Model.RequestList)
+       
+  @foreach (var item in Model.RequestList)
 {
     // ===== 需求單審核進度邏輯 =====
-string rs1 = "", rs2 = "", rs3 = "", rl1 = "", rl2 = "";
-var rst = item.Main.Status;
+    string rs1 = "", rs2 = "", rs3 = "", rl1 = "", rl2 = "";
+    var rst = item.Main.Status;
 
-// 只用 0 / 1 / 3
-// 0 = PendingAI
-// 1 = PendingReview
-// 3 = Completed
-// 4 = Rejected
+    if (rst == 4)
+    {
+        rs1 = rs2 = rs3 = "step-rejected";
+    }
+    else if (rst == 0)
+    {
+        rs1 = "step-processing";
+    }
+    else if (rst == 1)
+    {
+        rs1 = "step-active";
+        rl1 = "line-active";
+        rs2 = "step-processing";
+    }
+    else if (rst == 3)
+    {
+        rs1 = rs2 = rs3 = "step-active";
+        rl1 = rl2 = "line-active";
+    }
+    else
+    {
+        rs1 = "step-processing";
+    }
 
-if (rst == 4)
-{
-    rs1 = rs2 = rs3 = "step-rejected";
-}
-else if (rst == 0)
-{
-    rs1 = "step-processing";
-}
-else if (rst == 1)
-{
-    rs1 = "step-active";
-    rl1 = "line-active";
-    rs2 = "step-processing";
-}
-else if (rst == 3)
-{
-    rs1 = rs2 = rs3 = "step-active";
-    rl1 = rl2 = "line-active";
-}
-else
-{
-    rs1 = "step-processing";
-}
+    // ===== 狀態標籤文字與顏色 =====
+    string requestStatusText = "⏳ 審核中";
+    string requestStatusClass = "status-pending";
 
-// ===== 狀態標籤文字與顏色 =====
-string requestStatusText = "⏳ 審核中";
-string requestStatusClass = "status-pending";
+    if (rst == 4)
+    {
+        requestStatusText = "❌ 已退回";
+        requestStatusClass = "status-rejected";
+    }
+    else if (rst == 3)
+    {
+        requestStatusText = "✅ 已完成";
+        requestStatusClass = "status-approved";
+    }
+    else if (rst == 1 || rst == 0)
+    {
+        requestStatusText = "⏳ 審核中";
+        requestStatusClass = "status-pending";
+    }
 
-if (rst == 4)
-{
-    requestStatusText = "❌ 已退回";
-    requestStatusClass = "status-rejected";
-}
-else if (rst == 3)
-{
-    requestStatusText = "✅ 已完成";
-    requestStatusClass = "status-approved";
-}
-else if (rst == 1)
-{
-    requestStatusText = "⏳ 審核中";
-    requestStatusClass = "status-pending";
-}
-else if (rst == 0)
-{
-    requestStatusText = "⏳ 審核中";
-    requestStatusClass = "status-pending";
-}
+    var titleText = string.IsNullOrWhiteSpace(item.Main.Title) ? "未填寫標題" : item.Main.Title;
+    var systemCategory = string.IsNullOrWhiteSpace(item.Main.UserInput?.SystemCategory) ? "未分類" : item.Main.UserInput.SystemCategory;
+    var department = string.IsNullOrWhiteSpace(item.Main.UserInput?.Department) ? "未知部門" : item.Main.UserInput.Department;
+    var requesterText = item.Main.RequesterId.ToString();
 
     <div class="custom-card">
         <div class="card-header-custom">
-            <div>
+            <div class="d-flex flex-column">
                 <span class="ticket-id">
                     @(string.IsNullOrEmpty(item.Main.TicketNumber) ? $"需求單 #{item.Main.Id}" : item.Main.TicketNumber)
                 </span>
                 <span class="assigned-to">
-                    提單人：@item.Main.RequesterId
+                    <i class="bi bi-person-circle"></i> 提單人：@requesterText
                 </span>
             </div>
 
             <div class="badge-group text-end">
                 <span class="badge-status @requestStatusClass me-1"
-      onclick="document.getElementById('request-stepper-@item.Main.Id').classList.toggle('show')"
-      style="cursor:pointer;">
+                      onclick="document.getElementById('request-stepper-@item.Main.Id').classList.toggle('show')"
+                      style="cursor:pointer;">
                     @requestStatusText
                     <small class="ms-1" style="font-size:0.6rem; opacity:0.8;">(點擊看進度)</small>
                 </span>
 
-                <span class="badge-system">需求單</span>
+                <span class="badge-system">@systemCategory</span>
+                <span class="badge-ticket-cat">需求單</span>
             </div>
         </div>
 
         <div class="summary-text">
-            <strong>需求摘要：</strong> @item.Main.Description
+            <strong>需求摘要：</strong> @titleText
         </div>
 
         <div class="meta-info">
             <div class="meta-item">
+                <span class="meta-label">🏷️ 類型：</span>
+                <span class="badge-status status-approved">一般需求</span>
+            </div>
+
+            <div class="meta-item">
                 <span class="meta-label">📅 建立時間：</span>
                 <span>@item.Main.CreatedAt.ToString("yyyy/MM/dd HH:mm")</span>
+            </div>
+
+            <div class="meta-item">
+                <span class="meta-label">🏥 系統類別：</span>
+                <span>@systemCategory</span>
+            </div>
+
+            <div class="meta-item">
+                <span class="meta-label">🏢 部門：</span>
+                <span>@department</span>
             </div>
         </div>
 
@@ -567,18 +578,18 @@ else if (rst == 0)
                 </div>
             </div>
 
-        @if (rst == 4)
-{
-    <div class="alert alert-danger py-2 px-3 small mx-3 mt-3" style="font-size: 0.9rem; border-radius: 14px;">
-        <strong>⚠️ 退回理由：</strong> @(item.LatestRejectReason ?? "請聯繫開發人員了解詳情")
-    </div>
-}
+            @if (rst == 4)
+            {
+                <div class="alert alert-danger py-2 px-3 small mx-3 mt-3" style="font-size: 0.9rem; border-radius: 14px;">
+                    <strong>⚠️ 退回理由：</strong> @(item.LatestRejectReason ?? "請聯繫開發人員了解詳情")
+                </div>
+            }
         </div>
 
         <div class="text-end pt-2 d-flex justify-content-between align-items-center">
             <button type="button"
-        class="btn btn-link p-0 text-muted small text-decoration-none"
-        onclick="document.getElementById('request-stepper-@item.Main.Id').classList.toggle('show')">
+                    class="btn btn-link p-0 text-muted small text-decoration-none"
+                    onclick="document.getElementById('request-stepper-@item.Main.Id').classList.toggle('show')">
                 <i class="bi bi-chevron-down"></i> 詳細審核進度
             </button>
 
@@ -588,7 +599,8 @@ else if (rst == 0)
         </div>
     </div>
 }
-    }
+}
+    
     else
     {
         <div class="alert alert-info mt-4 text-center">

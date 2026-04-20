@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System.Security.Claims;
 using System.Text.Json;
 using System.ComponentModel.DataAnnotations;
 using Dr.meow.Data;
@@ -15,7 +14,6 @@ using Hangfire;
 
 namespace Dr.meow.Pages.Request
 {
-    // 提單專用的 ViewModel：負責畫面輸入與欄位驗證
     public class RequestCreateViewModel
     {
         [Required(ErrorMessage = "請輸入申請部門")]
@@ -64,14 +62,14 @@ namespace Dr.meow.Pages.Request
         private readonly DrMeowDbContext _db;
         private readonly IBackgroundJobClient _backgroundJob;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly IChatCompletionService _chatService;
+        private readonly IChatCompletionService? _chatService;
 
         public RequestCreateModel(
             ISearchService searchService,
             DrMeowDbContext db,
             IBackgroundJobClient backgroundJob,
             IServiceScopeFactory scopeFactory,
-            IChatCompletionService chatService)
+            IChatCompletionService? chatService = null)
         {
             _searchService = searchService;
             _db = db;
@@ -87,11 +85,9 @@ namespace Dr.meow.Pages.Request
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // 1) 先做欄位驗證
             if (!ModelState.IsValid)
                 return Page();
 
-            // 2) 取得登入使用者 ID
             var userIdStr = HttpContext.Session.GetString("UserId");
 
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
@@ -102,18 +98,17 @@ namespace Dr.meow.Pages.Request
 
             var ticketNumber = await GenerateUniqueTicketNumber();
 
-            using var transaction = await _db.Database.BeginTransactionAsync();
+            await using var transaction = await _db.Database.BeginTransactionAsync();
 
             try
             {
-                // A. 建立主表 Ticket
                 var ticket = new RequestTicket
                 {
                     TicketNumber = ticketNumber,
                     RequesterId = userId,
                     Title = FormModel.Title.Trim(),
                     Description = FormModel.Description.Trim(),
-                    Status = 0, // PendingAI
+                    Status = 0,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
@@ -121,24 +116,23 @@ namespace Dr.meow.Pages.Request
                 _db.RequestTickets.Add(ticket);
                 await _db.SaveChangesAsync();
 
-                // B. 建立使用者輸入明細
                 var userInput = new RequestUserInput
                 {
                     RequestId = ticket.Id,
-                    Department = FormModel.Department,
-                    Role = FormModel.Role,
-                    Contact = FormModel.Contact,
-                    SystemCategory = FormModel.SystemCategory,
-                    RequestType = FormModel.RequestType,
-                    Priority = FormModel.Priority,
-                    Benefit = FormModel.Benefit,
+                    Department = FormModel.Department?.Trim() ?? "",
+                    Role = FormModel.Role?.Trim() ?? "",
+                    Contact = FormModel.Contact?.Trim() ?? "",
+                    Description = FormModel.Description?.Trim() ?? "",
+                    SystemCategory = FormModel.SystemCategory?.Trim() ?? "",
+                    RequestType = FormModel.RequestType?.Trim() ?? "",
+                    Priority = FormModel.Priority?.Trim() ?? "普通",
+                    Benefit = string.IsNullOrWhiteSpace(FormModel.Benefit) ? null : FormModel.Benefit.Trim(),
                     ExpectedDate = FormModel.ExpectedDate,
-                    Note = FormModel.Note
+                    Note = string.IsNullOrWhiteSpace(FormModel.Note) ? null : FormModel.Note.Trim()
                 };
 
                 _db.RequestUserInputs.Add(userInput);
 
-                // C. 建立審核軌跡
                 var auditLog = new RequestAuditLog
                 {
                     RequestId = ticket.Id,
@@ -153,10 +147,15 @@ namespace Dr.meow.Pages.Request
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // D. 丟背景任務做 AI 分析
-                _backgroundJob.Enqueue(() => ProcessAiAnalysisAsync(ticket.Id));
-
-                TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！AI 正在進行資安掃描與改寫中...";
+                if (_chatService != null)
+                {
+                    _backgroundJob.Enqueue(() => ProcessAiAnalysisAsync(ticket.Id));
+                    TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！AI 正在進行資安掃描與改寫中...";
+                }
+                else
+                {
+                    TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！（目前 AI 尚未啟用）";
+                }
             }
             catch (Exception ex)
             {
@@ -175,7 +174,7 @@ namespace Dr.meow.Pages.Request
 
             do
             {
-                var randPart = Guid.NewGuid().ToString().Substring(0, 5).ToUpper();
+                var randPart = Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper();
                 ticketNumber = $"REQ-{datePart}-{randPart}";
             }
             while (await _db.RequestTickets.AnyAsync(x => x.TicketNumber == ticketNumber));
@@ -186,6 +185,11 @@ namespace Dr.meow.Pages.Request
         [AutomaticRetry(Attempts = 2)]
         public async Task ProcessAiAnalysisAsync(int ticketId)
         {
+            if (_chatService == null)
+            {
+                return;
+            }
+
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<DrMeowDbContext>();
 
@@ -193,7 +197,8 @@ namespace Dr.meow.Pages.Request
                 .Include(t => t.UserInput)
                 .FirstOrDefaultAsync(x => x.Id == ticketId);
 
-            if (ticket == null) return;
+            if (ticket == null)
+                return;
 
             try
             {
@@ -226,29 +231,29 @@ namespace Dr.meow.Pages.Request
 }}
 
 欄位產出規則：
- 1.aiReviewComment 請用主管審核草稿語氣撰寫，需具體、可執行、可驗收。
+1. aiReviewComment 請用主管審核草稿語氣撰寫，需具體、可執行、可驗收。
    請包含：
    - 建議確認重點
    - 驗收方式或驗收標準
    - 若有風險或限制，簡短提醒
    字數控制在 80~180 字。
-2.securityAssessment 只能輸出以下三種之一：
+2. securityAssessment 只能輸出以下三種之一：
    - 符合
    - 不適用
    - 需補件
-3.aiRequirementScore（1~5）：
+3. aiRequirementScore（1~5）：
    1 = 幾乎看不懂需求
    2 = 有部分內容，但描述不清楚或邏輯混亂
    3 = 需求大致明確，但仍有缺漏
    4 = 需求清楚，僅有小部分細節需補充
    5 = 需求完整明確、問題與目標一致
-4.aiStabilityScore（1~5）：
+4. aiStabilityScore（1~5）：
    1 = 風險高，可能影響系統穩定
    2 = 有明顯風險，需要大量測試或調整
    3 = 可行但仍需驗證
    4 = 風險低，大致穩定
    5 = 功能單純明確，預期穩定
-5.aiOverallScore（1~5）：
+5. aiOverallScore（1~5）：
    1 = 價值低或不可行
    2 = 價值有限或實作困難
    3 = 有一定價值但需再確認
@@ -282,12 +287,12 @@ namespace Dr.meow.Pages.Request
                 var aiText = result.Content ?? "";
 
                 var cleanJson = aiText
-                 .Replace("```json", "")
-                 .Replace("```", "")
-                 .Trim();
+                    .Replace("```json", "")
+                    .Replace("```", "")
+                    .Trim();
 
                 var aiData = JsonSerializer.Deserialize<AiResponseModel>(
-                    cleanJson ?? "",
+                    cleanJson,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (aiData == null)
@@ -297,61 +302,88 @@ namespace Dr.meow.Pages.Request
                         RequestId = ticketId,
                         ErrorMessage = "AI 回傳內容無法解析為 JSON",
                         AiReason = "AI 初審失敗，請人工確認",
-                        IsProcessed = false
+                        IsProcessed = false,
+                        ProcessedAt = DateTime.Now
                     });
 
-                    ticket.Status = 4; // 先退回，避免卡死
+                    ticket.Status = 4;
                     ticket.UpdatedAt = DateTime.Now;
 
                     await db.SaveChangesAsync();
                     return;
                 }
 
-                var aiDetail = new RequestAiDetail
+                var existedAiDetail = await db.RequestAiDetails
+                    .FirstOrDefaultAsync(x => x.RequestId == ticketId);
+
+                if (existedAiDetail == null)
                 {
-                    RequestId = ticketId,
-                    IsITRelated = aiData.IsITRelated,
-                    RefinedTitle = aiData.RefinedTitle,
-                    RefinedDescription = aiData.RefinedDescription,
-                    SecurityAssessment = aiData.SecurityAssessment,
-                    AiReason = aiData.Reason,
+                    var aiDetail = new RequestAiDetail
+                    {
+                        RequestId = ticketId,
+                        IsITRelated = aiData.IsITRelated,
+                        RefinedTitle = aiData.RefinedTitle,
+                        RefinedDescription = aiData.RefinedDescription,
+                        SecurityAssessment = aiData.SecurityAssessment,
+                        AiReason = aiData.Reason,
+                        AiReviewComment = aiData.AiReviewComment,
+                        AiRequirementScore = aiData.AiRequirementScore,
+                        AiStabilityScore = aiData.AiStabilityScore,
+                        AiOverallScore = aiData.AiOverallScore,
+                        AiSavedManDays = aiData.AiSavedManDays,
+                        AiRevenue = aiData.AiRevenue,
+                        ProcessedAt = DateTime.Now,
+                        IsProcessed = true
+                    };
 
-                    AiReviewComment = aiData.AiReviewComment,
-                    AiRequirementScore = aiData.AiRequirementScore,
-                    AiStabilityScore = aiData.AiStabilityScore,
-                    AiOverallScore = aiData.AiOverallScore,
-                    AiSavedManDays = aiData.AiSavedManDays,
-                    AiRevenue = aiData.AiRevenue,
-
-                    ProcessedAt = DateTime.Now,
-                    IsProcessed = true
-                }; 
-
-                db.RequestAiDetails.Add(aiDetail);
-
-                // ✅ AI 初審分流
-                if (aiData.IsApproved)
-                {
-                    ticket.Status = 1; // PendingReview = 待人工審核
+                    db.RequestAiDetails.Add(aiDetail);
                 }
                 else
                 {
-                    ticket.Status = 4; // Rejected = 已退回
+                    existedAiDetail.IsITRelated = aiData.IsITRelated;
+                    existedAiDetail.RefinedTitle = aiData.RefinedTitle;
+                    existedAiDetail.RefinedDescription = aiData.RefinedDescription;
+                    existedAiDetail.SecurityAssessment = aiData.SecurityAssessment;
+                    existedAiDetail.AiReason = aiData.Reason;
+                    existedAiDetail.AiReviewComment = aiData.AiReviewComment;
+                    existedAiDetail.AiRequirementScore = aiData.AiRequirementScore;
+                    existedAiDetail.AiStabilityScore = aiData.AiStabilityScore;
+                    existedAiDetail.AiOverallScore = aiData.AiOverallScore;
+                    existedAiDetail.AiSavedManDays = aiData.AiSavedManDays;
+                    existedAiDetail.AiRevenue = aiData.AiRevenue;
+                    existedAiDetail.ProcessedAt = DateTime.Now;
+                    existedAiDetail.IsProcessed = true;
+                    existedAiDetail.ErrorMessage = null;
                 }
 
+                ticket.Status = aiData.IsApproved ? (byte)1 : (byte)4;
                 ticket.UpdatedAt = DateTime.Now;
 
                 await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                db.RequestAiDetails.Add(new RequestAiDetail
+                var existedAiDetail = await db.RequestAiDetails
+                    .FirstOrDefaultAsync(x => x.RequestId == ticketId);
+
+                if (existedAiDetail == null)
                 {
-                    RequestId = ticketId,
-                    ErrorMessage = ex.Message,
-                    AiReason = "AI 初審發生錯誤，請稍後再試或人工確認",
-                    IsProcessed = false
-                });
+                    db.RequestAiDetails.Add(new RequestAiDetail
+                    {
+                        RequestId = ticketId,
+                        ErrorMessage = ex.Message,
+                        AiReason = "AI 初審發生錯誤，請稍後再試或人工確認",
+                        IsProcessed = false,
+                        ProcessedAt = DateTime.Now
+                    });
+                }
+                else
+                {
+                    existedAiDetail.ErrorMessage = ex.Message;
+                    existedAiDetail.AiReason = "AI 初審發生錯誤，請稍後再試或人工確認";
+                    existedAiDetail.IsProcessed = false;
+                    existedAiDetail.ProcessedAt = DateTime.Now;
+                }
 
                 ticket.Status = 4;
                 ticket.UpdatedAt = DateTime.Now;
@@ -365,12 +397,10 @@ namespace Dr.meow.Pages.Request
     {
         public bool IsApproved { get; set; }
         public bool IsITRelated { get; set; }
-
         public string RefinedTitle { get; set; } = "";
         public string RefinedDescription { get; set; } = "";
         public string SecurityAssessment { get; set; } = "";
         public string Reason { get; set; } = "";
-
         public string AiReviewComment { get; set; } = "";
         public int? AiRequirementScore { get; set; }
         public int? AiStabilityScore { get; set; }

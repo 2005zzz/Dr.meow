@@ -21,8 +21,8 @@
     <style>
 
         /************************************
-                        🔙 Dr.meow 返回鍵（醫療風格）
-                ************************************/
+                                🔙 Dr.meow 返回鍵（醫療風格）
+                        ************************************/
         .btn-drmeow-back {
             background: rgba(255,255,255,0.18);
             border: 1px solid rgba(255,255,255,0.35);
@@ -52,8 +52,8 @@
 
 
         /************************************
-                        🔔 通知鈴鐺
-                ************************************/
+                                🔔 通知鈴鐺
+                        ************************************/
         .btn-icon-notification {
             background-color: rgba(255, 255, 255, 0.18);
             border: 1px solid rgba(255, 255, 255, 0.25);
@@ -91,10 +91,53 @@
             border: 1px solid rgba(255,255,255,0.9);
         }
 
+        /************************************
+                                🚪 登出按鈕
+                        ************************************/
+        .btn-header-logout {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: #ffffff;
+            height: 46px;
+            padding: 0 18px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.18s ease;
+            backdrop-filter: blur(6px);
+        }
+
+            .btn-header-logout:hover {
+                background: rgba(255,255,255,0.32);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+                color: #ffffff;
+            }
+
+            .btn-header-logout i {
+                font-size: 1rem;
+            }
+        }
+
+            .btn-header-logout:hover {
+                background: #fff3f3;
+                color: #d94b4b;
+                border-color: #ea8b8b;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            }
+
+            .btn-header-logout i {
+                font-size: 1rem;
+            }
 
         /************************************
-                        通知下拉
-                ************************************/
+                                通知下拉
+                        ************************************/
         .notifications-menu {
             width: 320px;
             border-radius: 14px;
@@ -126,8 +169,8 @@
 
 
         /************************************
-                        Logo Hover
-                ************************************/
+                                Logo Hover
+                        ************************************/
         .drmeow-logo {
             border-radius: 10px;
             transition: transform 0.22s ease, box-shadow 0.22s ease;
@@ -136,6 +179,30 @@
             .drmeow-logo:hover {
                 transform: translateY(-1px) scale(1.03);
                 box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+            }
+
+        .btn-header-action {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: #ffffff;
+            height: 46px;
+            padding: 0 16px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.18s ease;
+            backdrop-filter: blur(6px);
+        }
+
+            .btn-header-action:hover {
+                background: rgba(255,255,255,0.32);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+                color: #ffffff;
             }
 
     </style>
@@ -179,41 +246,54 @@
                 </div>
 
 
-                <!-- 右側通知 -->
+                <!-- 右側：查看表單 + 通知 + 登出 -->
                 @if (!string.Equals(currentPage, "/Login", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    <div class="nav-item dropdown">
+                    <div class="d-flex align-items-center gap-2">
 
-                        <a class="btn-icon-notification"
-                           data-bs-toggle="dropdown">
-
-                            <i class="bi bi-bell-fill"></i>
-                            <span class="notification-badge"></span>
-
+                        <!-- 查看表單 -->
+                        <a asp-page="/Forms/FormsList" class="btn-header-action">
+                            <i class="bi bi-card-list"></i>
+                            查看表單
                         </a>
 
-                        <ul class="dropdown-menu dropdown-menu-end notifications-menu">
+                        <!-- 通知 -->
+                        <div class="nav-item dropdown">
+                            <a class="btn-icon-notification"
+                               href="javascript:void(0);"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
 
-                            <li class="notifications-header">
-                                最近通知
-                            </li>
+                                <i class="bi bi-bell-fill"></i>
+                                <span class="notification-badge"></span>
+                            </a>
 
-                            <li>
-                                <div class="notification-row">
-                                    <div class="notification-item-text">
-                                        您的變更單已審核完成
+                            <ul class="dropdown-menu dropdown-menu-end notifications-menu">
+                                <li class="notifications-header">
+                                    最近通知
+                                </li>
+
+                                <li>
+                                    <div class="notification-row">
+                                        <div class="notification-item-text">
+                                            您的變更單已審核完成
+                                        </div>
+                                        <div class="notification-time">
+                                            3 分鐘前
+                                        </div>
                                     </div>
-                                    <div class="notification-time">
-                                        3 分鐘前
-                                    </div>
-                                </div>
-                            </li>
+                                </li>
+                            </ul>
+                        </div>
 
-                        </ul>
+                        <!-- 登出 -->
+                        <a asp-page="/Logout" class="btn-header-logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                            登出
+                        </a>
 
                     </div>
                 }
-
             </div>
 
         </nav>

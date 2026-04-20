@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using Dr.meow.Data;
 using Dr.meow.Models;
 using System.Collections.Generic;
@@ -17,19 +18,18 @@ namespace Dr.meow.Pages.Forms
             _context = context;
         }
 
-        // 🚀 建立一個內嵌類別 (ViewModel)，專門用來裝卡片需要的資料
         public class VulnerabilityVM
         {
             public Vulnerability Main { get; set; } = default!;
             public string? LatestRejectReason { get; set; }
         }
+
         public class RequestTicketVM
         {
             public RequestTicket Main { get; set; } = default!;
             public string? LatestRejectReason { get; set; }
         }
 
-        // 修正屬性型別：現在我們改用 VM 清單
         public IList<VulnerabilityVM> VulnerabilityList { get; set; } = new List<VulnerabilityVM>();
         public IList<RequestTicketVM> RequestList { get; set; } = new List<RequestTicketVM>();
 
@@ -40,15 +40,13 @@ namespace Dr.meow.Pages.Forms
 
             int currentUserId = int.Parse(userIdStr);
 
-            // 🚀 核心邏輯：使用 .Select 一次把主表、關聯人、以及最後一筆退回理由勾出來
             VulnerabilityList = await _context.Vulnerability
-                .Include(v => v.Requester) // 抓提單人
+                .Include(v => v.Requester)
                 .Where(v => v.RequesterId == currentUserId)
                 .OrderByDescending(v => v.Id)
                 .Select(v => new VulnerabilityVM
                 {
                     Main = v,
-                    // 🎯 子查詢：去 VulnerabilityLogs 找這張單子最新的「Rejected」留言
                     LatestRejectReason = _context.VulnerabilityLogs
                         .Where(l => l.VulnerabilityId == v.Id && l.Action == "Rejected")
                         .OrderByDescending(l => l.CreatedAt)
@@ -56,19 +54,21 @@ namespace Dr.meow.Pages.Forms
                         .FirstOrDefault()
                 })
                 .ToListAsync();
+
             RequestList = await _context.RequestTickets
-    .Where(r => r.RequesterId == currentUserId)
-    .OrderByDescending(r => r.Id)
-    .Select(r => new RequestTicketVM
-    {
-        Main = r,
-        LatestRejectReason = _context.RequestAuditLogs
-            .Where(l => l.RequestId == r.Id && l.Action == "Rejected")
-            .OrderByDescending(l => l.Timestamp)
-            .Select(l => l.Comment)
-            .FirstOrDefault()
-    })
-    .ToListAsync();
+                .Include(r => r.UserInput)   // 關鍵：把 UserInput 一起載入
+                .Where(r => r.RequesterId == currentUserId)
+                .OrderByDescending(r => r.Id)
+                .Select(r => new RequestTicketVM
+                {
+                    Main = r,
+                    LatestRejectReason = _context.RequestAuditLogs
+                        .Where(l => l.RequestId == r.Id && l.Action == "Rejected")
+                        .OrderByDescending(l => l.Timestamp)
+                        .Select(l => l.Comment)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
         }
     }
 }
