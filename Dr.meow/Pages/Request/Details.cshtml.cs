@@ -57,7 +57,10 @@ namespace Dr.meow.Pages.Request
             {
                 Id = item.Id,
                 // ✅ AI 自動預填主管審核欄位
-                AcceptanceContent = item.AiDetail?.AiReviewComment,
+                AcceptanceContent =
+                   item.AiDetail?.AiReviewComment
+                   ?? item.AiDetail?.RefinedDescription
+                   ?? "（AI 尚未提供建議）",
                 SecurityAssessment = item.AiDetail?.SecurityAssessment switch
                 {
                     "符合" => "符合",
@@ -65,8 +68,8 @@ namespace Dr.meow.Pages.Request
                     "需補件" => "需補件",
                     "低風險" => "符合",
                     "無明顯風險" => "符合",
-                    "中風險" => "需補件",
-                    "高風險" => "需補件",
+                    "中" => "需補件",
+                    "高" => "需補件",
                     "建議補強" => "需補件",
                     _ => ""
                 },

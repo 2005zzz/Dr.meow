@@ -1,19 +1,23 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
-using System.Text.Json;
-using System.ComponentModel.DataAnnotations;
 using Dr.meow.Data;
 using Dr.meow.Models;
 using Dr.meow.Services;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Hangfire;
+using Microsoft.SemanticKernel.ChatCompletion;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace Dr.meow.Pages.Request
 {
+    // 提單專用的 ViewModel：負責畫面輸入與欄位驗證
     public class RequestCreateViewModel
     {
         [Required(ErrorMessage = "請輸入申請部門")]
@@ -62,14 +66,14 @@ namespace Dr.meow.Pages.Request
         private readonly DrMeowDbContext _db;
         private readonly IBackgroundJobClient _backgroundJob;
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly IChatCompletionService? _chatService;
+        private readonly IChatCompletionService _chatService;
 
         public RequestCreateModel(
             ISearchService searchService,
             DrMeowDbContext db,
             IBackgroundJobClient backgroundJob,
             IServiceScopeFactory scopeFactory,
-            IChatCompletionService? chatService = null)
+            IChatCompletionService chatService)
         {
             _searchService = searchService;
             _db = db;
@@ -85,9 +89,11 @@ namespace Dr.meow.Pages.Request
 
         public async Task<IActionResult> OnPostAsync()
         {
+            // 1) 先做欄位驗證
             if (!ModelState.IsValid)
                 return Page();
 
+            // 2) 取得登入使用者 ID
             var userIdStr = HttpContext.Session.GetString("UserId");
 
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
@@ -98,17 +104,18 @@ namespace Dr.meow.Pages.Request
 
             var ticketNumber = await GenerateUniqueTicketNumber();
 
-            await using var transaction = await _db.Database.BeginTransactionAsync();
+            using var transaction = await _db.Database.BeginTransactionAsync();
 
             try
             {
+                // A. 建立主表 Ticket
                 var ticket = new RequestTicket
                 {
                     TicketNumber = ticketNumber,
                     RequesterId = userId,
                     Title = FormModel.Title.Trim(),
                     Description = FormModel.Description.Trim(),
-                    Status = 0,
+                    Status = 0, // PendingAI
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 };
@@ -116,23 +123,24 @@ namespace Dr.meow.Pages.Request
                 _db.RequestTickets.Add(ticket);
                 await _db.SaveChangesAsync();
 
+                // B. 建立使用者輸入明細
                 var userInput = new RequestUserInput
                 {
                     RequestId = ticket.Id,
-                    Department = FormModel.Department?.Trim() ?? "",
-                    Role = FormModel.Role?.Trim() ?? "",
-                    Contact = FormModel.Contact?.Trim() ?? "",
-                    Description = FormModel.Description?.Trim() ?? "",
-                    SystemCategory = FormModel.SystemCategory?.Trim() ?? "",
-                    RequestType = FormModel.RequestType?.Trim() ?? "",
-                    Priority = FormModel.Priority?.Trim() ?? "普通",
-                    Benefit = string.IsNullOrWhiteSpace(FormModel.Benefit) ? null : FormModel.Benefit.Trim(),
+                    Department = FormModel.Department,
+                    Role = FormModel.Role,
+                    Contact = FormModel.Contact,
+                    SystemCategory = FormModel.SystemCategory,
+                    RequestType = FormModel.RequestType,
+                    Priority = FormModel.Priority,
+                    Benefit = FormModel.Benefit,
                     ExpectedDate = FormModel.ExpectedDate,
-                    Note = string.IsNullOrWhiteSpace(FormModel.Note) ? null : FormModel.Note.Trim()
+                    Note = FormModel.Note
                 };
 
                 _db.RequestUserInputs.Add(userInput);
 
+                // C. 建立審核軌跡
                 var auditLog = new RequestAuditLog
                 {
                     RequestId = ticket.Id,
@@ -147,15 +155,9 @@ namespace Dr.meow.Pages.Request
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                if (_chatService != null)
-                {
-                    _backgroundJob.Enqueue(() => ProcessAiAnalysisAsync(ticket.Id));
-                    TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！AI 正在進行資安掃描與改寫中...";
-                }
-                else
-                {
-                    TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！（目前 AI 尚未啟用）";
-                }
+                // D. 先直接執行 AI 分析（暫時繞過 Hangfire 做除錯）
+                await ProcessAiAnalysisAsync(ticket.Id);
+                TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！AI 已完成分析。";
             }
             catch (Exception ex)
             {
@@ -174,7 +176,7 @@ namespace Dr.meow.Pages.Request
 
             do
             {
-                var randPart = Guid.NewGuid().ToString("N").Substring(0, 5).ToUpper();
+                var randPart = Guid.NewGuid().ToString().Substring(0, 5).ToUpper();
                 ticketNumber = $"REQ-{datePart}-{randPart}";
             }
             while (await _db.RequestTickets.AnyAsync(x => x.TicketNumber == ticketNumber));
@@ -185,10 +187,8 @@ namespace Dr.meow.Pages.Request
         [AutomaticRetry(Attempts = 2)]
         public async Task ProcessAiAnalysisAsync(int ticketId)
         {
-            if (_chatService == null)
-            {
-                return;
-            }
+            System.Diagnostics.Debug.WriteLine("🔥🔥🔥 AI任務有進來 🔥🔥🔥");
+            System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\job_entered.txt", $"有進到 ProcessAiAnalysisAsync，ticketId={ticketId}，時間={DateTime.Now}");
 
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<DrMeowDbContext>();
@@ -197,8 +197,7 @@ namespace Dr.meow.Pages.Request
                 .Include(t => t.UserInput)
                 .FirstOrDefaultAsync(x => x.Id == ticketId);
 
-            if (ticket == null)
-                return;
+            if (ticket == null) return;
 
             try
             {
@@ -231,29 +230,31 @@ namespace Dr.meow.Pages.Request
 }}
 
 欄位產出規則：
-1. aiReviewComment 請用主管審核草稿語氣撰寫，需具體、可執行、可驗收。
+ 1.aiReviewComment 請用主管審核草稿語氣撰寫，需具體、可執行、可驗收。
    請包含：
    - 建議確認重點
    - 驗收方式或驗收標準
    - 若有風險或限制，簡短提醒
    字數控制在 80~180 字。
-2. securityAssessment 只能輸出以下三種之一：
-   - 符合
-   - 不適用
-   - 需補件
-3. aiRequirementScore（1~5）：
+2.securityAssessment 請根據需求內容的風險程度，自行判斷並輸出以下三個分類之一：
+   - 符合：表示需求風險低，或不涉及資安疑慮
+   - 不適用：表示此需求與資安無關
+   - 需補件：表示需求可能存在風險、資訊不足，或需要進一步評估
+   請務必根據語意自行判斷，不要輸出其他文字（例如：中、低、高、中風險等），
+   最終結果只能是上述三個值之一。
+3.aiRequirementScore（1~5）：
    1 = 幾乎看不懂需求
    2 = 有部分內容，但描述不清楚或邏輯混亂
    3 = 需求大致明確，但仍有缺漏
    4 = 需求清楚，僅有小部分細節需補充
    5 = 需求完整明確、問題與目標一致
-4. aiStabilityScore（1~5）：
+4.aiStabilityScore（1~5）：
    1 = 風險高，可能影響系統穩定
    2 = 有明顯風險，需要大量測試或調整
    3 = 可行但仍需驗證
    4 = 風險低，大致穩定
    5 = 功能單純明確，預期穩定
-5. aiOverallScore（1~5）：
+5.aiOverallScore（1~5）：
    1 = 價值低或不可行
    2 = 價值有限或實作困難
    3 = 有一定價值但需再確認
@@ -285,14 +286,57 @@ namespace Dr.meow.Pages.Request
 
                 var result = await _chatService.GetChatMessageContentAsync(history);
                 var aiText = result.Content ?? "";
+                System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\last_ai_response.txt", aiText);
 
                 var cleanJson = aiText
+                 .Replace("```json", "")
+                 .Replace("```", "")
+                 .Trim();
+
+                var aiData = JsonSerializer.Deserialize<AiResponseModel>(
+                    cleanJson ?? "",
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\before_review_ai.txt", "有走到第二段 AI 前");
+                // ⭐ 新增：第二段 AI（審核評分）
+                var reviewPrompt = $@"
+你是醫院需求單審核評分助手，負責根據需求內容評估其明確性、穩定性、整體價值，
+並保守估算可節省人力與可能收益。
+
+請只回傳純 JSON，格式如下：
+{{
+    ""aiRequirementScore"": 4,
+    ""aiStabilityScore"": 4,
+    ""aiOverallScore"": 4,
+    ""aiSavedManDays"": 2.5,
+    ""aiRevenue"": 0
+}}
+
+評分規則：
+1. aiRequirementScore（1~5）：需求清楚程度
+2. aiStabilityScore（1~5）：系統風險與穩定性
+3. aiOverallScore（1~5）：整體價值與可行性
+4. aiSavedManDays：保守估算節省人力（0~3 常見）
+5. aiRevenue：內部系統通常填 0
+
+需求單資料：
+標題：{ticket.Title}
+內容：{ticket.Description}
+";
+
+                var reviewHistory = new ChatHistory();
+                reviewHistory.AddUserMessage(reviewPrompt);
+
+                var reviewResult = await _chatService.GetChatMessageContentAsync(reviewHistory);
+                var reviewText = reviewResult.Content ?? "";
+                System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\last_ai_reviewscore_response.txt", reviewText);
+
+                var cleanReviewJson = reviewText
                     .Replace("```json", "")
                     .Replace("```", "")
                     .Trim();
 
-                var aiData = JsonSerializer.Deserialize<AiResponseModel>(
-                    cleanJson,
+                var reviewData = JsonSerializer.Deserialize<ReviewScoreAiResponseModel>(
+                    cleanReviewJson,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (aiData == null)
@@ -302,88 +346,91 @@ namespace Dr.meow.Pages.Request
                         RequestId = ticketId,
                         ErrorMessage = "AI 回傳內容無法解析為 JSON",
                         AiReason = "AI 初審失敗，請人工確認",
-                        IsProcessed = false,
-                        ProcessedAt = DateTime.Now
+                        IsProcessed = false
                     });
 
-                    ticket.Status = 4;
+                    ticket.Status = 4; // 先退回，避免卡死
                     ticket.UpdatedAt = DateTime.Now;
 
                     await db.SaveChangesAsync();
                     return;
                 }
+                // ✅ 統一校正 SecurityAssessment，只允許三種值
+                var rawSecurity = aiData.SecurityAssessment?.Trim() ?? "";
+                Console.WriteLine($"[AI原始 SecurityAssessment] = {rawSecurity}");
 
-                var existedAiDetail = await db.RequestAiDetails
-                    .FirstOrDefaultAsync(x => x.RequestId == ticketId);
-
-                if (existedAiDetail == null)
+                aiData.SecurityAssessment = rawSecurity switch
                 {
-                    var aiDetail = new RequestAiDetail
-                    {
-                        RequestId = ticketId,
-                        IsITRelated = aiData.IsITRelated,
-                        RefinedTitle = aiData.RefinedTitle,
-                        RefinedDescription = aiData.RefinedDescription,
-                        SecurityAssessment = aiData.SecurityAssessment,
-                        AiReason = aiData.Reason,
-                        AiReviewComment = aiData.AiReviewComment,
-                        AiRequirementScore = aiData.AiRequirementScore,
-                        AiStabilityScore = aiData.AiStabilityScore,
-                        AiOverallScore = aiData.AiOverallScore,
-                        AiSavedManDays = aiData.AiSavedManDays,
-                        AiRevenue = aiData.AiRevenue,
-                        ProcessedAt = DateTime.Now,
-                        IsProcessed = true
-                    };
+                    "符合" => "符合",
+                    "不適用" => "不適用",
+                    "需補件" => "需補件",
 
-                    db.RequestAiDetails.Add(aiDetail);
+                    "低" => "符合",
+                    "低風險" => "符合",
+                    "無明顯風險" => "符合",
+
+                    "中" => "需補件",
+                    "中風險" => "需補件",
+                    "高" => "需補件",
+                    "高風險" => "需補件",
+                    "建議補強" => "需補件",
+
+                    _ => "需補件"
+                };
+
+                System.Diagnostics.Debug.WriteLine($"[AI原始 SecurityAssessment] = {rawSecurity}");
+                System.Diagnostics.Debug.WriteLine($"[校正後 SecurityAssessment] = {aiData.SecurityAssessment}");
+                System.Diagnostics.Debug.WriteLine($"[準備存進DB的 SecurityAssessment] = {aiData.SecurityAssessment}");
+                var aiDetail = new RequestAiDetail
+                {
+                    RequestId = ticketId,
+                    IsITRelated = aiData.IsITRelated,
+                    RefinedTitle = aiData.RefinedTitle,
+                    RefinedDescription = aiData.RefinedDescription,
+                    SecurityAssessment =
+    aiData.SecurityAssessment == "符合" ||
+    aiData.SecurityAssessment == "不適用" ||
+    aiData.SecurityAssessment == "需補件"
+        ? aiData.SecurityAssessment
+        : "需補件",
+                    AiReason = aiData.Reason,
+
+                    AiReviewComment = aiData.AiReviewComment,
+                    AiRequirementScore = reviewData?.AiRequirementScore,
+                    AiStabilityScore = reviewData?.AiStabilityScore,
+                    AiOverallScore = reviewData?.AiOverallScore,
+                    AiSavedManDays = reviewData?.AiSavedManDays,
+                    AiRevenue = reviewData?.AiRevenue,
+
+                    ProcessedAt = DateTime.Now,
+                    IsProcessed = true
+                }; 
+
+                db.RequestAiDetails.Add(aiDetail);
+
+                // ✅ AI 初審分流
+                if (aiData.IsApproved)
+                {
+                    ticket.Status = 1; // PendingReview = 待人工審核
                 }
                 else
                 {
-                    existedAiDetail.IsITRelated = aiData.IsITRelated;
-                    existedAiDetail.RefinedTitle = aiData.RefinedTitle;
-                    existedAiDetail.RefinedDescription = aiData.RefinedDescription;
-                    existedAiDetail.SecurityAssessment = aiData.SecurityAssessment;
-                    existedAiDetail.AiReason = aiData.Reason;
-                    existedAiDetail.AiReviewComment = aiData.AiReviewComment;
-                    existedAiDetail.AiRequirementScore = aiData.AiRequirementScore;
-                    existedAiDetail.AiStabilityScore = aiData.AiStabilityScore;
-                    existedAiDetail.AiOverallScore = aiData.AiOverallScore;
-                    existedAiDetail.AiSavedManDays = aiData.AiSavedManDays;
-                    existedAiDetail.AiRevenue = aiData.AiRevenue;
-                    existedAiDetail.ProcessedAt = DateTime.Now;
-                    existedAiDetail.IsProcessed = true;
-                    existedAiDetail.ErrorMessage = null;
+                    ticket.Status = 4; // Rejected = 已退回
                 }
 
-                ticket.Status = aiData.IsApproved ? (byte)1 : (byte)4;
                 ticket.UpdatedAt = DateTime.Now;
 
                 await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                var existedAiDetail = await db.RequestAiDetails
-                    .FirstOrDefaultAsync(x => x.RequestId == ticketId);
-
-                if (existedAiDetail == null)
+                db.RequestAiDetails.Add(new RequestAiDetail
                 {
-                    db.RequestAiDetails.Add(new RequestAiDetail
-                    {
-                        RequestId = ticketId,
-                        ErrorMessage = ex.Message,
-                        AiReason = "AI 初審發生錯誤，請稍後再試或人工確認",
-                        IsProcessed = false,
-                        ProcessedAt = DateTime.Now
-                    });
-                }
-                else
-                {
-                    existedAiDetail.ErrorMessage = ex.Message;
-                    existedAiDetail.AiReason = "AI 初審發生錯誤，請稍後再試或人工確認";
-                    existedAiDetail.IsProcessed = false;
-                    existedAiDetail.ProcessedAt = DateTime.Now;
-                }
+                    RequestId = ticketId,
+                    ErrorMessage = ex.Message,
+                    AiReason = "AI 初審發生錯誤，請稍後再試或人工確認",
+                    IsProcessed = false
+                });
 
                 ticket.Status = 4;
                 ticket.UpdatedAt = DateTime.Now;
@@ -392,15 +439,24 @@ namespace Dr.meow.Pages.Request
             }
         }
     }
-
+    public class ReviewScoreAiResponseModel
+    {
+        public int? AiRequirementScore { get; set; }
+        public int? AiStabilityScore { get; set; }
+        public int? AiOverallScore { get; set; }
+        public decimal? AiSavedManDays { get; set; }
+        public decimal? AiRevenue { get; set; }
+    }
     public class AiResponseModel
     {
         public bool IsApproved { get; set; }
         public bool IsITRelated { get; set; }
+
         public string RefinedTitle { get; set; } = "";
         public string RefinedDescription { get; set; } = "";
         public string SecurityAssessment { get; set; } = "";
         public string Reason { get; set; } = "";
+
         public string AiReviewComment { get; set; } = "";
         public int? AiRequirementScore { get; set; }
         public int? AiStabilityScore { get; set; }

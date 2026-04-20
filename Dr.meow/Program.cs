@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 註冊 HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddControllers();
 
 // Razor Pages
 builder.Services.AddRazorPages();
@@ -128,5 +129,6 @@ app.MapGet("/", ctx =>
     ctx.Response.Redirect("/Login");
     return Task.CompletedTask;
 });
+app.MapControllers();
 
 app.Run();
