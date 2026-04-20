@@ -43,7 +43,7 @@ namespace Dr.meow.Controllers
                 var vuln = new Vulnerability
                 {
                     TicketNumber = "CHG-" + DateTime.Now.ToString("yyyyMMddHHmm"),
-                    Title = data.Title,
+                    
                     Description = data.Description,
                     Department = data.Department ?? "資訊中心",
                     RequesterId = data.RequesterId != 0 ? data.RequesterId : 5, // 預設 5
