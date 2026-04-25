@@ -10,28 +10,30 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Hangfire;
-using Hangfire.MemoryStorage;
+using Hangfire.MemoryStorage; // 👈 記得加
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 註冊 HttpContextAccessor
+// 註冊 HttpContextAccessor，這樣你才能在 Razor Pages 中使用 @inject
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 
 // Razor Pages
 builder.Services.AddRazorPages();
 
-// Hangfire
+// ⭐ Hangfire 註冊
 builder.Services.AddHangfire(config =>
 {
-    config.UseMemoryStorage();
+    config.UseMemoryStorage(); // 測試用（最簡單）
 });
+
 builder.Services.AddHangfireServer();
 
-// RAG 搜尋服務
+// ⭐ 註冊 RAG 搜尋服務（你的 AI 搜尋）
 builder.Services.AddHttpClient<ISearchService, SearchService>();
 
-// Session
+// ⭐ Session 服務
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -39,66 +41,48 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-
-// Azure OpenAI：有填設定才啟用
-var azureEndpoint = builder.Configuration["AzureOpenAI:Endpoint"];
-var azureApiKey = builder.Configuration["AzureOpenAI:ApiKey"];
-var azureDeploymentName = builder.Configuration["AzureOpenAI:DeploymentName"];
-
-if (!string.IsNullOrWhiteSpace(azureEndpoint) &&
-    !string.IsNullOrWhiteSpace(azureApiKey) &&
-    !string.IsNullOrWhiteSpace(azureDeploymentName))
-{
-    builder.Services.AddAzureOpenAIChatCompletion(
-        deploymentName: azureDeploymentName,
-        apiKey: azureApiKey,
-        endpoint: azureEndpoint,
-        modelId: "gpt-5.2-chat"
-    );
-}
-
-// Authentication
-var authBuilder = builder.Services.AddAuthentication(options =>
+builder.Services.AddAzureOpenAIChatCompletion(
+    deploymentName: builder.Configuration["AzureOpenAI:DeploymentName"]!,
+    apiKey: builder.Configuration["AzureOpenAI:ApiKey"]!,
+    endpoint: builder.Configuration["AzureOpenAI:Endpoint"]!,
+    modelId: "gpt-5.2-chat"
+);
+// ⭐ 只使用 Cookie Authentication（暫時不啟用 Google）
+builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-});
-
-authBuilder.AddCookie(options =>
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie(options =>
 {
     options.LoginPath = "/Login";
     options.AccessDeniedPath = "/Error";
+
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
-
-// Google OAuth：有填 ClientId + ClientSecret 才啟用
-var googleClientId = builder.Configuration["GoogleOAuth:ClientId"];
-var googleClientSecret = builder.Configuration["GoogleOAuth:ClientSecret"];
-
-if (!string.IsNullOrWhiteSpace(googleClientId) &&
-    !string.IsNullOrWhiteSpace(googleClientSecret))
+})
+.AddGoogle(options =>
 {
-    authBuilder.AddGoogle(options =>
+    options.ClientId = builder.Configuration["GoogleOAuth:ClientId"]
+        ?? throw new InvalidOperationException("Google ClientId 未設定。");
+    options.ClientSecret = builder.Configuration["GoogleOAuth:ClientSecret"]
+        ?? throw new InvalidOperationException("Google ClientSecret 未設定。");
+    options.Events = new OAuthEvents
     {
-        options.ClientId = googleClientId;
-        options.ClientSecret = googleClientSecret;
-        options.Events = new OAuthEvents
+        OnRedirectToAuthorizationEndpoint = context =>
         {
-            OnRedirectToAuthorizationEndpoint = context =>
-            {
-                context.Response.Redirect(context.RedirectUri + "&prompt=select_account");
-                return Task.CompletedTask;
-            }
-        };
-    });
-}
+            // 在導向 Google 登入頁面的 URL 後面加上 prompt=select_account
+            context.Response.Redirect(context.RedirectUri + "&prompt=select_account");
+            return Task.CompletedTask;
+        }
+    };
+});   
 
 // DbContext
 builder.Services.AddDbContext<DrMeowDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.")
+        ?? throw new InvalidOperationException("Connection string 'DrMeowDbContext' not found.")
     )
 );
 
@@ -115,8 +99,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseHangfireDashboard();
+app.UseHangfireDashboard(); // 可選，但建議加
 
+// ⭐ Session 必須放在 UseRouting 之後，UseAuthorization 之前
 app.UseSession();
 
 app.UseAuthentication();
@@ -124,6 +109,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
+// ⭐ 讓根目錄直接跳轉 Login
 app.MapGet("/", ctx =>
 {
     ctx.Response.Redirect("/Login");

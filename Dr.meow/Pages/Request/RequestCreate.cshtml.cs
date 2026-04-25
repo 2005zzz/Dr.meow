@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+=======
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.ChatCompletion;
+using System.Security.Claims;
+using System.Text.Json;
+using System.ComponentModel.DataAnnotations;
+>>>>>>> parent of b807ace (調整UI：移除sidebar、置中使用者顧問中心、header新增查看表單)
 using Dr.meow.Data;
 using Dr.meow.Models;
 using Dr.meow.Services;
@@ -155,9 +165,16 @@ namespace Dr.meow.Pages.Request
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+<<<<<<< HEAD
                 // D. 先直接執行 AI 分析（暫時繞過 Hangfire 做除錯）
                 await ProcessAiAnalysisAsync(ticket.Id);
                 TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！AI 已完成分析。";
+=======
+                // D. 丟背景任務做 AI 分析
+                _backgroundJob.Enqueue(() => ProcessAiAnalysisAsync(ticket.Id));
+
+                TempData["Message"] = $"✅ 需求單 {ticketNumber} 已送出！AI 正在進行資安掃描與改寫中...";
+>>>>>>> parent of b807ace (調整UI：移除sidebar、置中使用者顧問中心、header新增查看表單)
             }
             catch (Exception ex)
             {
@@ -187,9 +204,12 @@ namespace Dr.meow.Pages.Request
         [AutomaticRetry(Attempts = 2)]
         public async Task ProcessAiAnalysisAsync(int ticketId)
         {
+<<<<<<< HEAD
             System.Diagnostics.Debug.WriteLine("🔥🔥🔥 AI任務有進來 🔥🔥🔥");
             System.IO.File.WriteAllText(@"C:\Dr.meow\Dr.meow\job_entered.txt", $"有進到 ProcessAiAnalysisAsync，ticketId={ticketId}，時間={DateTime.Now}");
 
+=======
+>>>>>>> parent of b807ace (調整UI：移除sidebar、置中使用者顧問中心、header新增查看表單)
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<DrMeowDbContext>();
 
@@ -236,12 +256,19 @@ namespace Dr.meow.Pages.Request
    - 驗收方式或驗收標準
    - 若有風險或限制，簡短提醒
    字數控制在 80~180 字。
+<<<<<<< HEAD
 2.securityAssessment 請根據需求內容的風險程度，自行判斷並輸出以下三個分類之一：
    - 符合：表示需求風險低，或不涉及資安疑慮
    - 不適用：表示此需求與資安無關
    - 需補件：表示需求可能存在風險、資訊不足，或需要進一步評估
    請務必根據語意自行判斷，不要輸出其他文字（例如：中、低、高、中風險等），
    最終結果只能是上述三個值之一。
+=======
+2.securityAssessment 只能輸出以下三種之一：
+   - 符合
+   - 不適用
+   - 需補件
+>>>>>>> parent of b807ace (調整UI：移除sidebar、置中使用者顧問中心、header新增查看表單)
 3.aiRequirementScore（1~5）：
    1 = 幾乎看不懂需求
    2 = 有部分內容，但描述不清楚或邏輯混亂
@@ -292,6 +319,7 @@ namespace Dr.meow.Pages.Request
                  .Replace("```json", "")
                  .Replace("```", "")
                  .Trim();
+<<<<<<< HEAD
 
                 var aiData = JsonSerializer.Deserialize<AiResponseModel>(
                     cleanJson ?? "",
@@ -337,6 +365,11 @@ namespace Dr.meow.Pages.Request
 
                 var reviewData = JsonSerializer.Deserialize<ReviewScoreAiResponseModel>(
                     cleanReviewJson,
+=======
+
+                var aiData = JsonSerializer.Deserialize<AiResponseModel>(
+                    cleanJson ?? "",
+>>>>>>> parent of b807ace (調整UI：移除sidebar、置中使用者顧問中心、header新增查看表單)
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (aiData == null)
@@ -359,6 +392,7 @@ namespace Dr.meow.Pages.Request
                 var rawSecurity = aiData.SecurityAssessment?.Trim() ?? "";
                 Console.WriteLine($"[AI原始 SecurityAssessment] = {rawSecurity}");
 
+<<<<<<< HEAD
                 aiData.SecurityAssessment = rawSecurity switch
                 {
                     "符合" => "符合",
@@ -401,6 +435,23 @@ namespace Dr.meow.Pages.Request
                     AiOverallScore = reviewData?.AiOverallScore,
                     AiSavedManDays = reviewData?.AiSavedManDays,
                     AiRevenue = reviewData?.AiRevenue,
+=======
+                var aiDetail = new RequestAiDetail
+                {
+                    RequestId = ticketId,
+                    IsITRelated = aiData.IsITRelated,
+                    RefinedTitle = aiData.RefinedTitle,
+                    RefinedDescription = aiData.RefinedDescription,
+                    SecurityAssessment = aiData.SecurityAssessment,
+                    AiReason = aiData.Reason,
+
+                    AiReviewComment = aiData.AiReviewComment,
+                    AiRequirementScore = aiData.AiRequirementScore,
+                    AiStabilityScore = aiData.AiStabilityScore,
+                    AiOverallScore = aiData.AiOverallScore,
+                    AiSavedManDays = aiData.AiSavedManDays,
+                    AiRevenue = aiData.AiRevenue,
+>>>>>>> parent of b807ace (調整UI：移除sidebar、置中使用者顧問中心、header新增查看表單)
 
                     ProcessedAt = DateTime.Now,
                     IsProcessed = true
