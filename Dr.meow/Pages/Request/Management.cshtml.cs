@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Dr.meow.Data;
+﻿using Dr.meow.Data;
 using Dr.meow.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Dr.meow.Pages.Forms
 {
@@ -20,8 +21,17 @@ namespace Dr.meow.Pages.Forms
         public List<RequestTicket> Approved { get; set; } = new();
         public List<RequestTicket> Rejected { get; set; } = new();
 
-        public async Task OnGetAsync() // ✅ 改為非同步提升效能
+        public async Task<IActionResult> OnGetAsync() // ✅ 改為非同步提升效能
         {
+            var account = HttpContext.Session.GetString("Account");
+
+            if (account != "enginee")
+            {
+                Pending = new();
+                Approved = new();
+                Rejected = new();
+                return Page();
+            }
             // 💡 預載入關聯資料，方便列表顯示細節
             var allTickets = await _db.RequestTickets
               .Include(t => t.AiDetail)
@@ -44,6 +54,8 @@ namespace Dr.meow.Pages.Forms
             Rejected = allTickets
                 .Where(x => x.Status == 4)
                 .ToList();
+
+            return Page();
         }
     }
 }

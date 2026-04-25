@@ -5,8 +5,8 @@
 
 @{
     ViewData["Title"] = "使用者顧問中心";
+    var currentUserId = HttpContextAccessor.HttpContext?.Session.GetString("UserId") ?? "0";
 }
-
 <style>
     /* 左側選單卡片本身稍微圓一點 */
     .app-sidebar.card {
@@ -992,6 +992,7 @@
             const ai = window.latestAiFormData || {};
             // 1. 組合完整資料 (包含所有資安與技術欄位)
             const finalData = {
+                        RequesterId: @currentUserId,//登入身分
                 // 基礎欄位
                 Title: document.getElementById('modalTitle')?.value || "未命名需求",
                 Description: document.getElementById('modalDesc')?.value || "",
