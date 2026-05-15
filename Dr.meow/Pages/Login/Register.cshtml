@@ -162,7 +162,9 @@
                 <div class="alert alert-success py-2 text-center mb-3">
                     <i class="bi bi-check-circle-fill me-2"></i>@Model.SuccessMessage
                     <div class="mt-2">
-                        <a asp-page="/Login" class="btn btn-sm btn-success px-3">前往登入</a>
+                        <a asp-page="/Login/Login" class="btn btn-sm btn-success px-3">
+                            前往登入
+                        </a>
                     </div>
                 </div>
             }
@@ -230,7 +232,9 @@
 
         <div class="card-footer text-center bg-light py-3">
             <span class="text-muted small">已經有帳號了嗎？</span>
-            <a asp-page="/Login" class="text-decoration-none fw-bold" style="color: #2fa9a0;">
+            <a asp-page="/Login/Login"
+               class="text-decoration-none fw-bold"
+               style="color: #2fa9a0;">
                 點此登入
             </a>
         </div>

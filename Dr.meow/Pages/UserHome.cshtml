@@ -5,8 +5,8 @@
 
 @{
     ViewData["Title"] = "使用者顧問中心";
+    var currentUserId = HttpContextAccessor.HttpContext?.Session.GetString("UserId") ?? "0";
 }
-
 <style>
     /* 左側選單卡片本身稍微圓一點 */
     .app-sidebar.card {
@@ -196,24 +196,67 @@
 
     /* 動畫 */
     @@keyframes fadeIn {
-        from
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
 
-    {
-        opacity: 0;
-        transform: translateY(5px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
 
-<div class="d-flex justify-content-center mt-4">
+<div class="row g-3">
+    <!-- 左側選單 -->
+    <aside class="col-12 col-lg-3">
+        <div class="card shadow-sm app-sidebar">
+            <div class="list-group list-group-flush app-sidebar">
 
-    <section class="w-100" style="max-width: 900px;">
+                <div class="list-group-item text-secondary small text-uppercase d-flex justify-content-between align-items-center">
+                    <div>
+                        功能
+                        @{
+                            var userTeam = HttpContextAccessor.HttpContext.Session.GetString("UserTeam");
+                            if (!string.IsNullOrEmpty(userTeam))
+                            {
+                                <span class="badge" style="background-color: #3AB6A7; color: white; border-radius: 8px; padding: 4px 8px; margin-right: 5px;">
+                                    @userTeam
+                                </span>
+                            }
+                        }
+                    </div>
+                    <span class="text-muted small">
+                        @Model.Account
+                    </span>
+                </div>
+
+                <!-- RAG 顧問：預設 mode=consult -->
+                <a class="list-group-item list-group-item-action app-menu active"
+                   data-mode="consult">
+                    RAG 顧問
+                </a>
+
+               
+
+                <!-- 查看表單：同頁切換、Ajax 載入 -->
+                <a class="list-group-item list-group-item-action app-menu"
+                   data-mode="forms">
+                    查看表單
+                </a>
+
+                <div class="list-group-item text-secondary small text-uppercase">問答歷史</div>
+
+                <a class="list-group-item list-group-item-action text-danger" asp-page="/Login">
+                    登出
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 右側主區 -->
+    <section class="col-12 col-lg-9">
         <div class="card shadow-sm">
             <div class="card-header bg-white">
                 <h5 class="mb-0">Dr.Meow 使用者顧問中心</h5>
@@ -650,7 +693,7 @@
                 const jsonStr = data.formDataJson || data.FormDataJson || "";
 
                 let formattedAnswer = formatText(rawAnswer, loadingId);
-                
+
 
                 // ✅ [新功能]：如果表單準備好了，在文字下方加一個「常駐連結」
                 if (isReady || (jsonStr && jsonStr.includes("{"))) {
@@ -992,6 +1035,7 @@
             const ai = window.latestAiFormData || {};
             // 1. 組合完整資料 (包含所有資安與技術欄位)
             const finalData = {
+                        RequesterId: @currentUserId,//登入身分
                 // 基礎欄位
                 Title: document.getElementById('modalTitle')?.value || "未命名需求",
                 Description: document.getElementById('modalDesc')?.value || "",

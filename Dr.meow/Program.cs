@@ -19,7 +19,17 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 
 // Razor Pages
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    // ✅ 讓 /Login 可以對應到 Pages/Login/Login.cshtml
+    options.Conventions.AddPageRoute("/Login/Login", "/Login");
+
+    // ✅ 讓 /Register 可以對應到 Pages/Login/Register.cshtml
+    options.Conventions.AddPageRoute("/Login/Register", "/Register");
+
+    // ✅ 讓 /ForgotPassword 可以對應到 Pages/Login/ForgotPassword.cshtml
+    options.Conventions.AddPageRoute("/Login/ForgotPassword", "/ForgotPassword");
+});
 
 // Hangfire
 builder.Services.AddHangfire(config =>
@@ -30,6 +40,7 @@ builder.Services.AddHangfireServer();
 
 // RAG 搜尋服務
 builder.Services.AddHttpClient<ISearchService, SearchService>();
+builder.Services.AddHostedService<AdminScheduleNotificationService>();
 
 // Session
 builder.Services.AddDistributedMemoryCache();
@@ -66,6 +77,7 @@ var authBuilder = builder.Services.AddAuthentication(options =>
 
 authBuilder.AddCookie(options =>
 {
+    // ✅ 改成真的登入頁
     options.LoginPath = "/Login";
     options.AccessDeniedPath = "/Error";
     options.Cookie.SameSite = SameSiteMode.Lax;
@@ -129,6 +141,7 @@ app.MapGet("/", ctx =>
     ctx.Response.Redirect("/Login");
     return Task.CompletedTask;
 });
+
 app.MapControllers();
 
 app.Run();

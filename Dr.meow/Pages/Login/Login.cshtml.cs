@@ -8,7 +8,7 @@ using Dr.meow.Data;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace Dr.meow.Pages
+namespace Dr.meow.Pages.Login
 {
     public class LoginModel : PageModel
     {

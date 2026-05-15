@@ -1,5 +1,5 @@
 ﻿@page
-@model Dr.meow.Pages.LoginModel
+@model Dr.meow.Pages.Login.LoginModel
 
 @{
     Layout = "_LoginLayout";
@@ -199,15 +199,20 @@
             <div class="text-center mt-3">
                 <div class="text-muted mb-1">還沒有帳號嗎？</div>
 
-                <a asp-page="/Register" class="btn-register-secondary">
+                <a asp-page="/Login/Register" class="btn-register-secondary">
                     立即註冊
                 </a>
             </div>
 
             <div class="text-end mt-2">
-                <a href="javascript:void(0)" class="small text-muted">
+
+                <a asp-page="/Login/ForgotPassword"
+                   class="small text-muted text-decoration-none">
+
                     忘記密碼？
+
                 </a>
+
             </div>
         </form>
     </div>

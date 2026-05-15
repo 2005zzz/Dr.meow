@@ -141,6 +141,16 @@ namespace Dr.meow.Pages.Request
                 };
                 _db.RequestAuditLogs.Add(auditLog);
 
+                // ✅ 新增通知
+                _db.Notifications.Add(new Notification
+                {
+                    UserId = item.RequesterId.ToString(),
+                    Title = "變更單通知",
+                    Message = "您的變更單已審核完成",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                });
+
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
 

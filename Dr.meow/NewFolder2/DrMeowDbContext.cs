@@ -16,7 +16,7 @@ namespace Dr.meow.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
-        public DbSet<Notifications> Notifications { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         // ==========================================
         // 2. 弱點/變更管理系統 (Vulnerability System)
