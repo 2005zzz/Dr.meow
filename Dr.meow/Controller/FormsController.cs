@@ -69,7 +69,8 @@ namespace Dr.meow.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Vulnerability Error: {ex.Message}");
+                var error = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, $"Vulnerability Error: {error}");
             }
         }
 
@@ -80,10 +81,15 @@ namespace Dr.meow.Controllers
             try
             {
                 // A. RequestTicket
+                if (data.RequesterId == 0)
+                {
+                    return BadRequest("RequesterId 不可為 0");
+                }
+
                 var ticket = new RequestTicket
                 {
                     TicketNumber = "REQ-" + DateTime.Now.ToString("yyyyMMddHHmm"),
-                    RequesterId = data.RequesterId != 0 ? data.RequesterId : 5,
+                    RequesterId = data.RequesterId,
                     Title = data.Title,
                     Description = data.Description,
                     Status = 1,

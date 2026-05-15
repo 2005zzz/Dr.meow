@@ -388,11 +388,11 @@ namespace Dr.meow.Pages.Request
                     RefinedTitle = aiData.RefinedTitle,
                     RefinedDescription = aiData.RefinedDescription,
                     SecurityAssessment =
-    aiData.SecurityAssessment == "符合" ||
-    aiData.SecurityAssessment == "不適用" ||
-    aiData.SecurityAssessment == "需補件"
-        ? aiData.SecurityAssessment
-        : "需補件",
+                        aiData.SecurityAssessment == "符合" ||
+                        aiData.SecurityAssessment == "不適用" ||
+                        aiData.SecurityAssessment == "需補件"
+                            ? aiData.SecurityAssessment
+                            : "需補件",
                     AiReason = aiData.Reason,
 
                     AiReviewComment = aiData.AiReviewComment,
@@ -404,7 +404,7 @@ namespace Dr.meow.Pages.Request
 
                     ProcessedAt = DateTime.Now,
                     IsProcessed = true
-                }; 
+                };
 
                 db.RequestAiDetails.Add(aiDetail);
 
