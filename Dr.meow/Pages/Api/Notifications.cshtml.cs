@@ -17,8 +17,16 @@ namespace Dr.meow.Pages.API
         public async Task<IActionResult> OnGetAsync()
         {
             var userId = HttpContext.Session.GetString("UserId");
+            var role = HttpContext.Session.GetString("Role");
 
+            // ✅ 沒登入
             if (string.IsNullOrEmpty(userId))
+            {
+                return new JsonResult(new List<object>());
+            }
+
+            // ✅ 只有管理者可以看到排程通知
+            if (role?.ToLower() != "admin")
             {
                 return new JsonResult(new List<object>());
             }
