@@ -16,6 +16,11 @@
 
 	<ItemGroup>
 	  <Compile Remove="Models\Notifications.cs" />
+	  <Compile Remove="Pages\Api\Index.cshtml.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Remove="Pages\Api\Index.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>

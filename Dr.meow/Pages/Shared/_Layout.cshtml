@@ -10,6 +10,9 @@
         || string.Equals(currentPage, "/Login/Login", StringComparison.OrdinalIgnoreCase)
         || string.Equals(currentPage, "/Login/ForgotPassword", StringComparison.OrdinalIgnoreCase)
         || string.Equals(currentPage, "/Login/Register", StringComparison.OrdinalIgnoreCase);
+
+    bool isAdmin =
+        Context.Session.GetString("IsAdmin") == "1";
 }
 
 <!DOCTYPE html>
@@ -137,7 +140,7 @@
 
                 <div class="d-flex align-items-center gap-3">
 
-                    @if (!isLoginPage)
+                    @if (!isLoginPage && isAdmin)
                     {
                         <button onclick="goBackSafe()" class="btn-drmeow-back">
                             <i class="bi bi-arrow-left"></i>
@@ -161,7 +164,7 @@
 
                 </div>
 
-                @if (!isLoginPage)
+                @if (!isLoginPage && isAdmin)
                 {
                     <div class="nav-item dropdown">
 
@@ -281,19 +284,28 @@
             }
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            loadNotifications();
-
-            setInterval(loadNotifications, 30000);
+                       document.addEventListener("DOMContentLoaded", () => {
 
             const bell = document.querySelector('.btn-icon-notification');
             const badge = document.getElementById('notificationBadge');
 
-            if (bell && badge) {
-                bell.addEventListener('click', () => {
-                    badge.style.display = "none";
-                });
+            // ⭐ 沒有鈴鐺（使用者頁）直接不跑通知
+            if (!bell || !badge) {
+                return;
             }
+
+            loadNotifications();
+
+            setInterval(loadNotifications, 30000);
+
+            bell.addEventListener('click', async () => {
+
+                await fetch('/API/ReadNotifications', {
+                    method: 'POST'
+                });
+
+                badge.style.display = "none";
+            });
         });
     </script>
 
