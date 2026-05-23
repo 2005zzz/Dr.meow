@@ -9,7 +9,7 @@ namespace Dr.meow.Data
             : base(options)
         {
         }
-
+        public DbSet<VulnerabilityAiDetail> VulnerabilityAiDetail { get; set; }
         // ==========================================
         // 1. 基礎帳號權限系統
         // ==========================================
@@ -47,11 +47,22 @@ namespace Dr.meow.Data
             // ------------------------------------------
 
             // A. Ticket <-> User (多對一：誰提的單)
-            modelBuilder.Entity<RequestTicket>()
-                .HasOne<User>()
-                .WithMany()
-                .HasForeignKey(t => t.RequesterId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<RequestTicket>(entity =>
+            {
+                // 1. 先設定關聯 (Relationship)
+                entity.HasOne(t => t.Requester)
+                      .WithMany()
+                      .HasForeignKey(t => t.RequesterId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                // 2. 獨立設定屬性 (Property) 🚀 這樣才不會噴錯
+                entity.Property(t => t.Description)
+                      .HasColumnType("nvarchar(max)");
+
+                // 如果有 Department 欄位也可以順便設定
+                entity.Property(t => t.Department)
+                      .HasMaxLength(50);
+            });
 
             // B. Ticket <-> AiDetail (一對一：強關聯)
             modelBuilder.Entity<RequestAiDetail>()
@@ -89,6 +100,16 @@ namespace Dr.meow.Data
                 .WithMany()
                 .HasForeignKey(l => l.VulnerabilityId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // 🛡️ 弱點管理系統關聯設定
+            modelBuilder.Entity<VulnerabilityAiDetail>(entity =>
+            {
+                // 強制設定關聯：Vulnerability 擁有一個 VulnerabilityAiDetail
+                entity.HasOne(a => a.Vulnerability)
+                      .WithOne(v => v.AiDetail) // ⚠️ 請確保 Vulnerability.cs 內有這行屬性
+                      .HasForeignKey<VulnerabilityAiDetail>(a => a.VulnerabilityId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
             // ------------------------------------------
             // 🌱 Seed Data (種子資料)

@@ -167,11 +167,11 @@
                                     </div>
                                 </div>
 
-                                <!-- ✅ 右側只留查看詳情 -->
                                 <div class="ms-3">
                                     <a class="details-link"
                                        asp-page="/Request/Details"
-                                       asp-route-id="@f.Id">
+                                       asp-route-id="@f.Id"
+                                       asp-route-returnUrl="@(Request.Path + Request.QueryString)">
                                         查看詳情 >
                                     </a>
                                 </div>

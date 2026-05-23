@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "/Forms/ChangeManagement"
 @model Dr.meow.Pages.Forms.ChangeManagementModel
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
@@ -6,136 +6,192 @@
     ViewData["Title"] = "變更單審核";
     Layout = null;
 }
+@functions {
+    // 取得風險總評：假設 AI 回應中包含「風險總評」關鍵字
+    string GetRiskSummary(string comment)
+    {
+        if (string.IsNullOrEmpty(comment)) return "未提供風險總評";
+
+        var lines = comment.Split('\n');
+        // 嘗試抓取包含「風險總評」關鍵字的段落
+        var line = lines.FirstOrDefault(l => l.Contains("風險總評") || l.Contains("風險總結"));
+
+        if (line != null)
+        {
+            // 清理字串：移除關鍵字、冒號，並利用 Regex 移除 [來源...] 標記
+            var cleaned = line.Replace("風險總評", "")
+                              .Replace("風險總結", "")
+                              .Replace("：", "")
+                              .Trim();
+
+            // 使用 Regex 移除 [來源...] 及其內容
+            return System.Text.RegularExpressions.Regex.Replace(cleaned, @"\[.*?來源.*?\]", "").Trim();
+        }
+
+        return "詳細風險請見核心分析";
+    }
+    string GetCoreSummary(string comment)
+    {
+        if (string.IsNullOrEmpty(comment)) return "暫無分析資料";
+        return comment.Split('\n').FirstOrDefault(l => !string.IsNullOrWhiteSpace(l)) ?? comment;
+    }
+
+    IEnumerable<string> GetExecutionSteps(string comment)
+    {
+        if (string.IsNullOrEmpty(comment)) return Enumerable.Empty<string>();
+        return comment.Split('\n')
+                      .Where(line => line.Trim().StartsWith("1.") || line.Trim().StartsWith("2.") ||
+                                     line.Trim().StartsWith("3.") || line.Trim().StartsWith("4.") ||
+                                     line.Trim().StartsWith("-"))
+                      .Select(line => line.Trim());
+    }
+
+    IEnumerable<string> GetReferences(string comment)
+    {
+        if (string.IsNullOrEmpty(comment)) return Enumerable.Empty<string>();
+        return comment.Split(new[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries)
+                      .Where(s => s.Contains("來源"))
+                      .Select(s => "[" + s.Trim() + "]");
+    }
+}
+
 
 <style>
-    /* 卡片樣式 */
-    .admin-card {
-        border-left: 5px solid #dee2e6;
-        transition: all 0.2s;
-        background-color: #fff;
-        border-radius: 16px;
+    /* 🚀 管理者審核流：高端極簡醫療後台樣式 */
+    .vuln-review-page {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
-        .admin-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        /* 輕量級商務邊線卡片，去噪陰影 */
+        .vuln-review-page .admin-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1 !important;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
-    .border-pending {
-        border-left-color: #ffc107;
-    }
+            .vuln-review-page .admin-card:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            }
 
-    .border-tracking {
-        border-left-color: #0dcaf0;
-    }
-    /* 處理中用青藍色 */
-    .border-closed {
-        border-left-color: #198754;
-    }
-    /* 已結案用綠色 */
-
-    .border-rejected {
-        border-left-color: #dc3545;
-    }
-
-    /* 虛線區隔 */
-    .section-divider {
-        border-bottom: 1px dashed #ced4da;
-        flex-grow: 1;
-        margin-left: 1rem;
-    }
-
-    .status-text {
-        font-size: 0.85rem;
-        font-weight: bold;
-    }
-
-    /* 使用者頭像 */
-    .user-avatar {
-        width: 48px;
-        height: 48px;
-        background-color: #e9ecef;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: #495057;
-        font-size: 1.2rem;
-        margin-right: 15px;
-        flex-shrink: 0;
-    }
-
-    /* Tabs */
-    .nav-tabs .nav-link {
-        color: #6c757d;
-        font-weight: 600;
-        border: none;
-    }
-
-        .nav-tabs .nav-link.active {
-            color: #1f6e61;
-            font-weight: 800;
-            border-bottom: 3px solid #3AB6A7;
+        /* 頂部工作流定錨邊線 */
+        .vuln-review-page .border-my-team {
+            border-top: 4px solid #2a9d8f !important;
         }
 
-    /* 查看詳情（跟 Management 一樣） */
-    .details-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: 600;
-        color: #6c757d;
-        text-decoration: none;
-        white-space: nowrap;
-        padding: 6px 10px;
-        border-radius: 10px;
-        transition: all .15s ease;
-    }
-
-        .details-link:hover {
-            background: rgba(58,182,167,.12);
-            color: #2b6f66;
-            text-decoration: none;
+        .vuln-review-page .border-cross-team {
+            border-top: 4px solid #f4a261 !important;
         }
 
-    /* 按鈕區 */
-    .action-btn-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 120px;
-    }
-
-    .btn-approve {
-        background: #3AB6A7;
-        border: none;
-        color: #fff;
-        font-weight: 700;
-    }
-
-        .btn-approve:hover {
-            filter: brightness(.97);
+        .vuln-review-page .border-tracking {
+            border-top: 4px solid #0dcaf0 !important;
         }
 
-    .btn-reject {
-        border: 1px solid #dc3545;
+        .vuln-review-page .border-closed {
+            border-top: 4px solid #198754 !important;
+        }
+
+        .vuln-review-page .border-rejected {
+            border-top: 4px solid #dc3545 !important;
+        }
+
+        /* 扁平化素雅標籤 */
+        .vuln-review-page .badge-flat {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            margin-right: 4px;
+        }
+
+        /* 風險級別顏色 */
+        .vuln-review-page .sev-high {
+            background-color: #fce4d6;
+            color: #c65911;
+            border-color: #f8cbad;
+        }
+
+        .vuln-review-page .sev-medium {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+
+        .vuln-review-page .sev-low {
+            background-color: #e2f0d9;
+            color: #385723;
+            border-color: #c5e0b4;
+        }
+
+        /* AI 智能評語沉浸式沙盒 */
+        .vuln-review-page .ai-review-sandbox {
+            background-color: #f8fafc;
+            border-left: 3px solid #2a9d8f;
+            padding: 12px 14px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        /* 導覽 Tabs 細緻化 */
+        .vuln-review-page .nav-tabs .nav-link {
+            color: #64748b;
+            font-weight: 600;
+            border: none;
+            padding: 10px 20px;
+        }
+
+            .vuln-review-page .nav-tabs .nav-link.active {
+                color: #2a9d8f;
+                font-weight: 700;
+                border-bottom: 3px solid #2a9d8f;
+                background: transparent;
+            }
+
+        .vuln-review-page .ai-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+        }
+
+            .vuln-review-page .ai-toggle-btn:hover {
+                background: #f8fafc;
+                border-color: #cbd5e1;
+            }
+
+    /* 風險等級對應配色 */
+    .ai-toggle-btn.risk-high {
+        border-left: 4px solid #dc3545;
         color: #dc3545;
-        font-weight: 700;
-        background: #fff;
     }
 
-        .btn-reject:hover {
-            background: rgba(220,53,69,.08);
-        }
+    .ai-toggle-btn.risk-medium {
+        border-left: 4px solid #ffc107;
+        color: #856404;
+    }
+
+    .ai-toggle-btn.risk-low {
+        border-left: 4px solid #198754;
+        color: #155724;
+    }
 </style>
 
+<div class="container-fluid p-0 vuln-review-page">
 
-<div class="container-fluid p-0">
-
-    <h4 class="fw-bold mb-3">
-        ⚙️ 變更單審核
-    </h4>
+    <h5 class="fw-bold mb-3 text-dark">變更單審核管理</h5>
 
     <ul class="nav nav-tabs mb-4" id="changeTabs">
         <li class="nav-item">
@@ -160,99 +216,151 @@
         </li>
     </ul>
 
-
     <div class="tab-content">
 
-        <!-- 待審核 -->
         <div class="tab-pane fade show active" id="pending">
-
             @if (Model.Pending.Count == 0)
             {
-                <div class="text-muted">目前沒有待審核的變更單。</div>
+                <div class="text-muted py-4 small">目前沒有待審核的變更單。</div>
             }
             else
             {
                 @foreach (var f in Model.Pending)
                 {
-                    // 💡 取得 Session 並判斷是否為本組初審
+
+                    @* 🔥 插入除錯區塊：一眼看出資料是否有毒 🔥 
+                    <div class="alert alert-warning mb-3" style="font-size: 0.8rem;">
+                        <strong>[Debug] ID: @f.Main.Id | Dept: @f.Main.Department | Status: @f.Main.Status</strong><br />
+                        @if (f.AiDetail != null)
+                        {
+                            <span class="text-success">✅ AI Detail 成功抓取 (ID: @f.AiDetail.Id)</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger">❌ AiDetail 為 null (EF關聯失敗)</span>
+                        }
+                    </div>
+                    @* 🔥 除錯區塊結束 🔥 *@
+
                     var myTeam = HttpContextAccessor.HttpContext.Session.GetString("UserTeam");
                     bool isMyTeam = f.Main.Department == myTeam;
 
-                    <div class="card admin-card mb-3 shadow-sm @(isMyTeam ? "border-pending" : "border-info")"
-                         style="@(isMyTeam ? "" : "border-left-color: #fd7e14;")">
-
-                        <div class="card-body">
-
+                    <div class="card admin-card mb-3 @(isMyTeam ? "border-my-team" : "border-cross-team")">
+                        <div class="card-body p-4">
+                            @* 任務狀態標籤 *@
                             <div class="d-flex align-items-center mb-3">
-                                <div class="fw-bold" style="color: @(isMyTeam ? "#1f6e61" : "#d97706"); font-size: 0.85rem;">
-                                    @(isMyTeam ? "● 待本組組長初審任務" : "● 待跨組組長覆核任務")
+                                <div class="fw-bold small" style="color: @(isMyTeam ? "#2a9d8f" : "#e07a5f");">
+                                    ● @(isMyTeam ? "待本組組長初審任務" : "待跨組組長覆核任務")
                                 </div>
-                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #ced4da;"></div>
+                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #e2e8f0;"></div>
                             </div>
 
-                            <div class="d-flex justify-content-between align-items-start">
+                            @* 單號與資訊 *@
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold text-dark mb-0">@(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)</h6>
+                                <div>
+                                    <span class="badge-flat">@(f.Main.SystemCategory ?? "Other")</span>
+                                    @{
+                                        var sev = f.Main.Severity ?? "低風險";
+                                        string sevClass = sev.Contains("高") ? "sev-high" : (sev.Contains("中") ? "sev-medium" : "sev-low");
+                                    }
+                                    <span class="badge-flat @sevClass">@sev</span>
+                                </div>
+                            </div>
 
-                                <div class="d-flex align-items-start">
-                                    <div class="user-avatar" style="background-color: @(isMyTeam ? "#e9f9f5" : "#fff4e6");">
-                                        @((f.Main.Requester?.UserName?.Length ?? 0) > 0 ? f.Main.Requester.UserName.Substring(0, 1) : "👤")
+                            <div class="text-secondary mb-3 small">
+                                提單人：@(f.Main.Requester?.UserName ?? "系統人") ｜ 建立日期：@f.Main.CreatedAt.ToString("yyyy/MM/dd")
+                            </div>
+
+                            <div class="text-dark mb-3" style="font-size: 0.92rem; line-height: 1.5;">
+                                <strong>變更摘要：</strong> @f.Main.Description
+                            </div>
+                            @{
+                                var score = f.AiDetail?.PriorityScore ?? 0;
+                                string riskLevel = score > 70 ? "高風險" : (score > 40 ? "中風險" : "低風險");
+                                string riskClass = score > 70 ? "risk-high" : (score > 40 ? "risk-medium" : "risk-low");
+                            }
+
+                            @* 摺疊控制按鈕 *@
+                            @if (f.AiDetail != null)
+                            {
+                                <button class="ai-toggle-btn @riskClass mb-3" type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#aiCollapse-@f.Main.Id"
+                                        aria-expanded="false">
+                                    <i class="bi bi-robot me-2"></i>
+                                    <span>資安決策分析</span>
+                                    <span class="mx-2 text-muted">|</span>
+                                    <span class="fw-bold">@riskLevel</span>
+                                    <span class="small text-muted ms-1">(分數: @score)</span>
+                                    <i class="bi bi-chevron-down ms-3"></i>
+                                </button>
+                            
+
+                            @* 摺疊內容區 *@
+                            <div class="collapse" id="aiCollapse-@f.Main.Id">
+                                <div class="ai-review-sandbox mb-4" style="background-color: #f8fafc; border-left: 4px solid #2a9d8f; padding: 15px; border-radius: 0 8px 8px 0;">
+                                    <div class="mb-3 p-2 border-start border-danger bg-white shadow-sm" style="border-width: 3px !important;">
+                                        <div class="small fw-bold text-danger mb-1">風險總評：</div>
+                                        <div class="small text-dark">@GetRiskSummary(f.AiDetail.AiReviewComment)</div>
                                     </div>
 
-                                    <div>
-                                        <div class="d-flex align-items-center mb-1">
-                                            <h5 class="card-title mb-0 fw-bold text-dark">
-                                                @(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)
-                                            </h5>
+                                    <div class="mb-3">
+                                        <div class="small fw-bold text-dark mb-1">核心分析：</div>
+                                        <div class="text-dark small">@GetCoreSummary(f.AiDetail.AiReviewComment)</div>
+                                    </div>
 
-                                            @if (!isMyTeam)
+                                    <div class="mb-3">
+                                        <div class="small fw-bold text-dark mb-1">執行建議路徑：</div>
+                                        <ul class="list-unstyled mb-0 small text-muted">
+                                            @foreach (var step in GetExecutionSteps(f.AiDetail.AiReviewComment))
                                             {
-                                                <span class="badge bg-warning text-dark ms-2" style="font-size: 0.7rem;">跨組覆核</span>
+                                                <li class="mb-1"><i class="bi bi-check2-circle text-success me-1"></i> @step</li>
+                                            }
+                                        </ul>
+                                    </div>
+
+                                    <div class="pt-2 border-top">
+                                        <div class="small fw-bold text-secondary mb-1">合規引用：</div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach (var source in GetReferences(f.AiDetail.AiReviewComment))
+                                            {
+                                                <span class="badge border text-secondary px-2" style="background:#e2e8f0; font-size: 0.75rem;">@source</span>
                                             }
                                         </div>
-
-                                        <p class="text-muted mb-2 small">
-                                            申請人：@(f.Main.Requester?.UserName ?? "系統人") ｜
-                                            部門：@f.Main.Department ｜
-                                            建立：@f.Main.CreatedAt.ToString("yyyy/MM/dd")
-                                        </p>
-
-                                        <p class="card-text text-dark mb-0">
-                                            <strong>摘要：</strong> @f.Main.Description
-                                        </p>
-
-                                        @* 💡 顯示前一位主管的評語 (僅在覆核時顯示) *@
-                                        @if (!isMyTeam)
-                                        {
-                                            <div class="mt-2 p-2 bg-light rounded small border-start border-warning" style="font-size: 0.8rem;">
-                                                <strong>💡 初審組長評語：</strong>
-                                                @* 🚀 修正：改從 ViewModel 的 FirstReviewComment 抓取 *@
-                                                @(string.IsNullOrEmpty(f.FirstReviewComment) ? "通過，請協助覆核。" : f.FirstReviewComment)
-                                            </div>
-                                        }
                                     </div>
                                 </div>
+                            </div>
+                            }
 
-                                <div class="action-btn-group ms-3 text-end">
-                                    <a class="details-link mb-2" href="/Vulnerabilities/Details?id=@f.Main.Id">
-                                        查看詳情 >
-                                    </a>
+                            @* 初審意見與底部操作列 *@
+                            <div class="d-flex flex-column mt-3 pt-3 border-top">
+                                @if (!isMyTeam)
+                                {
+                                    <div class="mb-3 p-2 bg-light rounded text-secondary" style="font-size: 0.8rem; border-left: 3px solid #f4a261;">
+                                        <strong>初審主管意見：</strong> @(string.IsNullOrEmpty(f.FirstReviewComment) ? "通過，請協助跨組覆核。" : f.FirstReviewComment)
+                                    </div>
+                                }
 
-                                    @* 💡 修改核准按鈕：改為觸發 approveModal *@
-                                    <button type="button" class="btn btn-sm btn-approve w-100 mb-1 rounded-pill"
-                                            data-bs-toggle="modal" data-bs-target="#approveModal"
-                                            data-id="@f.Main.Id"
-                                            data-type="@(isMyTeam ? "初步核准" : "最終核准")"
-                                            data-title="@(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)">
-                                        @(isMyTeam ? "初步核准" : "最終核准")
-                                    </button>
-
-                                    <button type="button" class="btn btn-sm btn-reject w-100 rounded-pill"
-                                            data-bs-toggle="modal" data-bs-target="#rejectModal"
-                                            data-id="@f.Main.Id"
-                                            data-title="@(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)">
-                                        退回
-                                    </button>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="small text-muted">
+                                        <i class="bi bi-calendar-event me-1"></i> 預計實施時間：
+                                        <span class="fw-bold text-dark">@(f.Main.ScheduledTime.HasValue ? f.Main.ScheduledTime.Value.ToString("yyyy/MM/dd HH:mm") : "尚未排定")</span>
+                                    </div>
+                                    <div>
+                                        <a href="/Vulnerabilities/Details?id=@f.Main.Id&returnUrl=@System.Net.WebUtility.UrlEncode(Request.Path + Request.QueryString)"
+                                           class="text-secondary small text-decoration-none me-3"
+                                           style="font-size: 0.88rem;">
+                                            查看完整明細 &gt;
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-approve px-3 rounded" data-bs-toggle="modal" data-bs-target="#approveModal" data-id="@f.Main.Id" data-type="@(isMyTeam ? "初步核准" : "最終核准")" data-title="@(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)">
+                                            @(isMyTeam ? "初步核准" : "最終核准")
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-reject px-3 rounded ms-1" data-bs-toggle="modal" data-bs-target="#rejectModal" data-id="@f.Main.Id" data-title="@(string.IsNullOrWhiteSpace(f.Main.TicketNumber) ? $"變更單 #{f.Main.Id}" : f.Main.TicketNumber)">
+                                            退回
+                                        </button>
+                                    </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -260,33 +368,25 @@
             }
         </div>
 
-
-        @* --- 2. 處理中 (Tracking) --- *@
         <div class="tab-pane fade" id="tracking">
             @if (Model.Tracking.Count == 0)
             {
-                <div class="text-muted text-center py-5">目前沒有追蹤中的單據。</div>
+                <div class="text-muted py-4 small">目前沒有追蹤中的單據。</div>
             }
             else
             {
                 @foreach (var f in Model.Tracking)
                 {
-                    <div class="card admin-card border-tracking mb-3 shadow-sm opacity-75">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="status-text text-info">
-                                    ● 您已簽核完成 (目前進度：@(f.Main.Status == "PendingCross" ? "等待他組組長覆核" : "等待資安長審核"))
-                                </div>
-                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #ced4da;"></div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
+                    <div class="card admin-card border-tracking mb-3 opacity-75">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <h6 class="fw-bold mb-1">@f.Main.TicketNumber</h6>
-                                    <p class="text-muted mb-0 small">
-                                        您於 @f.Main.CreatedAt.ToString("yyyy/MM/dd") 已完成該階段授權
-                                    </p>
+                                    <h6 class="fw-bold text-dark mb-1">@f.Main.TicketNumber</h6>
+                                    <div class="small text-secondary">
+                                        建立時間：@f.Main.CreatedAt.ToString("yyyy/MM/dd") ｜ 當前階段：<span class="text-info fw-bold">@(f.Main.Status == "PendingCross" ? "等待跨組主管覆核" : "等待資安長審核")</span>
+                                    </div>
                                 </div>
-                                <a class="details-link" href="/Vulnerabilities/Details?id=@f.Main.Id">追蹤流程 ></a>
+                                <a href="/Vulnerabilities/Details?id=@f.Main.Id" class="text-decoration-none small text-info fw-bold">追蹤流程 &gt;</a>
                             </div>
                         </div>
                     </div>
@@ -294,28 +394,23 @@
             }
         </div>
 
-        @* --- 3. 已結案 (Closed) --- *@
         <div class="tab-pane fade" id="closed">
             @if (Model.Closed.Count == 0)
             {
-                <div class="text-muted text-center py-5">尚無已完成結案的單據。</div>
+                <div class="text-muted py-4 small">尚無已完成結案的單據。</div>
             }
             else
             {
                 @foreach (var f in Model.Closed)
                 {
-                    <div class="card admin-card border-approved mb-3 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="status-text text-success">● 最終結案 (此單據已正式生效)</div>
-                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #ced4da;"></div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
+                    <div class="card admin-card border-closed mb-3">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <h6 class="fw-bold mb-1">@f.Main.TicketNumber <span class="badge bg-success ms-2">SUCCESS</span></h6>
-                                    <p class="text-muted mb-0 small">結案日期：@DateTime.Now.ToString("yyyy/MM/dd") ｜ 部門：@f.Main.Department</p>
+                                    <h6 class="fw-bold text-success mb-1">@f.Main.TicketNumber <span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size: 0.72rem;">已生效</span></h6>
+                                    <div class="small text-muted">變更組別：@f.Main.Department ｜ 實施排程：@(f.Main.ScheduledTime?.ToString("yyyy/MM/dd HH:mm") ?? "未排定")</div>
                                 </div>
-                                <a class="details-link text-success" href="/Vulnerabilities/Details?id=@f.Main.Id">查看憑證</a>
+                                <a href="/Vulnerabilities/Details?id=@f.Main.Id" class="text-decoration-none small text-success fw-bold">查看憑證 &gt;</a>
                             </div>
                         </div>
                     </div>
@@ -323,11 +418,10 @@
             }
         </div>
 
-        @* --- 4. 已退回 (Rejected) --- *@
         <div class="tab-pane fade" id="rejected">
             @if (Model.Rejected.Count == 0)
             {
-                <div class="text-muted text-center py-5">目前沒有退回紀錄。</div>
+                <div class="text-muted py-4 small">目前沒有退回紀錄。</div>
             }
             else
             {
@@ -335,59 +429,21 @@
                 {
                     var userId = int.Parse(HttpContextAccessor.HttpContext.Session.GetString("UserId") ?? "0");
                     var myTeam = HttpContextAccessor.HttpContext.Session.GetString("UserTeam") ?? "";
-
-                    // 💡 邏輯 A：我是最後那個「按下退回鍵」的人
                     bool isLastReviewerMe = f.Main.LastReviewerId == userId;
-
-                    // 💡 邏輯 B：這是我這組的單子，且被「別人」退回 (需要我處理)
                     bool needsActionByMe = (f.Main.Department == myTeam && !isLastReviewerMe);
 
-                    <div class="card admin-card border-rejected mb-3 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="fw-bold @(isLastReviewerMe ? "text-danger" : "text-warning")" style="font-size: 0.85rem;">
-                                    @if (isLastReviewerMe)
-                                    {
-                                        <span>● 您已退回此申請 (等待申請人修正)</span>
-                                    }
-                                    else if (needsActionByMe)
-                                    {
-                                        <span>● 他組主管/資安長 已退回 (⚠️ 請您處理)</span>
-                                    }
-                                    else
-                                    {
-                                        @* 這裡處理「非本組也非我退」但出現在列表的情況（雖然過濾後理論上不會出現） *@
-                                        <span>● 已退回</span>
-                                    }
-                                </div>
-                                <div class="flex-grow-1 ms-3" style="border-bottom: 1px dashed #f5c2c7;"></div>
+                    <div class="card admin-card border-rejected mb-3">
+                        <div class="card-body p-4">
+                            <div class="fw-bold small mb-2 @(isLastReviewerMe ? "text-danger" : "text-warning")">
+                                ● @(isLastReviewerMe ? "您已執行退回 (等待申請人修正)" : "他組主管/資安長已退回 (請協助處理)")
                             </div>
-
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h6 class="fw-bold text-dark mb-1">@f.Main.TicketNumber</h6>
-                                    <div class="alert alert-danger py-2 mb-2 small" style="background-color: #fff5f5; border-color: #feb2b2;">
-                                        <strong>❌ 退回理由：</strong> @(f.LatestRejectReason ?? "內容填寫不完整，請重新檢查。")
-                                    </div>
-                                    @if (f.Main.UpdatedAt.HasValue)
-                                    {
-                                        <div class="text-muted small">處理時間：@f.Main.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")</div>
-                                    }
-                                </div>
-
-                                <div class="action-btn-group ms-3 text-end">
-                                    @if (needsActionByMe)
-                                    {
-                                        @* 💡 只有當「我是這組的主管」且「不是我退的」時，才顯示操作按鈕 *@
-                                        <button class="btn btn-sm btn-outline-warning w-100 mb-1 rounded-pill">轉交組員</button>
-                                        <button class="btn btn-sm btn-approve w-100 rounded-pill">親自修正</button>
-                                    }
-                                    else
-                                    {
-                                        @* 💡 如果是我退的，就顯示狀態即可 *@
-                                        <span class="badge bg-light text-secondary border rounded-pill px-3 py-2" style="font-size: 0.75rem;">已執行退回</span>
-                                    }
-                                </div>
+                            <h6 class="fw-bold text-dark mb-2">@f.Main.TicketNumber</h6>
+                            <div class="p-3 mb-2 small text-danger" style="background-color: #fff5f5; border: 1px solid #f5c2c7; border-radius: 6px;">
+                                <strong>退回具體原因：</strong> @(f.LatestRejectReason ?? "內容未盡完善，請退回申請人重新檢視。")
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mt-3">
+                                <span class="small text-muted">更新時間：@(f.Main.UpdatedAt?.ToString("yyyy/MM/dd HH:mm") ?? "無")</span>
+                                <a href="/Vulnerabilities/Details?id=@f.Main.Id" class="text-decoration-none small text-secondary fw-bold">查看單據 &gt;</a>
                             </div>
                         </div>
                     </div>
@@ -398,89 +454,4 @@
     </div>
 </div>
 
-@* <!-- 審核 Modal --> *@
-@* <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true"> *@
-@*     <div class="modal-dialog"> *@
-@*         <div class="modal-content" style="border-radius: 16px;"> *@
-@*             <form method="post" asp-page-handler="Approve"> *@
-@*                 <div class="modal-header border-0"> *@
-@*                     <h5 class="modal-title fw-bold">📝 填寫審核意見</h5> *@
-@*                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button> *@
-@*                 </div> *@
-@*                 <div class="modal-body"> *@
-@*                     <input type="hidden" name="id" id="approveFormId" /> *@
-@*                     <p class="mb-3">正在進行 <span id="approveModalLabel" class="badge bg-primary"></span>： <strong id="approveFormTitle"></strong></p> *@
-@*                     <textarea name="comment" class="form-control" rows="4" required placeholder="請輸入您的審核評語..."></textarea> *@
-@*                 </div> *@
-@*                 <div class="modal-footer border-0"> *@
-@*                     <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">取消</button> *@
-@*                     <button type="submit" class="btn btn-success rounded-pill px-4" style="background-color: #3AB6A7; border:none;">確認核准</button> *@
-@*                 </div> *@
-@*             </form> *@
-@*         </div> *@
-@*     </div> *@
-@* </div> *@
 
-@* <!-- 退回 Modal --> *@
-@* <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true"> *@
-@*     <div class="modal-dialog"> *@
-@*         <div class="modal-content" style="border-radius: 16px;"> *@
-@*             <form method="post" asp-page-handler="Reject"> *@
-@*                 <div class="modal-header border-0"> *@
-@*                     <h5 class="modal-title text-danger fw-bold">⚠️ 確認退回</h5> *@
-@*                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button> *@
-@*                 </div> *@
-@*                 <div class="modal-body"> *@
-@*                     <input type="hidden" name="id" id="modalFormId" /> *@
-@*                     <p>正在退回：<strong id="modalFormTitle"></strong></p> *@
-@*                     <textarea name="reason" class="form-control" rows="4" required placeholder="請填寫退回原因..."></textarea> *@
-@*                 </div> *@
-@*                 <div class="modal-footer border-0"> *@
-@*                     <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">取消</button> *@
-@*                     <button type="submit" class="btn btn-danger rounded-pill px-4">確認退回</button> *@
-@*                 </div> *@
-@*             </form> *@
-@*         </div> *@
-@*     </div> *@
-@* </div> *@
-
-
-@* <script> *@
-@*     (function() { *@
-@*         // 1. 解決 AJAX 背景變黑：先清除所有殘留的背景陰影 *@
-@*         document.querySelectorAll('.modal-backdrop').forEach(el => el.remove()); *@
-
-@*         // 2. 處理重複 Modal：如果 body 已經有同樣 ID 的 Modal，先刪掉舊的 *@
-@*         ['approveModal', 'rejectModal'].forEach(id => { *@
-@*             const oldModal = document.body.querySelector(`#${id}`); *@
-@*             if (oldModal && oldModal.parentNode === document.body) { *@
-@*                 oldModal.remove(); *@
-@*             } *@
-@*         }); *@
-
-@*         const approveModalEl = document.getElementById('approveModal'); *@
-@*         const rejectModalEl = document.getElementById('rejectModal'); *@
-
-@*         // 3. 強制外掛到 body *@
-@*         if (approveModalEl) document.body.appendChild(approveModalEl); *@
-@*         if (rejectModalEl) document.body.appendChild(rejectModalEl); *@
-
-@*         // 4. 事件綁定 (使用 Bootstrap 實例確保穩定) *@
-@*         if (approveModalEl) { *@
-@*             approveModalEl.addEventListener('show.bs.modal', function (event) { *@
-@*                 const btn = event.relatedTarget; *@
-@*                 document.getElementById('approveFormId').value = btn.getAttribute('data-id'); *@
-@*                 document.getElementById('approveFormTitle').textContent = btn.getAttribute('data-title'); *@
-@*                 document.getElementById('approveModalLabel').textContent = btn.getAttribute('data-type'); *@
-@*             }); *@
-@*         } *@
-
-@*         if (rejectModalEl) { *@
-@*             rejectModalEl.addEventListener('show.bs.modal', function (event) { *@
-@*                 const btn = event.relatedTarget; *@
-@*                 document.getElementById('modalFormId').value = btn.getAttribute('data-id'); *@
-@*                 document.getElementById('modalFormTitle').textContent = btn.getAttribute('data-title'); *@
-@*             }); *@
-@*         } *@
-@*     })(); *@
-@* </script> *@

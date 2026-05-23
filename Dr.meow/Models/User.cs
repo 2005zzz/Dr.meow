@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dr.meow.Models
 {
     public class User
     {
+        [Key]
         public int UserId { get; set; }
 
         // ⭐ 系統帳號登入用（你負責的）

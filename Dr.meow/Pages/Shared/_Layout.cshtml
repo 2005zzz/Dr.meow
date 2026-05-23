@@ -154,11 +154,13 @@
                 <!-- 左側 -->
                 <div class="d-flex align-items-center gap-3">
 
-                    @if (!string.Equals(currentPage, "/Login", System.StringComparison.OrdinalIgnoreCase))
+                    @* 🚀 修正：登入頁、變更單詳細頁、需求單詳細頁，通通不顯示 Layout 最左上的多餘返回鍵！ *@
+                    @if (!string.Equals(currentPage, "/Login", System.StringComparison.OrdinalIgnoreCase) &&
+                    !currentPage.StartsWith("/Vulnerabilities/Details", System.StringComparison.OrdinalIgnoreCase) &&
+                    !currentPage.StartsWith("/Request/Details", System.StringComparison.OrdinalIgnoreCase))
                     {
                         <button onclick="goBackSafe()" class="btn-drmeow-back">
-                            <i class="bi bi-arrow-left"></i>
-                            返回
+                            <i class="bi bi-arrow-left"></i> 返回
                         </button>
                     }
 
@@ -247,17 +249,46 @@
     <script>
 
         function goBackSafe() {
+            console.log("🛠 開始執行 goBackSafe...");
 
-            if (document.referrer && document.referrer !== window.location.href) {
+            // 1. 【最高優先級】檢查網址是否有明確指定的返回路徑 (ReturnUrl)
+            const urlParams = new URLSearchParams(window.location.search);
+            const backUrl = urlParams.get('returnUrl');
 
-                history.back();
-
-            } else {
-
-                window.location.href = "/UserHome";
-
+            if (backUrl) {
+                console.log("📍 偵測到 returnUrl，強制跳轉至:", backUrl);
+                window.location.replace(decodeURIComponent(backUrl));
+                return; // 成功跳轉，結束函式
             }
 
+            // 2. 【舊邏輯防線】檢查是否在諮詢模式下
+            const formsArea = document.getElementById('formsArea');
+            if (formsArea && !formsArea.classList.contains('d-none')) {
+                console.log("🏗 處於諮詢模式，執行模式切換...");
+                if (typeof window.backToConsultMode === 'function') {
+                    window.backToConsultMode();
+                } else {
+                    window.location.href = "/UserHome";
+                }
+                return; // 執行結束，結束函式
+            }
+
+            // 3. 【強制安全定錨】如果目前人在詳細頁，避免 history.back() 造成的循環
+            const currentPath = window.location.pathname.toLowerCase();
+            if (currentPath.includes('/details')) {
+                console.log("🔄 偵測到處於詳細頁，強制定錨至 UserHome...");
+                window.location.href = "/UserHome?tab=forms";
+                return;
+            }
+
+            // 4. 【最終防線】若以上皆無，才走標準歷史回溯
+            if (document.referrer && !document.referrer.includes('/Login')) {
+                console.log("🔙 執行標準瀏覽器回溯...");
+                history.back();
+            } else {
+                console.log("🏠 無 referrer 或在登入頁，強制回首頁...");
+                window.location.href = "/UserHome";
+            }
         }
 
     </script>

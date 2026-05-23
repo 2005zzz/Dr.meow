@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Dr.meow.Models
 {
@@ -11,6 +12,7 @@ namespace Dr.meow.Models
         public string JobTitle { get; set; } = "";
         public string Contact { get; set; } = "";
         public string Title { get; set; } = "";
+        [Column(TypeName = "nvarchar(max)")] // 🚀 確保長度足夠
         public string Description { get; set; } = "";
         public string SystemCategory { get; set; } = "";
         public string Priority { get; set; } = "";

@@ -1,278 +1,353 @@
-﻿@page
+﻿@page "/Vulnerabilities/Details"
 @model Dr.meow.Pages.Vulnerabilities.DetailsModel
 
 @{
-    ViewData["Title"] = "表單詳細內容";
+    ViewData["Title"] = "變更表單詳細內容";
+}
+@{
+    // 抓取傳遞過來的 returnUrl，若沒有則預設回到列表頁
+    string backUrl = Request.Query["returnUrl"].ToString();
+    if (string.IsNullOrEmpty(backUrl)) { backUrl = "/Forms/ChangeManagement"; }
 }
 
 <style>
-    /* 保留原本的 CSS 樣式 */
-    .vuln-details-page .card {
-        border-radius: 22px;
-        background: rgba(255,255,255,0.96);
-        border: 1px solid rgba(255,255,255,0.9);
-        box-shadow: 0 18px 40px rgba(47,110,100,0.18);
-        overflow: hidden;
+    /* 🚀 現代極簡、高專注度醫資後台風格 */
+    .vuln-details-page {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: #334155;
     }
 
-    .vuln-details-page .details-header {
-        background: linear-gradient(135deg,#8fdacb,#64bba8);
-        color: #ffffff;
-        padding: 16px 24px;
-        border-bottom: 1px solid rgba(255,255,255,0.6);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+        /* 主卡片：白底、細邊線，拔除誇張陰影 */
+        .vuln-details-page .main-card {
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+        }
 
-    .vuln-details-page .details-header-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.16);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-    }
-
-    .vuln-details-page .details-header-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        letter-spacing: .03em;
-    }
-
-    .vuln-details-page .card-body {
-        padding: 22px 26px 20px;
-    }
-
-    .vuln-details-page dl {
-        margin-bottom: 0.5rem;
-    }
-
-    .vuln-details-page dt {
-        font-weight: 600;
-        color: #425b58;
-        margin-top: 0.8rem; /* 增加間距讓閱讀更舒適 */
-        font-size: 0.95rem;
-    }
-
-    .vuln-details-page dd {
-        margin-bottom: 0.35rem;
-        color: #333;
-    }
-
-    /* 標籤樣式 */
-    .vuln-details-page .field-chip {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 999px;
-        font-size: 0.85rem;
-        background: #f2faf8;
-        border: 1px solid rgba(143,218,203,0.7);
-        color: #2f6e64;
-        margin-right: 5px;
-        font-weight: 500;
-    }
-
-    /* 風險等級顏色 */
-    .vuln-details-page .severity-low {
-        background: #e6f6ff;
-        border-color: #9fd3ff;
-        color: #1f567a;
-    }
-
-    .vuln-details-page .severity-medium {
-        background: #fff6e1;
-        border-color: #ffd08a;
-        color: #8a5a17;
-    }
-
-    .vuln-details-page .severity-high {
-        background: #ffe9ea;
-        border-color: #ff9ba0;
-        color: #8a1f2a;
-    }
-
-    .vuln-details-page .severity-critical {
-        background: #dc3545;
-        border-color: #dc3545;
-        color: #fff;
-    }
-    /* 新增重大風險 */
-
-    .vuln-details-page .desc-box {
-        padding: 15px;
-        border-radius: 12px;
-        background: #f8fbfb;
-        border: 1px solid rgba(143,218,203,0.4);
-        min-height: 80px;
-        white-space: pre-wrap; /* 保留換行 */
-        line-height: 1.6;
-    }
-
-    /* 按鈕樣式 */
-    .vuln-details-page .btn-edit {
-        border-radius: 999px;
-        padding: 8px 24px;
-        font-weight: 600;
-        border: none;
-        background: linear-gradient(135deg,#8fdacb,#64bba8);
-        color: #ffffff;
-        box-shadow: 0 10px 22px rgba(47,110,100,0.28);
-        transition: 0.18s ease;
-        text-decoration: none;
-    }
-
-        .vuln-details-page .btn-edit:hover {
-            background: linear-gradient(135deg,#7bcbbd,#51a798);
-            transform: translateY(-1px);
+        /* 內斂純色標頭 */
+        .vuln-details-page .details-header {
+            background-color: #2a9d8f; /* 穩重的專業醫療技術綠 */
             color: #ffffff;
+            padding: 22px 28px;
         }
 
-    .vuln-details-page .btn-delete {
-        border-radius: 999px;
-        padding: 8px 22px;
-        font-weight: 600;
-        border: 1px solid #e04444;
-        background-color: #f3b7b7;
-        color: #ffffff;
-        text-decoration: none;
-        transition: 0.15s ease;
-    }
+        .vuln-details-page .details-header-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
 
-        .vuln-details-page .btn-delete:hover {
-            background-color: #e0a0a0;
+        /* 輕量化快顯資訊列 */
+        .vuln-details-page .meta-banner {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 28px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            font-size: 0.88rem;
+            color: #64748b;
+        }
+
+        .vuln-details-page .meta-banner-item strong {
+            color: #1e293b;
+        }
+
+        /* 區塊標題：純文字加底線 */
+        .vuln-details-page .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        /* 簡約平面表單結構 */
+        .vuln-details-page .info-group {
+            margin-bottom: 18px;
+        }
+
+        .vuln-details-page .info-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .vuln-details-page .info-value {
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+        /* 扁平化素雅標籤 */
+        .vuln-details-page .field-chip {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            margin-right: 6px;
+        }
+
+        /* 風險級別：僅保留必要的文字顏色與淡背景，拒絕花俏 */
+        .vuln-details-page .severity-low {
+            background-color: #e2f0d9;
+            color: #385723;
+            border: 1px solid #c5e0b4;
+        }
+
+        .vuln-details-page .severity-medium {
+            background-color: #fff2cc;
+            color: #7f6000;
+            border: 1px solid #ffe599;
+        }
+
+        .vuln-details-page .severity-high {
+            background-color: #fce4d6;
+            color: #c65911;
+            border: 1px solid #f8cbad;
+        }
+
+        .vuln-details-page .severity-critical {
+            background-color: #f8d7da;
+            color: #842029;
+            border: 1px solid #f5c2c7;
+        }
+
+        .vuln-details-page .status-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* 純淨大文字說明框 */
+        .vuln-details-page .desc-box {
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            min-height: 380px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        /* 技術雙計畫整合區 */
+        .vuln-details-page .plan-box {
+            background-color: #fafafa;
+            border-left: 3px solid #64748b;
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 12px;
+        }
+
+        /* 高階功能按鈕區：極簡商務白 */
+        .vuln-details-page .btn-action-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 28px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .vuln-details-page .btn-meow-primary {
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid #2a9d8f;
+            background-color: #2a9d8f;
             color: #ffffff;
+            transition: all 0.15s ease;
+            text-decoration: none;
         }
 
-    .vuln-details-page .btn-back {
-        border-radius: 999px;
-        padding: 8px 22px;
-        font-weight: 500;
-        border: 1px solid #cfd4da;
-        background-color: #f7f7f8;
-        color: #4c5a64;
-        text-decoration: none;
-        transition: 0.15s ease;
-    }
+            .vuln-details-page .btn-meow-primary:hover {
+                background-color: #218175;
+                border-color: #218175;
+            }
 
-        .vuln-details-page .btn-back:hover {
-            background-color: #eceff3;
-            color: #4c5a64;
+        .vuln-details-page .btn-meow-danger {
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #dc3545;
+            transition: all 0.15s ease;
+            text-decoration: none;
         }
+
+            .vuln-details-page .btn-meow-danger:hover {
+                background-color: #fdf2f2;
+                border-color: #f8d7da;
+            }
+
+        .vuln-details-page .btn-meow-back {
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #475569;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+            .vuln-details-page .btn-meow-back:hover {
+                background-color: #f1f5f9;
+            }
 </style>
 
-<div class="vuln-details-page container mt-4 mb-4">
-    <div class="card">
+<div class="vuln-details-page container mt-4 mb-5">
+    <div class="mb-3">
+        <a href="javascript:void(0)" onclick="goBackSafe()" class="text-decoration-none text-secondary small fw-bold">
+            <i class="bi bi-chevron-left"></i> 返回上一頁
+        </a>
+    </div>
+
+    <div class="card main-card">
         <div class="details-header">
-            <div class="details-header-icon">
-                📄
-            </div>
-            <div>
-                <div class="details-header-title">表單詳細內容</div>
-                <div class="small" style="opacity:.9;">
-                    單號：@(string.IsNullOrEmpty(Model.Vulnerability.TicketNumber) ? $"#{Model.Vulnerability.Id}" : Model.Vulnerability.TicketNumber)
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div>
+                    <div class="details-header-title">系統變更申請單詳細內容</div>
+                    <div class="small opacity-75 mt-1">變更單索引：#@Model.Vulnerability.Id</div>
+                </div>
+                <div>
+                    @{
+                        var st = Model.Vulnerability.Status;
+                        string statusBadgeClass = "bg-warning-subtle text-warning-emphasis border border-warning-subtle";
+                        if (st == "Approved") { statusBadgeClass = "bg-success-subtle text-success-emphasis border border-success-subtle"; }
+                        else if (st == "Rejected") { statusBadgeClass = "bg-danger-subtle text-danger-emphasis border border-danger-subtle"; }
+                    }
+                    <span class="status-badge @statusBadgeClass">
+                        @(st == "Pending" ? "⏳ 審核中" : st == "Approved" ? "已准予實施" : "已退回修訂")
+                    </span>
                 </div>
             </div>
         </div>
 
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3">系統 / 工單類別</dt>
-                <dd class="col-sm-9">
-                    @if (!string.IsNullOrEmpty(Model.Vulnerability.SystemCategory))
-                    {
-                        <span class="field-chip">@Model.Vulnerability.SystemCategory</span>
-                    }
-                    @if (!string.IsNullOrEmpty(Model.Vulnerability.TicketCategory))
-                    {
-                        <span class="field-chip">@Model.Vulnerability.TicketCategory</span>
-                    }
-                </dd>
+        <div class="meta-banner">
+            <div class="meta-banner-item">
+                表單單號：<strong>@(string.IsNullOrEmpty(Model.Vulnerability.TicketNumber) ? "未核單" : Model.Vulnerability.TicketNumber)</strong>
+            </div>
+            <div class="meta-banner-item">
+                提單人員：<strong>@(Model.Vulnerability.Requester != null ? Model.Vulnerability.Requester.UserName : $"管理員 (ID: {Model.Vulnerability.RequesterId})")</strong>
+            </div>
+            <div class="meta-banner-item">
+                申請組別：<strong>@Model.Vulnerability.Department</strong>
+            </div>
+        </div>
 
-                <dt class="col-sm-3">變更類型 (Type)</dt>
-                <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.Vulnerability.ChangeType)
-                </dd>
+        <div class="card-body p-4">
 
-                <dt class="col-sm-3">風險評估 (Severity)</dt>
-                <dd class="col-sm-9">
-                    @{
-                        var sev = Model.Vulnerability.Severity?.Trim() ?? "";
-                        var sevClass = "severity-low";
-                        if (sev.Contains("重大")) { sevClass = "severity-critical"; }
-                        else if (sev.Contains("高")) { sevClass = "severity-high"; }
-                        else if (sev.Contains("中")) { sevClass = "severity-medium"; }
-                    }
-                    <span class="field-chip @sevClass">
-                        @(string.IsNullOrEmpty(sev) ? "未評估" : sev)
-                    </span>
-                </dd>
+            @* 🚀 如果表單被退回，最頂端顯示端正的退回理由區區塊 *@
+            @if (st == "Rejected")
+            {
+                <div class="alert alert-danger p-3 mb-4" style="border-radius: 8px; border: 1px solid #f5c2c7; background-color: #f8d7da; color: #842029;">
+                    <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> 表單退回理由：</div>
+                    <div class="small">@(Model.LatestRejectReason ?? "請聯繫資訊主管了解審核詳情。")</div>
+                </div>
+            }
 
-                <dt class="col-sm-3">影響與依賴</dt>
-                <dd class="col-sm-9">
-                    <div><strong>影響程度：</strong> @Html.DisplayFor(model => model.Vulnerability.ImpactLevel)</div>
-                    <div><strong>系統依賴：</strong> @Html.DisplayFor(model => model.Vulnerability.Dependency)</div>
-                </dd>
+            <div class="row g-4">
+                <div class="col-12 col-lg-6">
+                    <div class="section-title">變更單風險與控制評估</div>
 
-                <dt class="col-sm-3">預計實施時間</dt>
-                <dd class="col-sm-9">
-                    @* 🚀 修正：FoundDate 已刪除，統一顯示 ScheduledTime (DateTime 型態) *@
-                    @if (Model.Vulnerability.ScheduledTime.HasValue)
-                    {
-                        @Model.Vulnerability.ScheduledTime.Value.ToString("yyyy/MM/dd HH:mm")
-                    }
-                    else
-                    {
-                        <span class="text-muted">尚未排定時間</span>
-                    }
-                </dd>
+                    <div class="row">
+                        <div class="col-6 info-group">
+                            <span class="info-label">系統 / 工單類別</span>
+                            <div class="info-value">
+                                @if (!string.IsNullOrEmpty(Model.Vulnerability.SystemCategory))
+                                {
+                                    <span class="field-chip">@Model.Vulnerability.SystemCategory</span>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Vulnerability.TicketCategory))
+                                {
+                                    <span class="field-chip">@Model.Vulnerability.TicketCategory</span>
+                                }
+                            </div>
+                        </div>
 
-                <dt class="col-sm-3">計畫確認</dt>
-                <dd class="col-sm-9">
-                    <div><strong>測試計畫：</strong> @Html.DisplayFor(model => model.Vulnerability.TestPlan)</div>
-                    <div><strong>回復計畫：</strong> @Html.DisplayFor(model => model.Vulnerability.RecoveryPlan)</div>
-                </dd>
+                        <div class="col-6 info-group">
+                            <span class="info-label">變更類型 (Type)</span>
+                            <div class="info-value fw-bold">@Model.Vulnerability.ChangeType</div>
+                        </div>
 
-                <dt class="col-sm-3">提單人 (AssignedTo)</dt>
-                <dd class="col-sm-9">
-                    @* 🚀 修正：AssignedTo 已改為 Requester 關聯 *@
-                    @if (Model.Vulnerability.Requester != null)
-                    {
-                        <span class="badge bg-light text-dark border">
-                            <i class="bi bi-person"></i> @Model.Vulnerability.Requester.UserName (@Model.Vulnerability.Requester.Account)
-                        </span>
-                    }
-                    else
-                    {
-                        @:系統管理員 (ID: @Model.Vulnerability.RequesterId)
-                    }
-                </dd>
+                        <div class="col-6 info-group">
+                            <span class="info-label">風險評估 (Severity)</span>
+                            <div class="info-value">
+                                @{
+                                    var sev = Model.Vulnerability.Severity?.Trim() ?? "";
+                                    var sevClass = "severity-low";
+                                    if (sev.Contains("重大")) { sevClass = "severity-critical"; }
+                                    else if (sev.Contains("高")) { sevClass = "severity-high"; }
+                                    else if (sev.Contains("中")) { sevClass = "severity-medium"; }
+                                }
+                                <span class="field-chip @sevClass">@((string.IsNullOrEmpty(sev) ? "未評估" : sev))</span>
+                            </div>
+                        </div>
 
-                <dt class="col-sm-3">流程狀態 (Status)</dt>
-                <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.Vulnerability.Status)
-                </dd>
+                        <div class="col-6 info-group">
+                            <span class="info-label">預計實施時間</span>
+                            <div class="info-value">
+                                @(Model.Vulnerability.ScheduledTime.HasValue ? Model.Vulnerability.ScheduledTime.Value.ToString("yyyy/MM/dd HH:mm") : "尚未排定時間")
+                            </div>
+                        </div>
 
-                <dt class="col-sm-3">變更內容 (Description)</dt>
-                <dd class="col-sm-9">
-                    <div class="desc-box">
-                        @Html.DisplayFor(model => model.Vulnerability.Description)
+                        <div class="col-12 info-group mt-2">
+                            <span class="info-label">衝擊與系統依賴</span>
+                            <div class="p-3 bg-light rounded" style="font-size: 0.9rem; border: 1px solid #e2e8f0;">
+                                <div class="mb-1"><strong>影響程度：</strong> @Model.Vulnerability.ImpactLevel</div>
+                                <div><strong>系統依賴：</strong> @Model.Vulnerability.Dependency</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 info-group mt-2">
+                            <span class="info-label">ISMS 控制計畫確認</span>
+
+                            <div class="plan-box">
+                                <div class="fw-bold mb-1" style="font-size: 0.88rem;">測試計畫 (Test Plan)</div>
+                                <div class="text-secondary small">@Model.Vulnerability.TestPlan</div>
+                            </div>
+
+                            <div class="plan-box" style="border-left-color: #e2e8f0;">
+                                <div class="fw-bold mb-1" style="font-size: 0.88rem;">回復計畫 (Recovery Plan)</div>
+                                <div class="text-secondary small">@Model.Vulnerability.RecoveryPlan</div>
+                            </div>
+                        </div>
                     </div>
-                </dd>
-            </dl>
+                </div>
 
-            <div class="mt-4">
-                <a asp-page="./Edit" asp-route-id="@Model.Vulnerability.Id" class="btn-edit">
-                    <i class="bi bi-pencil-square"></i> 編輯表單
-                </a>
+                <div class="col-12 col-lg-6">
+                    <div class="section-title">變更實施詳細內容</div>
+                    <div class="desc-box">@Model.Vulnerability.Description</div>
 
-                <a asp-page="./Delete" asp-route-id="@Model.Vulnerability.Id" class="btn-delete ms-2">
-                    <i class="bi bi-trash"></i> 刪除
-                </a>
+                </div>
 
             </div>
+
+        </div>
+
+        <div class="btn-action-group justify-content-end">
+            <a asp-page="./Edit" asp-route-id="@Model.Vulnerability.Id" class="btn-meow-primary">
+                編輯表單
+            </a>
+            <a asp-page="./Delete" asp-route-id="@Model.Vulnerability.Id" class="btn-meow-danger ms-2">
+                刪除作廢
+            </a>
         </div>
     </div>
 </div>

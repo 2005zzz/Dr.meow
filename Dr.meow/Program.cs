@@ -109,10 +109,19 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-// ⭐ 讓根目錄直接跳轉 Login
+// 🚀 【根除劫持】：智慧引導 Logo 與根目錄路由
 app.MapGet("/", ctx =>
 {
-    ctx.Response.Redirect("/Login");
+    var userIdStr = ctx.Session.GetString("UserId");
+    if (!string.IsNullOrEmpty(userIdStr))
+    {
+        // 如果已經有 Session 登入身分，點 Logo 一律回首頁中控台，拒絕跳回登入頁！
+        ctx.Response.Redirect("/UserHome");
+    }
+    else
+    {
+        ctx.Response.Redirect("/Login");
+    }
     return Task.CompletedTask;
 });
 app.MapControllers();

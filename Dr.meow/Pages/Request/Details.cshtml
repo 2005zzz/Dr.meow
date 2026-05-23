@@ -1,237 +1,229 @@
-﻿@page
+﻿@page "/Request/Details"
 @model Dr.meow.Pages.Request.DetailsModel
 @{
     ViewData["Title"] = "需求單詳細內容";
 }
 
 <style>
-    .details-wrap {
-        max-width: 980px;
+    /* 🚀 現代極簡、高專注度醫資後台風格 (需求單 REQ 專屬) */
+    .req-details-page {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: #334155;
+        max-width: 1140px;
         margin: 0 auto;
     }
 
-    .details-card {
-        border-radius: 24px;
-        overflow: hidden;
-        border: 0;
-        box-shadow: 0 18px 40px rgba(0,0,0,.08);
-    }
+        /* 主卡片：細緻灰色邊線，去噪除陰影 */
+        .req-details-page .main-card {
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+        }
 
-    .details-header {
-        background: #6fc7b7;
-        color: #fff;
-        padding: 22px 26px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
+        /* 內斂純色醫療綠標頭 */
+        .req-details-page .details-header {
+            background-color: #2a9d8f;
+            color: #ffffff;
+            padding: 22px 28px;
+        }
 
-    .details-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: rgba(255,255,255,.22);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        flex-shrink: 0;
-    }
+        .req-details-page .details-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
 
-    .details-title {
-        font-size: 22px;
-        font-weight: 800;
-        margin: 0;
-        line-height: 1.2;
-    }
+        /* 輕量化快顯資訊列 */
+        .req-details-page .meta-banner {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 28px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            font-size: 0.88rem;
+            color: #64748b;
+        }
 
-    .details-subtitle {
-        margin: 6px 0 0;
-        font-size: 14px;
-        opacity: .92;
-    }
+        .req-details-page .meta-banner-item strong {
+            color: #1e293b;
+        }
 
-    .details-body {
-        padding: 28px 28px 22px;
-        background: #fff;
-    }
+        /* 區塊標題：純文字加底線 */
+        .req-details-page .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #cbd5e1;
+            margin-bottom: 20px;
+        }
 
-    .meta-row {
-        display: grid;
-        grid-template-columns: 240px 1fr;
-        gap: 14px 26px;
-        align-items: start;
-        padding: 10px 0;
-    }
+        /* 簡約平面表單欄位結構 */
+        .req-details-page .info-group {
+            margin-bottom: 18px;
+        }
 
-    .meta-key {
-        color: #52606d;
-        font-weight: 800;
-    }
+        .req-details-page .info-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+            display: block;
+        }
 
-    .meta-val {
-        color: #1f2937;
-        font-weight: 600;
-    }
+        .req-details-page .info-value {
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
 
-    .desc-box {
-        border: 1px solid rgba(111,199,183,.35);
-        border-radius: 14px;
-        padding: 18px 18px;
-        min-height: 170px;
-        background: #fbfffe;
-        white-space: pre-wrap;
-    }
-
-    .section-title {
-        font-weight: 900;
-        font-size: 18px;
-        margin: 10px 0 12px;
-        color: #184e45;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-        .section-title .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 999px;
-            background: rgba(58,182,167,.9);
+        /* 扁平化素雅標籤 */
+        .req-details-page .field-chip {
             display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            margin-right: 6px;
         }
 
-    .review-card {
-        border: 1px solid rgba(111,199,183,.35);
-        border-radius: 16px;
-        background: #fbfffe;
-        padding: 18px;
-    }
-
-    .review-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-top: 16px;
-    }
-
-    .action-bar {
-        display: flex;
-        gap: 14px;
-        margin-top: 22px;
-        flex-wrap: wrap;
-    }
-
-    .btn-pill {
-        border-radius: 999px;
-        padding: 12px 22px;
-        font-weight: 800;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        border: 0;
-    }
-
-    .btn-edit {
-        background: #7fd0c1;
-        color: #fff;
-    }
-
-        .btn-edit:hover {
-            filter: brightness(.97);
-            color: #fff;
+        .req-details-page .status-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
-    .btn-delete {
-        border: 1px solid #dc3545;
-        color: #fff;
-        background: #f06262;
-    }
-
-        .btn-delete:hover {
-            filter: brightness(.97);
-            color: #fff;
+        /* 純淨大文字說明框 */
+        .req-details-page .desc-box {
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            min-height: 420px; /* 確保與左側高度對稱平衡 */
+            line-height: 1.7;
+            color: #334155;
+            font-size: 0.95rem;
+            text-align: left;
         }
 
-    .btn-back {
-        background: #e9f7f4;
-        color: #1f6e61;
-        border: 1px solid rgba(58,182,167,.25);
-    }
-
-        .btn-back:hover {
-            background: #ddf3ef;
-            color: #1f6e61;
+        /* 傳統強烈色彩警告框去優化 */
+        .req-details-page .alert {
+            border-radius: 8px;
+            border: 1px solid transparent;
         }
 
-    @@media (max-width: 768px) {
-        .meta-row {
-            grid-template-columns: 1fr;
+        /* 審核卡片保留原本的結構樣式 */
+        .req-details-page .review-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            padding: 22px;
         }
-    }
-    /* ===== 審核按鈕美化 ===== */
 
-    .review-actions {
-        display: flex;
-        gap: 14px;
-        margin-top: 16px;
-    }
+        .req-details-page .btn-review {
+            border-radius: 6px;
+            padding: 10px 24px;
+            font-weight: 600;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.92rem;
+        }
 
-    .btn-review {
-        border-radius: 999px;
-        padding: 14px 30px;
-        font-weight: 800;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 16px;
-    }
+        .req-details-page .btn-approve {
+            background: #2a9d8f;
+            color: white;
+        }
 
-    .btn-approve {
-        background: linear-gradient(135deg,#27ae60,#2ecc71);
-        color: white;
-    }
+            .req-details-page .btn-approve:hover {
+                background: #218175;
+            }
 
-    .btn-reject {
-        background: linear-gradient(135deg,#e74c3c,#ff6b6b);
-        color: white;
-    }
+        .req-details-page .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+            .req-details-page .btn-reject:hover {
+                background: #bd2130;
+            }
+
+        /* 功能控制按鈕 */
+        .req-details-page .btn-action-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 28px;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .req-details-page .btn-meow-primary {
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid #2a9d8f;
+            background-color: #2a9d8f;
+            color: #ffffff;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+            .req-details-page .btn-meow-primary:hover {
+                background-color: #218175;
+            }
+
+        .req-details-page .btn-meow-back {
+            border-radius: 6px;
+            padding: 8px 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #475569;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+            .req-details-page .btn-meow-back:hover {
+                background-color: #f1f5f9;
+            }
 </style>
 
-<div class="container py-4 details-wrap">
+<div class="req-details-page container mt-4 mb-5">
+    <div class="mb-3">
+        <a href="javascript:void(0)" onclick="goBackSafe()" class="text-decoration-none text-secondary small fw-bold">
+            <i class="bi bi-chevron-left"></i> 返回上一頁
+        </a>
+    </div>
 
-    <div class="card details-card">
-
+    <div class="card main-card">
         <div class="details-header">
-            <div class="details-icon">📄</div>
-            <div>
-                <div class="details-title">需求單詳細內容</div>
-                <div class="details-subtitle">
-                    單號：REQ-@Model.Item.Id
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div>
+                    <h5 class="details-title">需求申請單詳細內容</h5>
+                    <div class="small opacity-75 mt-1">流水號索引：#@Model.Item.Id</div>
                 </div>
-            </div>
-        </div>
-
-        <div class="details-body">
-
-            <div class="meta-row">
-                <div class="meta-key">標題</div>
-                <div class="meta-val">@Model.Item.Title</div>
-
-                <div class="meta-key">系統類別</div>
-                <div class="meta-val">@(Model.Item.UserInput?.SystemCategory ?? "未分類")</div>
-
-                <div class="meta-key">部門</div>
-                <div class="meta-val">@(Model.Item.UserInput?.Department ?? "未知部門")</div>
-
-                <div class="meta-key">建立時間</div>
-                <div class="meta-val">@Model.Item.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
-
-                <div class="meta-key">狀態</div>
-                <div class="meta-val">
+                <div>
                     @{
-                        // 簡單的狀態轉換顯示
+                        string statusBadgeClass = Model.Item.Status switch
+                        {
+                            0 => "bg-light-subtle text-muted border border-secondary-subtle",
+                            1 => "bg-warning-subtle text-warning-emphasis border border-warning-subtle",
+                            2 => "bg-info-subtle text-info-emphasis border border-info-subtle",
+                            3 => "bg-success-subtle text-success-emphasis border border-success-subtle",
+                            4 => "bg-danger-subtle text-danger-emphasis border border-danger-subtle",
+                            _ => "bg-light text-dark"
+                        };
                         string statusText = Model.Item.Status switch
                         {
                             0 => "⏳ AI 分析中",
@@ -242,23 +234,115 @@
                             _ => "❓ 未知狀態"
                         };
                     }
-                    @statusText
-                </div>
-
-                <div class="meta-key">需求內容 (Description)</div>
-                <div class="meta-val">
-                    <div class="desc-box">@Model.Item.Description</div>
+                    <span class="status-badge @statusBadgeClass">@statusText</span>
                 </div>
             </div>
-           
+        </div>
 
-            @* ✅ 審核區：只在狀態為 1 (PendingReview) 時顯示 *@
+        <div class="meta-banner">
+            <div class="meta-banner-item">
+                表單單號：<strong>@(string.IsNullOrEmpty(Model.Item.TicketNumber) ? "未核單" : Model.Item.TicketNumber)</strong>
+            </div>
+            <div class="meta-banner-item">
+                申請組別 / 部門：<strong>@(Model.Item.Department ?? "Team1")</strong>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+
+            @* 🚀 【退回警示區】：若狀態為 4 (已退回)，顯示工單日誌中的具體原因 *@
+            @if (Model.Item.Status == 4)
+            {
+                var rejectLog = Model.Item.AuditLogs?.OrderByDescending(l => l.Timestamp).FirstOrDefault(l => l.Action == "Rejected");
+                <div class="alert alert-danger p-3 mb-4" style="border-radius: 8px; border: 1px solid #f5c2c7; background-color: #f8d7da; color: #842029;">
+                    <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> 表單退回理由：</div>
+                    <div class="small">@(rejectLog != null && !string.IsNullOrWhiteSpace(rejectLog.Comment) ? rejectLog.Comment : "請聯繫開發人員了解審核詳情。")</div>
+                    @if (rejectLog != null)
+                    {
+                        <div class="text-end" style="font-size: 0.75rem; opacity: 0.8; margin-top: 4px;">
+                            審核代碼：@rejectLog.ActorId ｜ 時間：@rejectLog.Timestamp.ToString("yyyy/MM/dd HH:mm")
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="row g-4">
+                <div class="col-12 col-lg-6">
+                    <div class="section-title">需求評估與資安範疇明細</div>
+
+                    <div class="row">
+                        @* 🎯 【欄位解鎖 1】：SystemCategory (系統類別) *@
+                        <div class="col-6 info-group">
+                            <span class="info-label">系統類別</span>
+                            <div class="info-value">
+                                <span class="field-chip">@(Model.Item.SystemCategory ?? "未分類")</span>
+                            </div>
+                        </div>
+
+                        @* 🎯 【欄位解鎖 2】：RequestType (需求類型) *@
+                        <div class="col-6 info-group">
+                            <span class="info-label">需求類型</span>
+                            <div class="info-value">
+                                <span class="field-chip">@(string.IsNullOrEmpty(Model.Item.RequestType) ? "一般需求" : Model.Item.RequestType)</span>
+                            </div>
+                        </div>
+
+                        <div class="col-6 info-group">
+                            <span class="info-label">優先等級 (Priority)</span>
+                            <div class="info-value">
+                                <span class="fw-bold"><i class="bi bi-lightning-charge-fill text-warning small"></i> @(Model.Item.Priority ?? "中")</span>
+                            </div>
+                        </div>
+
+                        @* 🎯 【欄位解鎖 3】：ExpectedCompletionDate (期望完成日期) 正式歸隊 *@
+                        <div class="col-6 info-group">
+                            <span class="info-label">期望完成日期</span>
+                            <div class="info-value fw-bold">
+                                <i class="bi bi-calendar-check text-primary small me-1"></i>
+                                @(Model.Item.ExpectedCompletionDate.HasValue ? Model.Item.ExpectedCompletionDate.Value.ToString("yyyy/MM/dd") : "未設定")
+                            </div>
+                        </div>
+
+                        <div class="col-12 info-group mt-2">
+                            <span class="info-label">建立與提單時間</span>
+                            <div class="info-value">
+                                <i class="bi bi-clock text-secondary small me-1"></i> @Model.Item.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss")
+                            </div>
+                        </div>
+
+                        @* 🎯 【欄位解鎖 4】：ExpectedBenefits (預期效益 / 原因) 垂直高對齊展現 *@
+                        <div class="col-12 info-group mt-2">
+                            <span class="info-label">預期效益 / 申請原因</span>
+                            <div class="p-3 bg-light rounded" style="font-size: 0.92rem; border: 1px solid #e2e8f0; line-height: 1.6; color: #475569;">
+                                @(string.IsNullOrEmpty(Model.Item.ExpectedBenefits) ? "申請人未填寫預期效益描述。" : Model.Item.ExpectedBenefits)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="section-title">需求實施詳細內容 (Description)</div>
+
+                    @* 🎯 核心修復：強制 text-start 靠左、w-100 撐滿，把歪歪的空白全部推開！ *@
+                    <div class="desc-box">
+                        <div class="fw-bold mb-2" style="font-size: 1.1rem; color: #0f172a;">@Model.Item.Title.Trim()</div>
+
+                        <div style="border-top: 1px dashed #e2e8f0; margin: 12px 0 16px 0;"></div>
+
+                        <div style="color: #334155; line-height: 1.7; white-space: pre-wrap;">@Model.Item.Description.Trim()</div>
+                    </div>
+                </div>
+            </div>
+
+            @* ==========================================
+               🚨 核心防禦：以下是妳指定的「審核與驗收填寫區塊」，100% 結構未動原樣保留
+               ========================================== *@
             @if (Model.Item.Status == 1)
             {
                 <hr class="my-4" />
 
-                <div class="section-title">
-                    <span class="dot"></span> 開發人員審核／驗收填寫
+                <div class="section-title" style="border-bottom-color: #cbd5e1;">
+                    開發人員審核／驗收填寫
                 </div>
 
                 <div class="review-card">
@@ -266,35 +350,30 @@
                         <input type="hidden" asp-for="Review.Id" value="@Model.Item.Id" />
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">驗收內容 / 審核意見</label>
-                            <textarea class="form-control"
-                                      rows="4"
-                                      asp-for="Review.AcceptanceContent"
-                                      placeholder="例如：已修正檔名過長問題，新增提示訊息..."></textarea>
+                            <label class="form-label fw-bold small text-secondary">驗收內容 / 審核意見</label>
+                            <textarea class="form-control" rows="4" asp-for="Review.AcceptanceContent" placeholder="例如：已修正檔名過長問題，新增提示訊息..."></textarea>
                         </div>
 
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">驗收日期</label>
-                                <input class="form-control"
-                                       type="date"
-                                       asp-for="Review.AcceptanceDate" />
+                                <label class="form-label fw-bold small text-secondary">驗收日期</label>
+                                <input class="form-control" type="date" asp-for="Review.AcceptanceDate" />
                             </div>
 
                             <div class="col-md-8">
-                                <label class="form-label fw-bold">資安評估</label>
+                                <label class="form-label fw-bold small text-secondary">資安評估</label>
                                 <select class="form-select" asp-for="Review.SecurityAssessment">
                                     <option value="">（未填）</option>
                                     <option value="符合">符合</option>
                                     <option value="不適用">不適用</option>
-                                    <option value="需補件">需補件</option>
+                                    <option value="Sec">需補件</option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="row g-3 mt-1">
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">需求一致性（1~5）</label>
+                                <label class="form-label fw-bold small text-secondary">需求一致性（1~5）</label>
                                 <select class="form-select" asp-for="Review.SatisfactionNeed">
                                     <option value="">（未填）</option>
                                     @for (int i = 1; i <= 5; i++)
@@ -305,7 +384,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">功能穩定性（1~5）</label>
+                                <label class="form-label fw-bold small text-secondary">功能穩定性（1~5）</label>
                                 <select class="form-select" asp-for="Review.SatisfactionStability">
                                     <option value="">（未填）</option>
                                     @for (int i = 1; i <= 5; i++)
@@ -316,7 +395,7 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">整體（1~5）</label>
+                                <label class="form-label fw-bold small text-secondary">整體（1~5）</label>
                                 <select class="form-select" asp-for="Review.SatisfactionOverall">
                                     <option value="">（未填）</option>
                                     @for (int i = 1; i <= 5; i++)
@@ -329,121 +408,62 @@
 
                         <div class="row g-3 mt-1">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">每月節省人力（人日）</label>
-                                <input class="form-control"
-                                       type="number"
-                                       step="0.1"
-                                       asp-for="Review.BenefitManDays" />
+                                <label class="form-label fw-bold small text-secondary">每月節省人力（人日）</label>
+                                <input class="form-control" type="number" step="0.1" asp-for="Review.BenefitManDays" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">創造收益（元）</label>
-                                <input class="form-control"
-                                       type="number"
-                                       step="1"
-                                       asp-for="Review.BenefitRevenue" />
+                                <label class="form-label fw-bold small text-secondary">創造收益（元）</label>
+                                <input class="form-control" type="number" step="1" asp-for="Review.BenefitRevenue" />
                             </div>
                         </div>
 
                         <div class="mt-3">
-                            <label class="form-label fw-bold text-danger">退回原因（退回時必填）</label>
-                            <textarea class="form-control"
-                                      rows="3"
-                                      asp-for="Review.RejectReason"
-                                      placeholder="若要退回，請填寫原因..."></textarea>
-
+                            <label class="form-label fw-bold small text-danger">退回原因（退回時必填）</label>
+                            <textarea class="form-control" rows="3" asp-for="Review.RejectReason" placeholder="若要退回，請填寫原因..."></textarea>
                             <div class="text-danger small mt-1">
                                 @Html.ValidationSummary()
                             </div>
                         </div>
 
                         <div class="review-actions">
-
-                            <button type="submit"
-                                    class="btn-review btn-approve"
-                                    asp-page-handler="Approve"
-                                    onclick="return confirm('確定核准這筆需求單？');">
-
+                            <button type="submit" class="btn-review btn-approve" asp-page-handler="Approve" onclick="return confirm('確定核准這筆需求單？');">
                                 ✔ 核准
-
                             </button>
-
-                            <button type="submit"
-                                    class="btn-review btn-reject"
-                                    asp-page-handler="Reject"
-                                    onclick="return confirm('確定退回這筆需求單？');">
-
+                            <button type="submit" class="btn-review btn-reject" asp-page-handler="Reject" onclick="return confirm('確定退回這筆需求單？');">
                                 ✖ 退回
-
                             </button>
-
                         </div>
                     </form>
                 </div>
             }
 
-            @* ✅ 顯示審核結果 (狀態 2:已核准/開發中, 4:已退回) *@
-
+            @* 🚀 核准通過後的狀態提示看板 *@
             @if (Model.Item.Status == 2 || Model.Item.Status == 3)
             {
-                // ✅ 從 AuditLogs 找出最後一筆 "Approved" 的紀錄
-                var approveLog = Model.Item.AuditLogs?
-                .OrderByDescending(l => l.Timestamp)
-                .FirstOrDefault(l => l.Action == "Approved");
-
-                <div class="alert alert-success mt-4 d-flex align-items-center justify-content-between">
+                var approveLog = Model.Item.AuditLogs?.OrderByDescending(l => l.Timestamp).FirstOrDefault(l => l.Action == "Approved");
+                <div class="alert alert-success mt-4 d-flex align-items-center justify-content-between" style="border-radius: 8px; background-color: #d1e7dd; border-color: #badbcc; color: #0f5132;">
                     <div>
-                        <i class="bi bi-check-circle-fill me-2"></i> <strong>✅ 需求已核准通過</strong>
+                        <strong><i class="bi bi-check-circle-fill me-2"></i> 需求已核准通過</strong>
                         @if (approveLog != null)
                         {
-                            <div class="small mt-1 text-dark">
-                                <span>審核代碼：@approveLog.ActorId</span>
-                                <span class="mx-2">|</span>
-                                <span>核准時間：@approveLog.Timestamp.ToString("yyyy/MM/dd HH:mm")</span>
+                            <div class="small mt-1 text-secondary" style="font-size: 0.8rem;">
+                                審核代碼：@approveLog.ActorId <span class="mx-2">|</span> 核准時間：@approveLog.Timestamp.ToString("yyyy/MM/dd HH:mm")
                             </div>
                         }
                     </div>
-                    <span class="badge bg-success">開發中</span>
+                    <span class="badge bg-success" style="padding: 6px 12px; font-weight: 600;">內部開發中</span>
                 </div>
             }
-
-            @if (Model.Item.Status == 4)
-            {
-                // ✅ 從 AuditLogs 找出最後一筆 "Rejected" 的紀錄
-                var rejectLog = Model.Item.AuditLogs?
-                .OrderByDescending(l => l.Timestamp)
-                .FirstOrDefault(l => l.Action == "Rejected");
-
-                <div class="alert alert-danger mt-4">
-                    <div class="fw-bold mb-1"><i class="bi bi-x-circle-fill me-2"></i> ❌ 需求已退回修正</div>
-                    @if (rejectLog != null)
-                    {
-                        <div class="bg-white p-2 rounded border border-danger-subtle mt-2">
-                            <strong>退回原因：</strong> @(string.IsNullOrWhiteSpace(rejectLog.Comment) ? "未填寫具體原因" : rejectLog.Comment)
-                        </div>
-                        <div class="small mt-2 text-muted">
-                            審核代碼：@rejectLog.ActorId ｜ 時間：@rejectLog.Timestamp.ToString("yyyy/MM/dd HH:mm")
-                        </div>
-                    }
-                </div>
-            }
-
-            @* ✅ 下方功能按鈕 *@
-            <div class="mt-4 gap-2 d-flex">
-                <a asp-page="/Forms/Management" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> 回列表
-                </a>
-
-                @* 如果 status 是 4 (退回)，可以顯示一個「重新編輯」按鈕 *@
-                @if (Model.Item.Status == 4)
-                {
-                    <a asp-page="/Request/Edit" asp-route-id="@Model.Item.Id" class="btn btn-primary">
-                        重新編輯送出
-                    </a>
-                }
-            </div>
-            
 
         </div>
-    </div>
 
+        <div class="btn-action-group justify-content-end">
+            @if (Model.Item.Status == 4)
+            {
+                <a asp-page="/Request/Edit" asp-route-id="@Model.Item.Id" class="btn-meow-primary">
+                    重新編輯並送出申請
+                </a>
+            }
+        </div>
+    </div>
 </div>

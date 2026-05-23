@@ -17,7 +17,6 @@ namespace Dr.meow.Pages.Forms
             _context = context;
         }
 
-        // 🚀 建立一個內嵌類別 (ViewModel)，專門用來裝卡片需要的資料
         public class VulnerabilityVM
         {
             public Vulnerability Main { get; set; } = default!;
@@ -29,46 +28,54 @@ namespace Dr.meow.Pages.Forms
             public string? LatestRejectReason { get; set; }
         }
 
-        // 修正屬性型別：現在我們改用 VM 清單
         public IList<VulnerabilityVM> VulnerabilityList { get; set; } = new List<VulnerabilityVM>();
         public IList<RequestTicketVM> RequestList { get; set; } = new List<RequestTicketVM>();
 
-        public async Task OnGetAsync()
+        // 🚀 關鍵修改：讓 OnGetAsync 接收前端傳來的 formType 參數
+        public async Task OnGetAsync(string? formType)
         {
             var userIdStr = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userIdStr)) return;
 
             int currentUserId = int.Parse(userIdStr);
 
-            // 🚀 核心邏輯：使用 .Select 一次把主表、關聯人、以及最後一筆退回理由勾出來
-            VulnerabilityList = await _context.Vulnerability
-                .Include(v => v.Requester) // 抓提單人
-                .Where(v => v.RequesterId == currentUserId)
-                .OrderByDescending(v => v.Id)
-                .Select(v => new VulnerabilityVM
-                {
-                    Main = v,
-                    // 🎯 子查詢：去 VulnerabilityLogs 找這張單子最新的「Rejected」留言
-                    LatestRejectReason = _context.VulnerabilityLogs
-                        .Where(l => l.VulnerabilityId == v.Id && l.Action == "Rejected")
-                        .OrderByDescending(l => l.CreatedAt)
-                        .Select(l => l.Comment)
-                        .FirstOrDefault()
-                })
-                .ToListAsync();
-            RequestList = await _context.RequestTickets
-    .Where(r => r.RequesterId == currentUserId)
-    .OrderByDescending(r => r.Id)
-    .Select(r => new RequestTicketVM
-    {
-        Main = r,
-        LatestRejectReason = _context.RequestAuditLogs
-            .Where(l => l.RequestId == r.Id && l.Action == "Rejected")
-            .OrderByDescending(l => l.Timestamp)
-            .Select(l => l.Comment)
-            .FirstOrDefault()
-    })
-    .ToListAsync();
+            // 🎯 條件分流 A：如果前端要的是變更單（或者沒傳），才去撈變更單資料
+            if (string.IsNullOrEmpty(formType) || formType == "Vulnerability")
+            {
+                VulnerabilityList = await _context.Vulnerability
+                    .Include(v => v.Requester)
+                    .Where(v => v.RequesterId == currentUserId)
+                    .OrderByDescending(v => v.Id)
+                    .Select(v => new VulnerabilityVM
+                    {
+                        Main = v,
+                        LatestRejectReason = _context.VulnerabilityLogs
+                            .Where(l => l.VulnerabilityId == v.Id && l.Action == "Rejected")
+                            .OrderByDescending(l => l.CreatedAt)
+                            .Select(l => l.Comment)
+                            .FirstOrDefault()
+                    })
+                    .ToListAsync();
+            }
+
+            // 🎯 條件分流 B：如果前端要的是需求單（或者沒傳），才去撈需求單資料
+            if (string.IsNullOrEmpty(formType) || formType == "Request")
+            {
+                RequestList = await _context.RequestTickets
+                    .Include(r => r.Requester)
+                    .Where(r => r.RequesterId == currentUserId)
+                    .OrderByDescending(r => r.Id)
+                    .Select(r => new RequestTicketVM
+                    {
+                        Main = r,
+                        LatestRejectReason = _context.RequestAuditLogs
+                            .Where(l => l.RequestId == r.Id && l.Action == "Rejected")
+                            .OrderByDescending(l => l.Timestamp)
+                            .Select(l => l.Comment ?? "")
+                            .FirstOrDefault()
+                    })
+                    .ToListAsync();
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using Dr.meow.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dr.meow.Migrations
 {
     [DbContext(typeof(DrMeowDbContext))]
-    partial class DrMeowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509081727_AddEvaluationFields")]
+    partial class AddEvaluationFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -428,7 +431,7 @@ namespace Dr.meow.Migrations
                             UserId = 1,
                             Account = "enginee",
                             AccountType = "Admin",
-                            CreatedAt = new DateTime(2026, 5, 23, 1, 36, 43, 706, DateTimeKind.Local).AddTicks(5735),
+                            CreatedAt = new DateTime(2026, 5, 9, 16, 17, 26, 671, DateTimeKind.Local).AddTicks(1248),
                             Email = "dept@drmeow.com",
                             IsActive = true,
                             PasswordHash = "123456"
@@ -438,7 +441,7 @@ namespace Dr.meow.Migrations
                             UserId = 2,
                             Account = "team1boss",
                             AccountType = "Admin",
-                            CreatedAt = new DateTime(2026, 5, 23, 1, 36, 43, 706, DateTimeKind.Local).AddTicks(5738),
+                            CreatedAt = new DateTime(2026, 5, 9, 16, 17, 26, 671, DateTimeKind.Local).AddTicks(1250),
                             Department = "Team1",
                             Email = "team1@drmeow.com",
                             IsActive = true,
@@ -449,7 +452,7 @@ namespace Dr.meow.Migrations
                             UserId = 3,
                             Account = "team2boss",
                             AccountType = "Admin",
-                            CreatedAt = new DateTime(2026, 5, 23, 1, 36, 43, 706, DateTimeKind.Local).AddTicks(5740),
+                            CreatedAt = new DateTime(2026, 5, 9, 16, 17, 26, 671, DateTimeKind.Local).AddTicks(1252),
                             Department = "Team2",
                             Email = "team2@drmeow.com",
                             IsActive = true,
@@ -460,7 +463,7 @@ namespace Dr.meow.Migrations
                             UserId = 4,
                             Account = "superboss",
                             AccountType = "Admin",
-                            CreatedAt = new DateTime(2026, 5, 23, 1, 36, 43, 706, DateTimeKind.Local).AddTicks(5742),
+                            CreatedAt = new DateTime(2026, 5, 9, 16, 17, 26, 671, DateTimeKind.Local).AddTicks(1254),
                             Email = "super@drmeow.com",
                             IsActive = true,
                             PasswordHash = "123456"
@@ -470,7 +473,7 @@ namespace Dr.meow.Migrations
                             UserId = 5,
                             Account = "gmember1",
                             AccountType = "User",
-                            CreatedAt = new DateTime(2026, 5, 23, 1, 36, 43, 706, DateTimeKind.Local).AddTicks(5744),
+                            CreatedAt = new DateTime(2026, 5, 9, 16, 17, 26, 671, DateTimeKind.Local).AddTicks(1256),
                             Department = "Team1",
                             Email = "user1@drmeow.com",
                             IsActive = true,
@@ -481,7 +484,7 @@ namespace Dr.meow.Migrations
                             UserId = 6,
                             Account = "gmember2",
                             AccountType = "User",
-                            CreatedAt = new DateTime(2026, 5, 23, 1, 36, 43, 706, DateTimeKind.Local).AddTicks(5747),
+                            CreatedAt = new DateTime(2026, 5, 9, 16, 17, 26, 671, DateTimeKind.Local).AddTicks(1257),
                             Department = "Team2",
                             Email = "user2@drmeow.com",
                             IsActive = true,
@@ -662,65 +665,6 @@ namespace Dr.meow.Migrations
                     b.ToTable("VulnerabilityLogs");
                 });
 
-            modelBuilder.Entity("VulnerabilityAiDetail", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("AiOverallScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("AiReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("AiRequirementScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("AiReviewComment")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("AiStabilityScore")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ComplianceStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsITRelated")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsProcessed")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("PriorityScore")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ProcessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RefinedDescription")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RefinedTitle")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SecurityAssessment")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("VulnerabilityId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VulnerabilityId")
-                        .IsUnique();
-
-                    b.ToTable("VulnerabilityAiDetail");
-                });
-
             modelBuilder.Entity("Dr.meow.Models.RequestAiDetail", b =>
                 {
                     b.HasOne("Dr.meow.Models.RequestTicket", "RequestTicket")
@@ -751,13 +695,11 @@ namespace Dr.meow.Migrations
 
             modelBuilder.Entity("Dr.meow.Models.RequestTicket", b =>
                 {
-                    b.HasOne("Dr.meow.Models.User", "Requester")
+                    b.HasOne("Dr.meow.Models.User", null)
                         .WithMany()
                         .HasForeignKey("RequesterId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Requester");
                 });
 
             modelBuilder.Entity("Dr.meow.Models.RequestUserInput", b =>
@@ -810,17 +752,6 @@ namespace Dr.meow.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("VulnerabilityAiDetail", b =>
-                {
-                    b.HasOne("Dr.meow.Models.Vulnerability", "Vulnerability")
-                        .WithOne("AiDetail")
-                        .HasForeignKey("VulnerabilityAiDetail", "VulnerabilityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Vulnerability");
-                });
-
             modelBuilder.Entity("Dr.meow.Models.RequestTicket", b =>
                 {
                     b.Navigation("AiDetail")
@@ -840,11 +771,6 @@ namespace Dr.meow.Migrations
             modelBuilder.Entity("Dr.meow.Models.User", b =>
                 {
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("Dr.meow.Models.Vulnerability", b =>
-                {
-                    b.Navigation("AiDetail");
                 });
 #pragma warning restore 612, 618
         }

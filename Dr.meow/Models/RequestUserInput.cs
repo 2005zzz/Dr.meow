@@ -11,6 +11,7 @@ namespace Dr.meow.Models
         public string Department { get; set; } = "";
         public string Role { get; set; } = "";
         public string Contact { get; set; } = "";
+        [Column(TypeName = "nvarchar(max)")] // 🚀 確保長度足夠
         public string Description { get; set; } = "";
         public string SystemCategory { get; set; } = "";
         public string RequestType { get; set; } = "";

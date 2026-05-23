@@ -21,6 +21,7 @@ namespace Dr.meow.Pages.Forms
             public Vulnerability Main { get; set; } = default!;
             public string? LatestRejectReason { get; set; }
             public string? FirstReviewComment { get; set; }
+            public VulnerabilityAiDetail? AiDetail { get; set; }
         }
 
         public List<VulnerabilityVM> Pending { get; set; } = new();
@@ -30,34 +31,47 @@ namespace Dr.meow.Pages.Forms
 
         public async Task OnGetAsync()
         {
+            var connection = _db.Database.GetDbConnection();
+            Console.WriteLine($"🔍 [讀取方] 資料庫: {connection.Database}, 伺服器: {connection.DataSource}");
             // 1. 取得目前主管的組別 (例如: Team1)
             var myTeam = HttpContext.Session.GetString("UserTeam") ?? "";
             var userIdStr = HttpContext.Session.GetString("UserId") ?? "0";
             int currentUserId = int.Parse(userIdStr);
+            Console.WriteLine($"🔍 正在檢查的 Department 是: '{myTeam}'");
             System.Diagnostics.Debug.WriteLine($"🔍 目前登入者 ID: {currentUserId}");
             var baseQuery = _db.Vulnerability.Include(v => v.Requester);
 
             // --- 1. ⏳ 待處理 (Pending) ---
-            Pending = await _db.Vulnerability
-                .Include(v => v.Requester) // 🚀 重要：沒有這一行，卡片上的提單人頭像會抓不到資料
+            // 這裡我們採用先撈出實體，再轉型為 VM 的穩定做法
+            var pendingEntities = await _db.Vulnerability
+                .Include(v => v.Requester)
+                //.Include(v => v.AiDetail) // 顯式 Include，EF Core 會幫你處理關聯
                 .Where(x =>
                     (x.Department == myTeam && x.Status == "Pending") ||
                     (x.Department != myTeam && x.Status == "PendingCross") ||
-                    (x.Status == "PendingCISO" && /* 這裡判斷是否為資安長角色 */ false)
+                    (x.Status == "PendingCISO" && false)
                 )
                 .OrderByDescending(x => x.CreatedAt)
-                .Select(x => new VulnerabilityVM
-                {
-                    Main = x,
-                    // 💡 待處理單據通常不需要 LatestRejectReason，除非妳想在初審時看到「之前的退回紀錄」
-                    // 如果需要，可以比照 Rejected 的寫法把子查詢加在這裡
-                    FirstReviewComment = _db.VulnerabilityLogs
+                .ToListAsync();
+
+            // 2. 獲取所有相關的 AI Detail (單次查詢，避開 n+1 與關聯載入失敗的問題)
+            var vulnIds = pendingEntities.Select(v => v.Id).ToList();
+            var aiDetails = await _db.VulnerabilityAiDetail
+                .Where(a => vulnIds.Contains(a.VulnerabilityId))
+                .ToListAsync();
+
+            // 轉換為 VM
+            Pending = pendingEntities.Select(x => new VulnerabilityVM
+            {
+                Main = x,
+                // 這裡直接讀取 Include 到的 AiDetail 物件
+                AiDetail = aiDetails.FirstOrDefault(a => a.VulnerabilityId == x.Id),
+                FirstReviewComment = _db.VulnerabilityLogs
                     .Where(l => l.VulnerabilityId == x.Id && l.StepName == "組長初審" && l.Action == "Approved")
                     .OrderByDescending(l => l.CreatedAt)
                     .Select(l => l.Comment)
                     .FirstOrDefault()
-                })
-                .ToListAsync();
+            }).ToList();
 
             // --- 2. 🔄 處理中 (Tracking) ---
             // 💡 邏輯：我審過(我的ID在裡面)，但狀態還不是最終的 Approved 或 Rejected
