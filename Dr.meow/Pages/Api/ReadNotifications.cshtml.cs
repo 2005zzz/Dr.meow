@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dr.meow.Pages.API
 {
+    [IgnoreAntiforgeryToken(Order = 1001)]
     public class ReadNotificationsModel : PageModel
     {
         private readonly DrMeowDbContext _db;
@@ -20,21 +21,25 @@ namespace Dr.meow.Pages.API
 
             if (string.IsNullOrEmpty(userId))
             {
-                return new JsonResult(false);
+                return new JsonResult(new { success = false });
             }
 
-            var list = await _db.Notifications
-                .Where(x => x.UserId == userId && !x.IsRead)
+            var notifications = await _db.Notifications
+                .Where(x => x.UserId == userId && x.IsRead == false)
                 .ToListAsync();
 
-            foreach (var item in list)
+            foreach (var n in notifications)
             {
-                item.IsRead = true;
+                n.IsRead = true;
             }
 
             await _db.SaveChangesAsync();
 
-            return new JsonResult(true);
+            return new JsonResult(new
+            {
+                success = true,
+                count = notifications.Count
+            });
         }
     }
 }

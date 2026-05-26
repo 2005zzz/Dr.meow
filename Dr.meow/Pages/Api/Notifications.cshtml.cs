@@ -17,19 +17,14 @@ namespace Dr.meow.Pages.API
         public async Task<IActionResult> OnGetAsync()
         {
             var userId = HttpContext.Session.GetString("UserId");
-            var isAdmin = HttpContext.Session.GetString("IsAdmin");
 
+            // 沒登入
             if (string.IsNullOrEmpty(userId))
             {
                 return new JsonResult(new List<object>());
             }
 
-            // ✅ 只有管理者可以看到通知
-            if (isAdmin != "1")
-            {
-                return new JsonResult(new List<object>());
-            }
-
+            // 撈目前登入者自己的未讀通知
             var list = await _db.Notifications
                 .Where(x => x.UserId == userId && !x.IsRead)
                 .OrderByDescending(x => x.CreatedAt)

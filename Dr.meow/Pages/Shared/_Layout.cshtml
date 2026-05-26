@@ -30,7 +30,7 @@
         .btn-drmeow-back {
             background: rgba(255,255,255,0.18);
             border: 1px solid rgba(255,255,255,0.35);
-            color: #ffffff;
+            color: #fff;
             height: 44px;
             padding: 0 16px;
             border-radius: 14px;
@@ -38,22 +38,20 @@
             align-items: center;
             gap: 8px;
             font-weight: 600;
-            font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.18s ease;
+            transition: all .18s ease;
             backdrop-filter: blur(6px);
         }
 
             .btn-drmeow-back:hover {
-                background: rgba(255,255,255,0.32);
+                background: rgba(255,255,255,.32);
                 transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.16);
             }
 
         .btn-icon-notification {
-            background-color: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: #ffffff;
+            background-color: rgba(255,255,255,.18);
+            border: 1px solid rgba(255,255,255,.25);
+            color: #fff;
             width: 46px;
             height: 46px;
             border-radius: 14px;
@@ -63,14 +61,7 @@
             position: relative;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.18s ease;
         }
-
-            .btn-icon-notification:hover {
-                background-color: rgba(255, 255, 255, 0.32);
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.16);
-            }
 
             .btn-icon-notification i {
                 font-size: 1.25rem;
@@ -84,63 +75,83 @@
             height: 9px;
             background-color: #ff4d4f;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,.9);
         }
 
         .notifications-menu {
-            width: 320px;
+            width: 360px;
             border-radius: 14px;
             padding: 0;
             overflow: hidden;
+            max-height: 560px;
+            overflow-y: auto;
         }
 
         .notifications-header {
             padding: 10px 16px;
             font-weight: 600;
-            font-size: 0.95rem;
             color: #444;
             background: #f8f9fa;
             border-bottom: 1px solid #e5e5e5;
         }
 
+        .notify-icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 12px;
+            border: 0;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .notify-clear-btn {
+            background: #ffeaea;
+            color: #e05a5a;
+        }
+
+        .notify-setting-btn {
+            background: #f3f0ff;
+            color: #8b6fd6;
+        }
+
         .notification-row {
             padding: 12px 16px;
-            border-bottom: 1px solid #eeeeee;
+            border-bottom: 1px solid #eee;
         }
 
         .notification-item-text {
-            font-size: 0.95rem;
+            font-size: .95rem;
             color: #333;
+            white-space: normal;
         }
 
         .notification-time {
-            font-size: 0.8rem;
+            font-size: .8rem;
             color: #7a7a7a;
+            margin-top: 4px;
+        }
+
+        #notifySettingBox {
+            background: #f8fffd;
         }
 
         .drmeow-logo {
             border-radius: 10px;
-            transition: transform 0.22s ease, box-shadow 0.22s ease;
         }
-
-            .drmeow-logo:hover {
-                transform: translateY(-1px) scale(1.03);
-                box-shadow: 0 6px 16px rgba(0,0,0,0.18);
-            }
     </style>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
 
     <header>
-        <nav class="navbar border-bottom box-shadow mb-3"
-             style="background-color:#3AB6A7;">
-
+        <nav class="navbar border-bottom box-shadow mb-3" style="background-color:#3AB6A7;">
             <div class="container d-flex align-items-center justify-content-between">
 
                 <div class="d-flex align-items-center gap-3">
-
-                    @if (!isLoginPage && isAdmin)
+                    @if (!isLoginPage)
                     {
                         <button onclick="goBackSafe()" class="btn-drmeow-back">
                             <i class="bi bi-arrow-left"></i>
@@ -148,28 +159,18 @@
                         </button>
                     }
 
-                    <a class="navbar-brand d-flex align-items-center gap-3 text-white m-0"
-                       asp-page="/Index">
-
-                        <img src="~/images/drmeow-logo.png"
-                             class="drmeow-logo"
-                             style="height:60px;">
-
-                        <span class="fw-bold"
-                              style="font-size:1.4rem;">
-                            Dr.meow
-                        </span>
-
+                    <a class="navbar-brand d-flex align-items-center gap-3 text-white m-0" asp-page="/Index">
+                        <img src="~/images/drmeow-logo.png" class="drmeow-logo" style="height:60px;">
+                        <span class="fw-bold" style="font-size:1.4rem;">Dr.meow</span>
                     </a>
-
                 </div>
 
-                @if (!isLoginPage && isAdmin)
+                @if (!isLoginPage)
                 {
                     <div class="nav-item dropdown">
-
                         <a class="btn-icon-notification"
                            data-bs-toggle="dropdown"
+                           data-bs-auto-close="outside"
                            href="javascript:void(0);">
 
                             <i class="bi bi-bell-fill"></i>
@@ -178,22 +179,13 @@
                                   id="notificationBadge"
                                   style="display:none;">
                             </span>
-
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end notifications-menu"
                             id="notificationList">
-
-                            <li class="notifications-header">
-                                最近通知
-                            </li>
-
-                            <li class="p-3 text-muted">
-                                目前沒有通知
-                            </li>
-
+                            <li class="notifications-header">最近通知</li>
+                            <li class="p-3 text-muted">目前沒有通知</li>
                         </ul>
-
                     </div>
                 }
 
@@ -207,8 +199,7 @@
         </div>
     </main>
 
-    <footer class="text-center text-white py-3"
-            style="background-color:#3AB6A7;">
+    <footer class="text-center text-white py-3" style="background-color:#3AB6A7;">
         © 2025 Dr.meow 智慧資安顧問系統
     </footer>
 
@@ -216,6 +207,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        const isAdminUser = @(isAdmin.ToString().ToLower());
+
         function goBackSafe() {
             if (document.referrer && document.referrer !== window.location.href) {
                 history.back();
@@ -224,25 +217,102 @@
             }
         }
 
+        function renderNotificationHeader() {
+            return `
+                <li class="notifications-header d-flex justify-content-between align-items-center">
+                    <span>最近通知</span>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button"
+                                id="clearNotifications"
+                                class="notify-icon-btn notify-clear-btn"
+                                title="清除通知">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+
+                        ${isAdminUser ? `
+                            <button type="button"
+                                    id="openNotifySetting"
+                                    class="notify-icon-btn notify-setting-btn"
+                                    title="排程設定">
+                                ⚙️
+                            </button>
+                        ` : ``}
+                    </div>
+                </li>
+            `;
+        }
+
+        function renderSettingBox() {
+            if (!isAdminUser) return "";
+
+            return `
+                <li id="notifySettingBox"
+                    class="p-3 border-bottom"
+                    style="display:none; background:#f8fffd;">
+
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div style="width:34px;height:34px;border-radius:12px;background:#dff8f3;display:flex;align-items:center;justify-content:center;">
+                            ⚙️
+                        </div>
+                        <div>
+                            <div class="fw-bold">排程通知設定</div>
+                            <div class="text-muted small">設定每日提醒管理者檢查待審核表單</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">通知時間</label>
+                        <input type="time" id="notifyTime" class="form-control rounded-3" />
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-4 px-3 py-2 rounded-4"
+                         style="background:#ffffff;border:1px solid #dff3ee;">
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:32px;height:32px;border-radius:10px;background:#e7faf5;display:flex;align-items:center;justify-content:center;">
+                                🔔
+                            </div>
+
+                            <div>
+                                <div class="fw-bold" style="font-size:.95rem;">啟用通知</div>
+                                <div class="text-muted" style="font-size:.78rem;">開啟後將依時間自動提醒</div>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="notifyEnabled"
+                                   style="width:46px;height:24px;cursor:pointer;" />
+                        </div>
+                    </div>
+
+                    <button type="button"
+                            id="saveNotifySetting"
+                            class="btn w-100 fw-bold rounded-4 py-2 border-0"
+                            style="background:linear-gradient(135deg,#63d1c2,#3ab6a7);color:white;font-size:.95rem;box-shadow:0 4px 14px rgba(58,182,167,.28);">
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        儲存設定
+                    </button>
+                </li>
+            `;
+        }
+
         async function loadNotifications() {
-            const list = document.getElementById('notificationList');
-            const badge = document.getElementById('notificationBadge');
+            const list = document.getElementById("notificationList");
+            const badge = document.getElementById("notificationBadge");
 
             if (!list || !badge) return;
 
             try {
-                const res = await fetch('/API/Notifications');
+                const res = await fetch("/API/Notifications");
                 const data = await res.json();
 
-                list.innerHTML = `
-                    <li class="notifications-header">
-                        最近通知
-                    </li>
-                `;
+                list.innerHTML = renderNotificationHeader() + renderSettingBox();
 
                 if (!Array.isArray(data) || data.length === 0) {
                     badge.style.display = "none";
-
                     list.innerHTML += `
                         <li class="p-3 text-muted">
                             目前沒有通知
@@ -257,55 +327,112 @@
                     list.innerHTML += `
                         <li>
                             <div class="notification-row">
-                                <div class="notification-item-text">
-                                    ${n.message}
-                                </div>
-                                <div class="notification-time">
-                                    ${n.time}
-                                </div>
+                                <div class="notification-item-text">${n.message}</div>
+                                <div class="notification-time">${n.time}</div>
                             </div>
                         </li>
                     `;
                 });
             }
             catch (e) {
-                console.log(e);
-
-                badge.style.display = "none";
-
-                list.innerHTML = `
-                    <li class="notifications-header">
-                        最近通知
-                    </li>
-                    <li class="p-3 text-muted">
-                        目前沒有通知
-                    </li>
-                `;
+                console.log("通知錯誤:", e);
             }
         }
 
-                       document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", () => {
+            loadNotifications();
+            setInterval(loadNotifications, 30000);
+        });
 
-            const bell = document.querySelector('.btn-icon-notification');
-            const badge = document.getElementById('notificationBadge');
+        document.addEventListener("click", async (e) => {
+            const settingBtn = e.target.closest("#openNotifySetting");
 
-            // ⭐ 沒有鈴鐺（使用者頁）直接不跑通知
-            if (!bell || !badge) {
+            if (settingBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const box = document.getElementById("notifySettingBox");
+                if (!box) return;
+
+                box.style.display = box.style.display === "none" ? "block" : "none";
+
+                try {
+                    const res = await fetch("/API/GetNotificationSetting");
+                    const data = await res.json();
+
+                    document.getElementById("notifyTime").value =
+                        `${String(data.hour).padStart(2, "0")}:${String(data.minute).padStart(2, "0")}`;
+
+                    document.getElementById("notifyEnabled").checked = data.isEnabled;
+                }
+                catch (err) {
+                    console.log("讀取通知設定錯誤:", err);
+                }
+
                 return;
             }
 
-            loadNotifications();
+                   const clearBtn = e.target.closest("#clearNotifications");
 
-            setInterval(loadNotifications, 30000);
+        if (clearBtn) {
+            e.preventDefault();
+            e.stopPropagation();
 
-            bell.addEventListener('click', async () => {
+            console.log("垃圾桶有被點到");
 
-                await fetch('/API/ReadNotifications', {
-                    method: 'POST'
-                });
-
-                badge.style.display = "none";
+            const res = await fetch("/API/ClearNotifications", {
+                method: "POST"
             });
+
+            const text = await res.text();
+
+            console.log("ClearNotifications status:", res.status);
+            console.log("ClearNotifications response:", text);
+
+            await loadNotifications();
+
+            return;
+        }
+
+            const saveBtn = e.target.closest("#saveNotifySetting");
+
+            if (saveBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const time = document.getElementById("notifyTime").value;
+                const enabled = document.getElementById("notifyEnabled").checked;
+
+                try {
+                    const res = await fetch("/API/SaveNotificationSetting", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            timeText: time,
+                            isEnabled: enabled
+                        })
+                    });
+
+                    const result = await res.json();
+
+                    alert(result.success ? "通知設定已儲存" : "通知設定儲存失敗");
+                }
+                catch (err) {
+                    console.log("儲存通知設定錯誤:", err);
+                    alert("通知設定儲存失敗");
+                }
+
+                return;
+            }
+
+            const bell = e.target.closest(".btn-icon-notification");
+
+            if (bell) {
+                const badge = document.getElementById("notificationBadge");
+                if (badge) badge.style.display = "none";
+            }
         });
     </script>
 

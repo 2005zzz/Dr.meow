@@ -4,6 +4,7 @@ using Dr.meow.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dr.meow.Migrations
 {
     [DbContext(typeof(DrMeowDbContext))]
-    partial class DrMeowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260525225735_AddNotificationScheduleSetting")]
+    partial class AddNotificationScheduleSetting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

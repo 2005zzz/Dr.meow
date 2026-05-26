@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,9 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AddPageRoute("/Login/Login", "/Login");
     options.Conventions.AddPageRoute("/Login/Register", "/Register");
     options.Conventions.AddPageRoute("/Login/ForgotPassword", "/ForgotPassword");
+
+    // ✅ 讓 /API/ReadNotifications 這種 fetch POST 不會被 AntiForgery 擋 400
+    options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute());
 });
 
 // Hangfire

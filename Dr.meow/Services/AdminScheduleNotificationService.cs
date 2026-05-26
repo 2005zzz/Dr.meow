@@ -17,73 +17,81 @@ namespace Dr.meow.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await RunSchedules();
+                await RunScheduleAsync();
 
-                // 每分鐘檢查一次時間
+                // 每分鐘檢查一次
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }
 
-        private async Task RunSchedules()
-        {
-            var now = DateTime.Now;
-
-            // ✅ 測試用：每分鐘前 10 秒產生一次通知
-            // 測完後請改回：now.Hour == 9 && now.Minute == 0
-            if (now.Hour == 9 && now.Minute == 0)
-            {
-                await NotifyAdmins(
-                    "表單處理提醒",
-                    "今日待辦：請檢查逾期未處理案件，並確認每日待審核清單。",
-                    "TEST_0900");
-            }
-
-            // 每日 13:00
-            if (now.Hour == 13 && now.Minute == 0)
-            {
-                await NotifyAdmins(
-                    "資料同步檢查",
-                    "請確認各系統資料一致性，並記錄今日同步狀態。",
-                    "Daily_1300");
-            }
-
-            // 每週一 08:00
-            if (now.DayOfWeek == DayOfWeek.Monday && now.Hour == 8 && now.Minute == 0)
-            {
-                await NotifyAdmins(
-                    "上週績效報告",
-                    "請檢視上週表單處理時效、熱門查詢主題與系統使用情況報告。",
-                    "Weekly_Mon_0800");
-            }
-
-            // 每週六 02:00
-            if (now.DayOfWeek == DayOfWeek.Saturday && now.Hour == 2 && now.Minute == 0)
-            {
-                await NotifyAdmins(
-                    "知識庫更新",
-                    "請檢查 SharePoint 文件異動、重新索引更新內容，並確認向量資料庫優化狀態。",
-                    "Weekly_Sat_0200");
-            }
-
-            // 每月 25 日 09:00
-            if (now.Day == 25 && now.Hour == 9 && now.Minute == 0)
-            {
-                await NotifyAdmins(
-                    "每月合規報告",
-                    "請執行文件時效性檢查、政策遵循狀態評估，並產生管理階層報告。",
-                    "Monthly_25_0900");
-            }
-        }
-
-        private async Task NotifyAdmins(string title, string message, string scheduleKey)
+        private async Task RunScheduleAsync()
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<DrMeowDbContext>();
 
-            // ✅ 用 yyyyMMddHHmm，確保同一分鐘不會重複新增
-            var notificationKey = $"{scheduleKey}_{DateTime.Now:yyyyMMddHHmm}";
+            var now = DateTime.Now;
 
-            // 找管理者帳號
+            // ✅ 從資料庫讀取管理者設定的通知時間
+            var setting = await db.NotificationScheduleSettings
+                .FirstOrDefaultAsync();
+
+            // ✅ 如果資料庫沒有設定，先自動建立一筆預設 09:00
+            if (setting == null)
+            {
+                setting = new NotificationScheduleSetting
+                {
+                    Hour = 9,
+                    Minute = 0,
+                    IsEnabled = true,
+                    UpdatedAt = DateTime.Now
+                };
+
+                db.NotificationScheduleSettings.Add(setting);
+                await db.SaveChangesAsync();
+            }
+
+            // ✅ 如果管理者關閉通知，就不執行
+            if (!setting.IsEnabled)
+            {
+                return;
+            }
+
+            // ✅ 時間不符合就不執行
+            if (now.Hour != setting.Hour || now.Minute != setting.Minute)
+            {
+                return;
+            }
+
+            // ✅ 檢查是否有未審核需求單
+            var pendingRequestCount = await db.RequestTickets
+                .CountAsync(x => x.Status == 1);
+
+            // ✅ 檢查是否有未審核變更單
+            var pendingVulnerabilityCount = await db.Vulnerability
+                .CountAsync(x => x.Status == "Pending");
+
+            var totalPending = pendingRequestCount + pendingVulnerabilityCount;
+
+            // ✅ 沒有未審核表單就不通知
+            if (totalPending <= 0)
+            {
+                return;
+            }
+
+            await NotifyAdmins(
+                db,
+                "表單處理提醒",
+                $"目前有 {totalPending} 筆未審核表單，請至管理者後台查看。"
+            );
+        }
+
+        private async Task NotifyAdmins(DrMeowDbContext db, string title, string message)
+        {
+            var now = DateTime.Now;
+
+            // ✅ 同一分鐘內避免重複新增
+            var notificationKey = $"PendingForms_{now:yyyyMMddHHmm}";
+
             var adminIds = await db.Users
                 .Where(u => u.AccountType == "Admin")
                 .Select(u => u.UserId.ToString())
@@ -91,9 +99,8 @@ namespace Dr.meow.Services
 
             foreach (var adminId in adminIds)
             {
-                bool exists = await db.Notifications.AnyAsync(n =>
+                var exists = await db.Notifications.AnyAsync(n =>
                     n.UserId == adminId &&
-                    n.Title == title &&
                     n.Message.Contains(notificationKey));
 
                 if (!exists)
@@ -102,9 +109,9 @@ namespace Dr.meow.Services
                     {
                         UserId = adminId,
                         Title = title,
-                        Message = $"{message}（排程代碼：{notificationKey}）",
+                        Message = $"{message}（通知代碼：{notificationKey}）",
                         IsRead = false,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = now
                     });
                 }
             }
